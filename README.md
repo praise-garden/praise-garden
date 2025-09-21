@@ -7,10 +7,10 @@ Praise Garden is a free, open-source testimonial collection and management platf
 We welcome contributions from developers of all skill levels!
 
 🎨 Designers: Help improve our UI/UX
-💻 Developers: Add features and fix bugs
-📝 Writers: Improve documentation
-🌐 Translators: Help make Praise Garden multilingual
-🧪 Testers: Help us find and fix issues
+- 💻 Developers: Add features and fix bugs
+- 📝 Writers: Improve documentation
+- 🌐 Translators: Help make Praise Garden multilingual
+- 🧪 Testers: Help us find and fix issues
 
 ## Current Progress:
 We started working on this project just a few days back, so we are still working on the basic structure. We want to make sure that initially the project has the below features:
