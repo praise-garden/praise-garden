@@ -1,0 +1,146 @@
+PraiseGarden.io: Project Technical Brief & Schema
+Version: 1.2 (MVP with Forms & Widgets)
+Date: September 23, 2025
+
+1. Project Overview
+PraiseGarden is an open-core testimonial collection tool, designed as a direct competitor to services like Senja.io and Testimonial.to. Its primary audience is developers, founders, and small to medium-sized businesses.
+
+The core philosophy is to provide a powerful, feature-rich, and unlimited self-hosted version for individuals (Hacker Plan), while offering paid, cloud-hosted plans with advanced features for professionals and teams in the future.
+
+2. Core Architecture: The Open-Source "Engine"
+This brief focuses exclusively on building the "Engine": the core open-source product. The commercial "Wrapper" (for paid features like billing and third-party scraping) will be developed as a separate project in a private repository at a later date.
+
+Repository: The entire public GitHub repository.
+
+License: AGPLv3.
+
+Scope: A complete Next.js application that handles all core functionality for an individual user: creating custom forms to collect testimonials, managing them, and creating custom widgets to display them.
+
+Goal: To be the best free testimonial tool for an individual, encouraging community contribution and adoption.
+
+3. Technology Stack
+Component
+
+Technology
+
+Application Framework
+
+Next.js (with React)
+
+Language
+
+TypeScript
+
+Styling
+
+Tailwind CSS & Shadcn/UI
+
+Backend & Database
+
+Supabase (Postgres & Storage)
+
+Deployment
+
+Vercel
+
+Embeddable Widget
+
+Vanilla TypeScript (compiled to JS)
+
+Open-Source License
+
+AGPLv3
+
+4. Supabase Database Schema (MVP)
+This schema is designed for a single-user model but is structured to easily accommodate teams in the future.
+
+projects
+
+Represents a product or website that collects testimonials. A User can have multiple Projects.
+
+Columns:
+
+id (UUID, Primary Key)
+
+owner_id (UUID, Foreign Key -> auth.users.id)
+
+name (Text)
+
+created_at (Timestamp)
+
+forms (NEW)
+
+Stores the configuration for a specific testimonial collection form. A Project can have many Forms.
+
+Columns:
+
+id (UUID, Primary Key)
+
+project_id (UUID, Foreign Key -> projects.id)
+
+name (Text) - e.g., "Video Testimonial Form", "Website Embed Form"
+
+settings (JSONB) - Stores all customizations: { "title": "Share your feedback!", "allowVideo": true, "fields": ["name", "rating"], "buttonColor": "#22c55e" }
+
+created_at (Timestamp)
+
+widgets (NEW)
+
+Stores the configuration for a specific testimonial display widget (e.g., a "Wall of Love"). A Project can have many Widgets.
+
+Columns:
+
+id (UUID, Primary Key)
+
+project_id (UUID, Foreign Key -> projects.id)
+
+name (Text) - e.g., "Homepage Wall of Love", "Pricing Page Popup"
+
+settings (JSONB) - Stores all customizations: { "layout": "grid", "theme": "dark", "showAvatars": true }
+
+created_at (Timestamp)
+
+testimonials (UPDATED)
+
+A single piece of praise, now linked to the Form it was collected from.
+
+Columns:
+
+id (UUID, Primary Key)
+
+project_id (UUID, Foreign Key -> projects.id)
+
+form_id (UUID, Foreign Key -> forms.id) - NEW
+
+type (Enum: text, video) - Default: text.
+
+author_name (Text)
+
+author_title (Text, optional)
+
+author_avatar_url (Text, optional)
+
+content (Text)
+
+video_url (Text, optional)
+
+rating (Integer, optional)
+
+status (Enum: pending, published, hidden) - Default: pending.
+
+created_at (Timestamp)
+
+5. Core User & Data Flow (Updated)
+User Signup: User signs up and is taken to their dashboard.
+
+Project Creation: User creates their first Project.
+
+Form Creation: Inside a project, the user creates a Form. They customize it using our UI, and we save the configuration to the settings JSONB field in the forms table.
+
+Collecting a Testimonial: The user shares the public link for that specific form (/collect/{form_id}). A new testimonial is submitted and linked to that form_id.
+
+Managing Testimonials: The user approves/hides testimonials in their dashboard.
+
+Widget Creation: The user creates a Widget to display testimonials. They customize its appearance, and we save the configuration to the settings JSONB field in the widgets table.
+
+Displaying Testimonials: The user gets a script tag for their widget (/widget/{widget_id}.js), which fetches and displays the approved testimonials according to its saved settings.
