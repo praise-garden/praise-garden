@@ -1,36 +1,11 @@
+import Sidebar from "@/components/Sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const navSections = [
-  {
-    title: "Collect",
-    items: [
-      { label: "Forms", icon: "form" },
-      { label: "Widgets", icon: "widget" },
-    ]
-  },
-  {
-    title: "Create", 
-    items: [
-      { label: "Create Forms", icon: "plus" },
-      { label: "Create Widgets", icon: "code" },
-    ]
-  },
-  {
-    title: "",
-    items: [
-      { label: "Import Testimonials", icon: "upload" },
-    ]
-  }
-];
+ 
 
-const quickNavItems = [
-  { label: "Overview", icon: "home" },
-  { label: "Analytics", icon: "chart" },
-  { label: "Settings", icon: "gear" },
-];
 
 const statCards = [
   { label: "Total Reviews", value: "2,847", change: "+12%" },
@@ -115,87 +90,9 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50/30 font-sans">
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] min-h-screen">
+      <div className="grid grid-cols-1 lg:grid-cols-[16rem_1fr] min-h-screen">
         {/* Sidebar */}
-        <aside aria-label="Primary" className="bg-white border-r border-gray-100 lg:block hidden flex flex-col">
-          <div className="flex-1 p-6">
-            {/* Project Selector */}
-            <div className="mb-8">
-              <button className="w-full flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">AC</span>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">Acme Corporation</p>
-                    <p className="text-xs text-gray-500">Current Project</p>
-                  </div>
-                </div>
-                <Icon name="chevron-down" className="size-4 text-gray-400" />
-              </button>
-            </div>
-
-            {/* Quick Navigation */}
-            <div className="mb-6">
-              <div className="space-y-1">
-                {quickNavItems.map((item, index) => (
-                  <a
-                    key={item.label}
-                    href="#"
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 ${
-                      index === 0 ? 'bg-gray-50 text-black' : 'text-gray-600 hover:text-black'
-                    }`}
-                    aria-label={item.label}
-                  >
-                    <Icon name={item.icon} className="size-4" />
-                    <span>{item.label}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            
-            {/* Main Navigation Sections */}
-            <nav className="space-y-6" role="navigation">
-              {navSections.map((section, sectionIndex) => (
-                <div key={sectionIndex}>
-                  {section.title && (
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-                      {section.title}
-                    </h3>
-                  )}
-                  <div className="space-y-1">
-                    {section.items.map((item, itemIndex) => (
-                      <a
-                        key={item.label}
-                        href="#"
-                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-50 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-200"
-                        aria-label={item.label}
-                      >
-                        <Icon name={item.icon} className="size-4" />
-                        <span>{item.label}</span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </nav>
-          </div>
-
-          {/* Account Section */}
-          <div className="p-6 border-t border-gray-100">
-            <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer">
-              <Avatar className="size-8">
-                <AvatarImage alt="" src="" />
-                <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-sm">JD</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
-                <p className="text-xs text-gray-500 truncate">john@example.com</p>
-              </div>
-              <Icon name="gear" className="size-4 text-gray-400" />
-            </div>
-          </div>
-        </aside>
+        <Sidebar />
 
         {/* Main Content */}
         <div className="flex flex-col">

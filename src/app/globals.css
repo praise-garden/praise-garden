@@ -1,25 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8F9FA; /* Paper White */
+  --foreground: #212529; /* Charcoal */
+  --border: #E9ECEF; /* Light Gray */
+
+  /* Brand & feedback */
+  --color-accent: #22c55e; /* Praise Green */
+  --color-info: #0D6EFD; /* Info Blue */
+  --color-warning: #FFC107; /* Warning Yellow */
+  --color-danger: #DC3545; /* Danger Red */
+
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-border: var(--border);
+  --color-accent: var(--color-accent);
+  --color-info: var(--color-info);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 /* Theme toggled via .dark on html */
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #121212; /* Deep Charcoal */
+  --foreground: #F8F9FA; /* Paper White */
+  --border: #2a2a2a; /* Derived dark border */
 }
 .light {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8F9FA; /* Paper White */
+  --foreground: #212529; /* Charcoal */
+  --border: #E9ECEF; /* Light Gray */
 }
 
 body {
