@@ -10,7 +10,6 @@
   --color-info: #0D6EFD; /* Info Blue */
   --color-warning: #FFC107; /* Warning Yellow */
   --color-danger: #DC3545; /* Danger Red */
-
 }
 
 @theme inline {
@@ -43,4 +42,24 @@ body {
   font-smooth: antialiased;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle global backdrop glow */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -40% -20% auto -20%;
+  height: 70vh;
+  background: radial-gradient(60% 60% at 50% 0%, color-mix(in oklab, var(--accent) 25%, transparent) 0%, transparent 60%),
+    radial-gradient(40% 40% at 20% 10%, color-mix(in oklab, var(--accent) 12%, transparent) 0%, transparent 70%);
+  filter: blur(80px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Card utility */
+.ui-card {
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
 }
