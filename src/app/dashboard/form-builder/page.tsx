@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import RatingCard from '@/components/RatingCard';
-import FormBuilderSidebar from '@/components/FormBuilderSidebar';
+// import FormBuilderSidebar from '@/components/FormBuilderSidebar';
 import NegativeFeedbackCard from '@/components/NegativeFeedbackCard';
 import QuestionCard from '@/components/QuestionCard';
 import PrivateFeedbackCard from '@/components/PrivateFeedbackCard';
@@ -13,6 +13,11 @@ import ReadyToSendCard from '@/components/ReadyToSendCard';
 import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
 import { Reorder } from "framer-motion";
+
+import { FormConfig, FormBlock, FormBlockType } from '@/types/form-config';
+import { createDefaultFormConfig } from '@/lib/default-form-config';
+import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
+import { toast, Toaster } from 'sonner';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -89,59 +94,25 @@ const RewardIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </button>
   );
 
-export type PageItem = { 
-  id: string; 
-  type: 'welcome' | 'rating' | 'negative' | 'question' | 'private' | 'consent' | 'about' | 'ready' | 'thankyou';
-  title: string; 
-  enabled: boolean;
-  content?: {
-    question?: string;
-    description?: string;
-    testimonial?: string;
-    examples?: string[];
-    tips?: string[];
-  }
-};
-
-const defaultQuestionTips = [
-  'Share specific results, e.g. "Our conversion rate increased by 30%"',
-  'Mention your timeline, e.g. "In just 2 months of using this..."',
-  'Highlight a favorite feature, e.g. "The automation saved us 10 hours/week"',
-];
-
-const initialPages: PageItem[] = [
-  { id: crypto.randomUUID(), type: 'welcome', title: 'Welcome page', enabled: true },
-  { id: crypto.randomUUID(), type: 'rating', title: 'Rating page', enabled: true },
-  { id: crypto.randomUUID(), type: 'negative', title: 'Negative feedback page', enabled: true },
-  { id: crypto.randomUUID(), type: 'question', title: 'Question #1', enabled: true, content: { question: 'Share your success story with us', description: 'Help others discover the value you\'ve experienced', tips: defaultQuestionTips } },
-  { id: crypto.randomUUID(), type: 'private', title: 'Private Feedback', enabled: true },
-  { id: crypto.randomUUID(), type: 'consent', title: 'Consent page', enabled: true },
-  { id: crypto.randomUUID(), type: 'about', title: 'About you page', enabled: true },
-  { id: crypto.randomUUID(), type: 'ready', title: 'Ready to send page', enabled: true },
-  { id: crypto.randomUUID(), type: 'thankyou', title: 'Thank you page', enabled: true },
-];
-
 export interface FormCardProps {
-    page: PageItem;
+    // page: PageItem; - This will be replaced by a specific block config
+    config: FormBlock;
     currentPage: number;
     totalPages: number;
     onNext: () => void;
     onPrevious: () => void;
-    onToggle: (id: string) => void;
-    onDelete?: (id: string) => void;
-    isDeletable?: boolean;
+    onFieldFocus: (blockId: string, fieldPath: string) => void;
+    // onToggle: (id: string) => void; - This will be handled in the main page
+    // onDelete?: (id: string) => void; - This will be handled in the main page
+    // isDeletable?: boolean;
 }
 
-export const FormCard: React.FC<React.PropsWithChildren<FormCardProps>> = ({
+export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'config' | 'onFieldFocus'>>> = ({
     children,
-    page,
     currentPage,
     totalPages,
     onNext,
     onPrevious,
-    onToggle,
-    onDelete,
-    isDeletable = false
 }) => {
     return (
         <div className="w-[94%] max-w-[1200px] xl:max-w-[1320px] h-[78vh] xl:h-[82vh] max-h-[820px] mx-auto bg-[#121212] rounded-2xl shadow-2xl overflow-hidden border border-gray-800 flex flex-col">
@@ -151,7 +122,7 @@ export const FormCard: React.FC<React.PropsWithChildren<FormCardProps>> = ({
                     <span className="bg-green-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center flex-none">
                         {currentPage}
                     </span>
-                    <span className="text-gray-300 font-semibold tracking-wider text-xs uppercase truncate">{page.title}</span>
+                    {/* <span className="text-gray-300 font-semibold tracking-wider text-xs uppercase truncate">{page.title}</span> */}
                 </div>
                 
                 {/* Center: Navigation (Absolutely Centered) */}
@@ -179,32 +150,8 @@ export const FormCard: React.FC<React.PropsWithChildren<FormCardProps>> = ({
                     </button>
                 </div>
 
-                {/* Right Side: Actions */}
+                {/* Right Side: Actions are now in the sidebar */}
                 <div className="flex items-center gap-2 flex-1 justify-end">
-                    {onDelete && isDeletable && (
-                        <button
-                            onClick={() => onDelete(page.id)}
-                            aria-label="Delete question"
-                            className="rounded-md text-gray-400 hover:bg-white/10 p-1.5"
-                        >
-                            <TrashIcon />
-                        </button>
-                    )}
-                     <div className="relative flex-none" onClick={(e) => e.stopPropagation()}>
-                        <input
-                            type="checkbox"
-                            id={`page-toggle-card-${page.id}`}
-                            className="sr-only peer"
-                            checked={page.enabled}
-                            onChange={() => onToggle(page.id)}
-                        />
-                        <label
-                            htmlFor={`page-toggle-card-${page.id}`}
-                            className="flex items-center cursor-pointer w-9 h-5 bg-gray-700 rounded-full p-0.5 transition-colors peer-checked:bg-purple-600"
-                        >
-                            <span className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 translate-x-0 peer-checked:translate-x-4"></span>
-                        </label>
-                    </div>
                 </div>
             </div>
             {children}
@@ -213,95 +160,129 @@ export const FormCard: React.FC<React.PropsWithChildren<FormCardProps>> = ({
 }
 
 const FormBuilderPage = () => {
-  const [pages, setPages] = useState<PageItem[]>(initialPages);
-  const [activeTab, setActiveTab] = useState<'pages' | 'edit'>('pages');
+    const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
+    const [activeTab, setActiveTab] = useState<'pages' | 'edit'>('pages');
+    const [currentPageIndex, setCurrentPageIndex] = useState(0);
+    const [focusedField, setFocusedField] = useState<{ blockId: string; fieldPath: string } | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-
-  const handleTogglePage = (id: string) => {
-    setPages(prev => prev.map(p => (p.id === id ? { ...p, enabled: !p.enabled } : p)));
-  };
-
-  const enabledPages = useMemo(() => pages.filter(p => p.enabled), [pages]);
-  
-  const handleNextPage = useCallback(() => {
-    setCurrentPageIndex(currentIndex => {
-        if (currentIndex < enabledPages.length - 1) {
-            return currentIndex + 1;
-        }
-        return currentIndex;
-    });
-  }, [enabledPages.length]);
-
-  const handlePreviousPage = useCallback(() => {
-      setCurrentPageIndex(currentIndex => {
-          if (currentIndex > 0) {
-              return currentIndex - 1;
+    useEffect(() => {
+        const formId = 'd1b2c3a4-e5f6-7890-1234-567890abcdef'; // Hardcoded for now
+    
+        const fetchFormConfig = async () => {
+          try {
+            const response = await fetch(`/api/forms/${formId}`);
+            if (!response.ok) {
+              if (response.status === 404) {
+                // If not found, create a default one to start with.
+                // In a real app, you might redirect or show an error.
+                console.warn(`Form ${formId} not found, creating a default config.`);
+                const projectId = '123e4567-e89b-12d3-a456-426614174000' as any;
+                const defaultConfig = createDefaultFormConfig({ projectId, formId });
+                setFormConfig(defaultConfig);
+              } else {
+                throw new Error('Failed to fetch form configuration');
+              }
+            } else {
+              const data = await response.json();
+              setFormConfig(data);
+            }
+          } catch (error) {
+            console.error(error);
+            toast.error('Could not load form data.');
           }
-          return currentIndex;
-      });
-  }, []);
+        };
+    
+        fetchFormConfig();
+      }, []);
+
+    const handleFieldFocus = (blockId: string, fieldPath: string) => {
+        setFocusedField({ blockId, fieldPath });
+        setActiveTab('edit');
+    };
+
+    const enabledBlocks = useMemo(() => formConfig?.blocks.filter(b => b.enabled) || [], [formConfig]);
+  
+    const handleNextPage = useCallback(() => {
+    setCurrentPageIndex(currentIndex => Math.min(currentIndex + 1, enabledBlocks.length - 1));
+  }, [enabledBlocks.length]);
+
+    const handlePreviousPage = useCallback(() => {
+        setCurrentPageIndex(currentIndex => Math.max(currentIndex - 1, 0));
+    }, []);
+
+    const handleSave = async () => {
+        if (!formConfig || !formConfig.id) {
+            toast.error('Cannot save form without an ID.');
+            return;
+        }
+        setIsSaving(true);
+        try {
+            const response = await fetch(`/api/forms/${formConfig.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formConfig),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Save failed');
+            }
+
+            toast.success('Form saved successfully!');
+        } catch (error: any) {
+            toast.error(`Failed to save form: ${error.message}`);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
   const handlePageClick = (index: number) => {
     setCurrentPageIndex(index);
   };
 
-  const handleReorder = (newOrder: PageItem[]) => {
-    // Preserve the currently selected page after reordering
-    const currentEnabledPage = enabledPages[currentPageIndex];
-    setPages(newOrder);
-    const newEnabledPages = newOrder.filter(p => p.enabled);
-    const newPageIndex = newEnabledPages.findIndex(p => p.id === currentEnabledPage?.id);
-    
-    if (newPageIndex !== -1) {
-      setCurrentPageIndex(newPageIndex);
-    } else if (newEnabledPages.length > 0) {
-      setCurrentPageIndex(0);
-    } else {
-      setCurrentPageIndex(-1); // No enabled pages
-    }
+  const handleTogglePage = (blockId: string) => {
+    setFormConfig(prevConfig => {
+      if (!prevConfig) return null;
+      return {
+        ...prevConfig,
+        blocks: prevConfig.blocks.map(block =>
+          block.id === blockId
+            ? { ...block, enabled: !block.enabled }
+            : block
+        ),
+      };
+    });
+  };
+
+  const handleReorder = (newOrder: FormBlock[]) => {
+    // This logic needs to be updated for the new structure
   };
 
   const handleAddPage = () => {
-    const questionPagesCount = pages.filter(p => p.type === 'question').length;
-    const newPage: PageItem = {
-      id: crypto.randomUUID(),
-      type: 'question',
-      title: `Question #${questionPagesCount + 1}`,
-      enabled: true,
-      content: {
-        question: `Your new question...`,
-        description: 'A new description...'
-      }
-    };
-
-    const updatedPages = [...pages];
-    // Add new page after the last question or at the end of the form
-    const lastQuestionIndex = pages.map(p => p.type).lastIndexOf('question');
-    const insertIndex = lastQuestionIndex !== -1 ? lastQuestionIndex + 1 : pages.length - 2; // before ready/thank you
-    
-    updatedPages.splice(insertIndex, 0, newPage);
-
-    setPages(updatedPages);
-
-    const newEnabledPages = updatedPages.filter(p => p.enabled);
-    const newPageIndex = newEnabledPages.findIndex(p => p.id === newPage.id);
-
-    if (newPageIndex !== -1) {
-      setCurrentPageIndex(newPageIndex);
-    }
+    // This logic needs to be updated for the new structure
   };
 
   const handleDeletePage = (id: string) => {
-    setPages(pages.filter(p => p.id !== id));
-    // Adjust current page if the deleted one was selected
-    if (enabledPages[currentPageIndex]?.id === id) {
-        setCurrentPageIndex(Math.max(0, currentPageIndex - 1));
-    }
+    // This logic needs to be updated for the new structure
   };
 
-  const handleUpdatePageContent = (id: string, content: PageItem['content']) => {
-    setPages(pages.map(p => p.id === id ? { ...p, content } : p));
+  const handleUpdatePageContent = (id: string, content: any) => {
+    // This logic needs to be updated for the new structure
+  };
+
+  const handleUpdateBlock = (blockId: string, updatedProps: any) => {
+    setFormConfig(prevConfig => {
+        if (!prevConfig) return null;
+        return {
+            ...prevConfig,
+            blocks: prevConfig.blocks.map(block => 
+                block.id === blockId 
+                    ? { ...block, props: { ...block.props, ...updatedProps } } 
+                    : block
+            ),
+        };
+    });
   };
 
   useEffect(() => {
@@ -330,22 +311,31 @@ const FormBuilderPage = () => {
     };
   }, [handleNextPage, handlePreviousPage]);
 
+  if (!formConfig) {
+      return <div className="flex items-center justify-center h-screen bg-[#0A0A0A] text-white">Loading...</div>;
+  }
+
   return (
     <div className="flex flex-col w-full h-screen bg-[#0A0A0A] text-white">
+        <Toaster position="bottom-right" theme="dark" />
         <header className="relative flex-none flex items-center justify-between h-16 px-6 bg-[#121212] border-b border-gray-800 z-20">
             <div className="flex items-center gap-3">
                 <button className="text-gray-400 rounded-md p-1 hover:bg-white/10">
                     <ArrowLeftIcon />
                 </button>
                 <div className="flex items-center gap-2 group cursor-pointer">
-                    <h1 className="text-lg font-medium">My testimonial form</h1>
+                    <h1 className="text-lg font-medium">{formConfig.name}</h1>
                     <EditIcon className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
             </div>
 
             <div className="flex items-center">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg text-sm">
-                    Save changes
+                <Button 
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg text-sm"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                >
+                    {isSaving ? 'Saving...' : 'Save changes'}
                 </Button>
             </div>
       </header>
@@ -359,38 +349,28 @@ const FormBuilderPage = () => {
                 {/* Card display area - single card at a time */}
                 <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
                     {(() => {
-                        const page = enabledPages[currentPageIndex];
-                        if (!page) return null;
+                        const block = enabledBlocks[currentPageIndex];
+                        if (!block) return null;
 
                         const cardProps = {
-                            page,
+                            config: block,
                             currentPage: currentPageIndex + 1,
-                            totalPages: enabledPages.length,
+                            totalPages: enabledBlocks.length,
                             onNext: handleNextPage,
                             onPrevious: handlePreviousPage,
-                            onToggle: handleTogglePage,
+                            onFieldFocus: handleFieldFocus,
                         };
 
-                        switch (page.type) {
-                            case 'rating': return <RatingCard {...cardProps} />;
-                            case 'negative': return <NegativeFeedbackCard {...cardProps} />;
-                            case 'welcome': return <WelcomeCard {...cardProps} />;
-                            case 'question': {
-                                const questionPages = enabledPages.filter(p => p.type === 'question');
-                                const questionIndex = questionPages.findIndex(p => p.id === page.id);
-                                return <QuestionCard 
-                                    {...cardProps}
-                                    questionNumber={questionIndex + 1}
-                                    totalQuestions={questionPages.length}
-                                    onUpdate={handleUpdatePageContent}
-                                    onDelete={handleDeletePage}
-                                />;
-                            }
-                            case 'private': return <PrivateFeedbackCard {...cardProps} />;
-                            case 'consent': return <ConsentCard {...cardProps} />;
-                            case 'about': return <AboutYouCard {...cardProps} />;
-                            case 'ready': return <ReadyToSendCard {...cardProps} />;
-                            case 'thankyou': return <ThankYouCard {...cardProps} />;
+                        switch (block.type) {
+                            case FormBlockType.Welcome: return <WelcomeCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.Rating: return <RatingCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.Question: return <QuestionCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.NegativeFeedback: return <NegativeFeedbackCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.PrivateFeedback: return <PrivateFeedbackCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.Consent: return <ConsentCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.AboutYou: return <AboutYouCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.ReadyToSend: return <ReadyToSendCard key={block.id} {...cardProps} config={block as any} />;
+                            case FormBlockType.ThankYou: return <ThankYouCard key={block.id} {...cardProps} config={block as any} />;
                             default: return null;
                         }
                     })()}
@@ -423,32 +403,32 @@ const FormBuilderPage = () => {
            
            {activeTab === 'pages' && (
              <>
-               <Reorder.Group axis="y" values={pages} onReorder={handleReorder} className="flex-1 overflow-y-auto p-3 space-y-2">
-                 {pages.map((page) => {
-                   const enabledIndex = enabledPages.findIndex(p => p.id === page.id);
-                   const isCurrentPage = enabledIndex === currentPageIndex && page.enabled;
+               <Reorder.Group axis="y" values={formConfig.blocks} onReorder={handleReorder} className="flex-1 overflow-y-auto p-3 space-y-2">
+                 {formConfig.blocks.map((block) => {
+                   const enabledIndex = enabledBlocks.findIndex(b => b.id === block.id);
+                   const isCurrentPage = enabledIndex === currentPageIndex && block.enabled;
                    
                    return (
                      <Reorder.Item
-                       key={page.id}
-                       value={page}
+                       key={block.id}
+                       value={block}
                        className={`group relative rounded-lg border-2 transition-colors cursor-grab active:cursor-grabbing ${
                          isCurrentPage
                            ? 'border-purple-500 bg-purple-500/10'
                            : 'border-gray-700 hover:border-gray-600'
-                       } ${!page.enabled ? 'opacity-40' : ''}`}
-                       onClick={() => page.enabled && handlePageClick(enabledIndex)}
+                       } ${!block.enabled ? 'opacity-40' : ''}`}
+                       onClick={() => block.enabled && handlePageClick(enabledIndex)}
                      >
                        {/* Thumbnail preview */}
                        <div className="aspect-video bg-[#121212] rounded-t-md border-b border-gray-700 overflow-hidden relative pointer-events-none">
-                          <ThumbnailPreview pageType={page.type} />
+                          <ThumbnailPreview pageType={block.type} />
                            
                            {/* Page number badge */}
                          <div className="absolute top-1.5 left-1.5">
                            <span className={`inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded ${
-                             page.enabled ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300'
+                             block.enabled ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300'
                            }`}>
-                             {page.enabled ? enabledIndex + 1 : '—'}
+                             {block.enabled ? enabledIndex + 1 : '—'}
                            </span>
                          </div>
                        </div>
@@ -457,19 +437,20 @@ const FormBuilderPage = () => {
                        <div className="p-2 flex items-center justify-between">
                          <div className="flex-1 min-w-0">
                            <p className="text-xs font-medium text-gray-300 truncate pointer-events-none">
-                             {page.title}
+                             {/* Need a title on the base block */}
+                             {block.type}
                            </p>
                          </div>
                          <div className="relative flex-none ml-2" onClick={(e) => e.stopPropagation()}>
                            <input
                              type="checkbox"
-                             id={`page-toggle-thumb-${page.id}`}
+                             id={`page-toggle-thumb-${block.id}`}
                              className="sr-only peer"
-                             checked={page.enabled}
-                             onChange={() => handleTogglePage(page.id)}
+                             checked={block.enabled}
+                             onChange={() => handleTogglePage(block.id)}
                            />
                            <label
-                             htmlFor={`page-toggle-thumb-${page.id}`}
+                             htmlFor={`page-toggle-thumb-${block.id}`}
                              className="flex items-center cursor-pointer w-9 h-5 bg-gray-700 rounded-full p-0.5 transition-colors peer-checked:bg-purple-600"
                            >
                              <span className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 translate-x-0 peer-checked:translate-x-4"></span>
@@ -494,23 +475,10 @@ const FormBuilderPage = () => {
            )}
  
            {activeTab === 'edit' && (
-             <div className="flex-grow overflow-y-auto p-6 space-y-6">
-                {enabledPages[currentPageIndex] ? (
-                    <div>
-                        <h3 className="text-base font-medium text-gray-300 mb-4">
-                            Editing: <span className="text-purple-400">{enabledPages[currentPageIndex].title}</span>
-                        </h3>
-                        {/* Placeholder for page-specific editing controls */}
-                        <div className="text-center text-gray-500 border border-dashed border-gray-700 rounded-lg py-12">
-                            <p>Page editing options will appear here.</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="text-center text-gray-500 pt-12">
-                        <p>Select a page to see editing options.</p>
-                    </div>
-                )}
-             </div>
+            <FormBuilderEditPanel
+                focusedBlock={enabledBlocks[currentPageIndex] || null}
+                onUpdateBlock={handleUpdateBlock}
+            />
            )}
         </aside>
       </div>
@@ -518,12 +486,12 @@ const FormBuilderPage = () => {
   );
 };
 
-const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
+const ThumbnailPreview = ({ pageType }: { pageType: FormBlockType }) => {
   const baseClasses = "w-full h-full p-3 flex flex-col items-center justify-center gap-1.5 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:12px_12px]";
 
   const content = () => {
     switch (pageType) {
-      case 'welcome':
+      case FormBlockType.Welcome:
         return (
           <>
             <div className="text-2xl">👋</div>
@@ -534,7 +502,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'rating':
+      case FormBlockType.Rating:
         return (
           <>
             <div className="text-2xl">⭐️</div>
@@ -544,7 +512,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             <div className="h-2 bg-purple-600 rounded w-1/2 mt-2"></div>
           </>
         );
-      case 'negative':
+      case FormBlockType.NegativeFeedback:
         return (
           <>
             <div className="text-2xl">💬</div>
@@ -554,7 +522,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'question':
+      case FormBlockType.Question:
         return (
           <>
             <div className="text-2xl">❓</div>
@@ -565,7 +533,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'private':
+      case FormBlockType.PrivateFeedback:
         return (
           <>
             <div className="text-2xl">🔒</div>
@@ -575,7 +543,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'consent':
+      case FormBlockType.Consent:
         return (
           <>
             <div className="text-2xl">✅</div>
@@ -591,7 +559,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'about':
+      case FormBlockType.AboutYou:
         return (
           <>
             <div className="text-2xl">👤</div>
@@ -602,7 +570,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'ready':
+      case FormBlockType.ReadyToSend:
          return (
           <>
             <div className="text-2xl">📤</div>
@@ -613,7 +581,7 @@ const ThumbnailPreview = ({ pageType }: { pageType: PageItem['type'] }) => {
             </div>
           </>
         );
-      case 'thankyou':
+      case FormBlockType.ThankYou:
         return (
           <>
             <div className="text-2xl">🎉</div>

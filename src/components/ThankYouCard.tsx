@@ -1,10 +1,14 @@
 import React from 'react';
 import Image from 'next/image';
-import { PageItem, FormCardProps } from '@/app/dashboard/form-builder/page';
+import { FormCardProps } from '@/app/dashboard/form-builder/page';
 import { FormCard } from '@/app/dashboard/form-builder/page';
 import AppBar from '@/components/ui/app-bar';
+import { ThankYouBlockConfig } from '@/types/form-config';
 
-interface ThankYouCardProps extends FormCardProps {}
+interface ThankYouCardProps extends FormCardProps {
+    config: ThankYouBlockConfig;
+    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+}
 
 const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -40,7 +44,12 @@ const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const ThankYouCard: React.FC<ThankYouCardProps> = (props) => {
+const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...props }) => {
+
+    const handleFieldClick = (fieldPath: string) => {
+        onFieldFocus?.(config.id, fieldPath);
+    };
+
     return (
         <FormCard {...props}>
             <div className="flex-grow flex overflow-hidden">
@@ -48,9 +57,21 @@ const ThankYouCard: React.FC<ThankYouCardProps> = (props) => {
                     <AppBar showBackButton={false} maxWidthClass="max-w-3xl" paddingXClass="px-6" />
                     <div className="w-full px-6 pt-8 pb-6">
                     <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch">
-                        <h1 className="text-xl sm:text-2xl font-bold leading-normal text-white">Thank you!</h1>
-                        <div className="content text-sm text-gray-400 sm:text-base mt-2">
-                            <p>Thank you so much for leaving a testimonial! Testimonials help me grow my business. They're the best way of helping me out if you read and enjoy my work.</p>
+                        <h1 
+                            className="text-xl sm:text-2xl font-bold leading-normal text-white"
+                            style={{ color: config.props.titleColor }}
+                            onClick={() => handleFieldClick('props.title')}
+                            data-field="props.title"
+                        >
+                            {config.props.title}
+                        </h1>
+                        <div 
+                            className="content text-sm text-gray-400 sm:text-base mt-2"
+                            style={{ color: config.props.descriptionColor }}
+                            onClick={() => handleFieldClick('props.description')}
+                            data-field="props.description"
+                        >
+                            <p>{config.props.description}</p>
                         </div>
                         <div className="my-6">
                             <button className="mt-4 flex w-full items-center justify-center gap-4 rounded-lg border border-gray-700 bg-[#1E1E1E] px-4 py-2 text-center text-2xl tracking-wider text-gray-400 font-mono">
@@ -61,40 +82,48 @@ const ThankYouCard: React.FC<ThankYouCardProps> = (props) => {
                     </div>
                     </div>
                 </div>
-                <div className="flex-none lg:w-1/2 bg-[#1E1E1E] border-l border-gray-800">
-                    <div className="flex h-full w-full flex-col p-4">
-                        <div className="mx-auto my-2 flex max-w-sm flex-col items-center gap-4 text-center">
-                            <div className="font-sans mb-2 mt-2 flex items-center gap-4 text-center text-xs font-medium text-gray-500 w-full">
-                                <hr className="w-full border-gray-700" />
-                                <div className="flex flex-none items-center gap-2">Share on X</div>
-                                <hr className="w-full border-gray-700" />
-                            </div>
-                            <div className="group relative mx-auto flex w-full items-start gap-4 rounded-lg border border-gray-700 bg-black/30 p-4 text-left text-sm text-white shadow-lg">
-                                <div className="flex flex-1 flex-wrap items-start justify-start">
-                                    <div className="flex flex-1 items-center">
-                                        <div className="flex w-full flex-col">
-                                            <div className="flex flex-1 items-center gap-2">
-                                                <img alt="" src="https://ui-avatars.com/api/Tony%20Stark/200/dcfce7/166534/2/0.34" className="h-10 w-10 rounded-full object-cover" />
-                                                <div>
-                                                    <div className="mr-2 flex items-center gap-2 font-bold text-gray-200 text-sm">
-                                                        <div>Tony Stark</div>
+                {config.props.showSocials && (
+                    <div className="flex-none lg:w-1/2 bg-[#1E1E1E] border-l border-gray-800">
+                        <div className="flex h-full w-full flex-col p-4">
+                            <div className="mx-auto my-2 flex max-w-sm flex-col items-center gap-4 text-center">
+                                <div className="font-sans mb-2 mt-2 flex items-center gap-4 text-center text-xs font-medium text-gray-500 w-full">
+                                    <hr className="w-full border-gray-700" />
+                                    <div 
+                                        className="flex flex-none items-center gap-2"
+                                        onClick={() => handleFieldClick('props.showSocials')}
+                                        data-field="props.showSocials"
+                                    >
+                                        Share on X
+                                    </div>
+                                    <hr className="w-full border-gray-700" />
+                                </div>
+                                <div className="group relative mx-auto flex w-full items-start gap-4 rounded-lg border border-gray-700 bg-black/30 p-4 text-left text-sm text-white shadow-lg">
+                                    <div className="flex flex-1 flex-wrap items-start justify-start">
+                                        <div className="flex flex-1 items-center">
+                                            <div className="flex w-full flex-col">
+                                                <div className="flex flex-1 items-center gap-2">
+                                                    <img alt="" src="https://ui-avatars.com/api/Tony%20Stark/200/dcfce7/166534/2/0.34" className="h-10 w-10 rounded-full object-cover" />
+                                                    <div>
+                                                        <div className="mr-2 flex items-center gap-2 font-bold text-gray-200 text-sm">
+                                                            <div>Tony Stark</div>
+                                                        </div>
+                                                        <div className="-mt-1 mr-1 text-xs text-gray-500">CEO at Stark Industries</div>
                                                     </div>
-                                                    <div className="-mt-1 mr-1 text-xs text-gray-500">CEO at Stark Industries</div>
                                                 </div>
                                             </div>
                                         </div>
+                                        <div className="w-full">
+                                            <p className="content mt-3 whitespace-pre-line text-sm text-gray-300">
+                                                When your customer leaves a testimonial, they will see it here.
+                                            </p>
+                                        </div>
+                                        <button className="mt-4 flex w-full rounded-[8px] p-0.5 shadow-lg bg-sky-600/90">
+                                            <span className="flex h-full w-full items-center justify-center gap-2 rounded-[6px] border py-1.5 text-sm font-medium border-sky-400/80 bg-sky-500 ">
+                                                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/x-social-media-white-icon.png" className="h-4 w-4" alt="" />
+                                                Post in one click
+                                            </span>
+                                        </button>
                                     </div>
-                                    <div className="w-full">
-                                        <p className="content mt-3 whitespace-pre-line text-sm text-gray-300">
-                                            When your customer leaves a testimonial, they will see it here.
-                                        </p>
-                                    </div>
-                                    <button className="mt-4 flex w-full rounded-[8px] p-0.5 shadow-lg bg-sky-600/90">
-                                        <span className="flex h-full w-full items-center justify-center gap-2 rounded-[6px] border py-1.5 text-sm font-medium border-sky-400/80 bg-sky-500 ">
-                                            <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/x-social-media-white-icon.png" className="h-4 w-4" alt="" />
-                                            Post in one click
-                                        </span>
-                                    </button>
                                 </div>
                             </div>
                             <div className="font-sans mb-2 mt-4 flex items-center gap-4 text-center text-xs font-medium text-gray-500 w-full">
@@ -124,7 +153,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = (props) => {
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </FormCard>
     );

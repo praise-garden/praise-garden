@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { PageItem, FormCardProps } from '@/app/dashboard/form-builder/page';
+import { FormCardProps } from '@/app/dashboard/form-builder/page';
 import { FormCard } from '@/app/dashboard/form-builder/page';
 import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
 import { motion } from 'framer-motion';
+import { ConsentBlockConfig } from '@/types/form-config';
 
 const GlobeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -25,15 +26,16 @@ const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-interface ConsentCardProps extends FormCardProps {}
+interface ConsentCardProps extends FormCardProps {
+    config: ConsentBlockConfig;
+    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+}
 
-const ConsentCard: React.FC<ConsentCardProps> = (props) => {
-  const [selectedOption, setSelectedOption] = useState<string>('');
+const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...props }) => {
+  const [consented, setConsented] = useState<boolean>(false);
 
-  const handleContinue = () => {
-    if (selectedOption) {
-      props.onNext();
-    }
+  const handleFieldClick = (fieldPath: string) => {
+    onFieldFocus?.(config.id, fieldPath);
   };
 
   return (
@@ -50,92 +52,58 @@ const ConsentCard: React.FC<ConsentCardProps> = (props) => {
           >
             {/* Header Section */}
             <div className="text-center mb-6">
-              <h1 className="text-lg md:text-xl font-semibold text-white mb-3">
-                Where can we use your testimonial?
+              <h1 
+                className="text-lg md:text-xl font-semibold text-white mb-3"
+                style={{ color: config.props.titleColor }}
+                onClick={() => handleFieldClick('props.title')}
+                data-field="props.title"
+              >
+                {config.props.title}
               </h1>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                Your testimonial helps others discover our product. Choose how you'd like us to use it.
+              <p 
+                className="text-sm text-gray-400 leading-relaxed"
+                style={{ color: config.props.descriptionColor }}
+                onClick={() => handleFieldClick('props.description')}
+                data-field="props.description"
+              >
+                {config.props.description}
               </p>
             </div>
 
-            {/* Consent Options */}
-            <div className="space-y-3 mb-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className={`group relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                  selectedOption === 'public' 
-                    ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20' 
-                    : 'border-gray-700 bg-[#1A1A1A] hover:border-gray-600 hover:bg-[#222222]'
-                }`}
-                onClick={() => setSelectedOption('public')}
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                    selectedOption === 'public' 
-                      ? 'border-purple-500 bg-purple-500' 
-                      : 'border-gray-600 group-hover:border-gray-500'
-                  }`}>
-                    {selectedOption === 'public' && (
-                      <CheckIcon className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-lg bg-purple-500/10">
-                        <GlobeIcon className="w-5 h-5 text-purple-400" />
-                      </div>
-                      <h3 className="text-base font-semibold text-white">Public testimonial</h3>
-                    </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      We'll share your testimonial on our website, social media, and marketing materials. 
-                      Help others discover the value you've experienced.
-                    </p>
-
-                  </div>
+            {/* Consent Checkbox */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className={`group relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                consented
+                  ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20' 
+                  : 'border-gray-700 bg-[#1A1A1A] hover:border-gray-600 hover:bg-[#222222]'
+              }`}
+              onClick={() => setConsented(!consented)}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`mt-1 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
+                  consented 
+                    ? 'border-purple-500 bg-purple-500' 
+                    : 'border-gray-600 group-hover:border-gray-500'
+                }`}>
+                  {consented && (
+                    <CheckIcon className="w-4 h-4 text-white" />
+                  )}
                 </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className={`group relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                  selectedOption === 'private' 
-                    ? 'border-lime-500 bg-lime-500/10 shadow-lg shadow-lime-500/20' 
-                    : 'border-gray-700 bg-[#1A1A1A] hover:border-gray-600 hover:bg-[#222222]'
-                }`}
-                onClick={() => setSelectedOption('private')}
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                    selectedOption === 'private' 
-                      ? 'border-lime-500 bg-lime-500' 
-                      : 'border-gray-600 group-hover:border-gray-500'
-                  }`}>
-                    {selectedOption === 'private' && (
-                      <CheckIcon className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-lg bg-lime-500/10">
-                        <ShieldIcon className="w-5 h-5 text-lime-400" />
-                      </div>
-                      <h3 className="text-base font-semibold text-white">Private testimonial</h3>
-                    </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      We'll keep your testimonial private for internal use only. We'll use it to improve our product 
-                      and share with potential customers in private conversations.
-                    </p>
-             
-                  </div>
+                
+                <div className="flex-1">
+                  <p 
+                    className="text-sm text-white leading-relaxed"
+                    onClick={(e) => { e.stopPropagation(); handleFieldClick('props.checkboxLabel'); }}
+                    data-field="props.checkboxLabel"
+                  >
+                    {config.props.checkboxLabel}
+                  </p>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
 
             {/* Continue Button */}
             <motion.div
@@ -144,15 +112,12 @@ const ConsentCard: React.FC<ConsentCardProps> = (props) => {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <button 
-                onClick={handleContinue}
-                disabled={!selectedOption}
-                className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                  selectedOption 
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-[1.02]' 
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
+                onClick={props.onNext}
+                className={`w-full py-3 px-4 mt-6 rounded-lg font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-[1.02]`}
+                onClickCapture={() => handleFieldClick('props.buttonText')}
+                data-field="props.buttonText"
               >
-                Continue
+                {config.props.buttonText}
               </button>
             </motion.div>
 

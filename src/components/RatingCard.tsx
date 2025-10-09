@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { PageItem, FormCardProps } from '@/app/dashboard/form-builder/page';
+import { FormCardProps } from '@/app/dashboard/form-builder/page';
 import { FormCard } from '@/app/dashboard/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RatingBlockConfig } from '@/types/form-config';
 
-interface RatingCardProps extends FormCardProps {}
+interface RatingCardProps extends FormCardProps {
+    config: RatingBlockConfig;
+    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+}
 
 const StarIcon = ({ filled, className }: { filled: boolean; className?: string }) => (
   <svg
@@ -21,7 +25,7 @@ const StarIcon = ({ filled, className }: { filled: boolean; className?: string }
   </svg>
 );
 
-const RatingCard: React.FC<RatingCardProps> = (props) => {
+const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props }) => {
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
@@ -37,8 +41,13 @@ const RatingCard: React.FC<RatingCardProps> = (props) => {
     setSelectedRating(rating);
     // Add slight delay before continuing for better UX
     setTimeout(() => {
-      props.onNext();
+        // Here we can decide if we want to automatically go next
+        // For now, let's just keep the rating
     }, 400);
+  };
+
+  const handleFieldClick = (fieldPath: string) => {
+    onFieldFocus?.(config.id, fieldPath);
   };
 
   return (
@@ -66,11 +75,21 @@ const RatingCard: React.FC<RatingCardProps> = (props) => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="space-y-3"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
-              How would you rate your experience?
+            <h2 
+                className="text-3xl sm:text-4xl font-bold text-white leading-tight"
+                style={{ color: config.props.titleColor }}
+                onClick={() => handleFieldClick('props.title')}
+                data-field="props.title"
+            >
+                {config.props.title}
             </h2>
-            <p className="text-gray-400 text-base sm:text-lg">
-              Your testimonial helps others understand the value of our product.
+            <p 
+                className="text-gray-400 text-base sm:text-lg"
+                style={{ color: config.props.descriptionColor }}
+                onClick={() => handleFieldClick('props.description')}
+                data-field="props.description"
+            >
+                {config.props.description}
             </p>
           </motion.div>
 
@@ -159,6 +178,17 @@ const RatingCard: React.FC<RatingCardProps> = (props) => {
               )}
             </AnimatePresence>
           </motion.div>
+
+          <motion.button
+            onClick={props.onNext}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-lg shadow-purple-500/30"
+            onClickCapture={() => handleFieldClick('props.buttonText')}
+            data-field="props.buttonText"
+        >
+            {config.props.buttonText}
+        </motion.button>
         </div>
       </div>
     </FormCard>

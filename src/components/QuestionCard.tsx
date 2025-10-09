@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { PageItem, FormCardProps, FormCard } from '@/app/dashboard/form-builder/page';
+import { FormCardProps, FormCard } from '@/app/dashboard/form-builder/page';
 import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { QuestionBlockConfig } from '@/types/form-config';
 
 const VideoIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -25,22 +26,21 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 interface QuestionCardProps extends FormCardProps {
-    onUpdate: (id:string, content: PageItem['content']) => void;
+    config: QuestionBlockConfig;
+    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+    // onUpdate might be needed later for textarea, but not for now
 }
 
 const QuestionCard = ({ 
-    page, 
-    onUpdate,
+    config,
+    onFieldFocus,
     ...cardProps 
 }: QuestionCardProps) => {
   
     const [mode, setMode] = useState<'options' | 'text'>('options');
 
-    const handleContentChange = (field: 'question' | 'description' | 'testimonial', value: string) => {
-        onUpdate(page.id, {
-            ...page.content,
-            [field]: value,
-        });
+    const handleFieldClick = (fieldPath: string) => {
+        onFieldFocus?.(config.id, fieldPath);
     };
 
     const rightPanelVariants: Variants = {
@@ -55,7 +55,6 @@ const QuestionCard = ({
 
     return (
         <FormCard 
-            page={page} 
             {...cardProps}
         >
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
@@ -83,11 +82,21 @@ const QuestionCard = ({
                             {/* Question Section - Compact & Original */}
                             <div className="mb-6">
                                
-                                <h1 className="mt-4 text-2xl md:text-3xl font-semibold text-white break-words leading-tight tracking-tight">
-                                    {page.content?.question || "Share your success story with us"}
+                                <h1 
+                                    className="mt-4 text-2xl md:text-3xl font-semibold text-white break-words leading-tight tracking-tight"
+                                    style={{ color: config.props.questionColor }}
+                                    onClick={() => handleFieldClick('props.question')}
+                                    data-field="props.question"
+                                >
+                                    {config.props.question}
                                 </h1>
-                                <p className="mt-2 text-sm text-gray-400 break-words leading-relaxed">
-                                    {page.content?.description || "Help others discover the value you've experienced"}
+                                <p 
+                                    className="mt-2 text-sm text-gray-400 break-words leading-relaxed"
+                                    style={{ color: config.props.descriptionColor }}
+                                    onClick={() => handleFieldClick('props.description')}
+                                    data-field="props.description"
+                                >
+                                    {config.props.description}
                                 </p>
                             </div>
 
@@ -234,19 +243,25 @@ const QuestionCard = ({
                                 exit="exit"
                                 className="w-full h-full flex flex-col"
                             >
-                                <AppBar onBack={() => setMode('options')} showBackArrow={true} />
+                                <AppBar onBack={() => setMode('options')} showBackButton={true} />
                                 <div className="flex-grow flex flex-col p-6 md:p-12 justify-center">
                                     <textarea
-                                        placeholder="Write your testimonial..."
+                                        placeholder={config.props.placeholder}
                                         className="w-full h-56 md:h-64 bg-[#232325] rounded-lg p-4 text-white text-lg placeholder-gray-500 focus:outline-none resize-none transition-all focus:ring-2 focus:ring-purple-500/50"
-                                        onChange={(e) => handleContentChange('testimonial', e.target.value)}
+                                        onChange={(e) => {
+                                            // onUpdate would go here later
+                                        }}
+                                        onClick={() => handleFieldClick('props.placeholder')}
+                                        data-field="props.placeholder"
                                     ></textarea>
                                     <div className="mt-6 flex-shrink-0">
                                         <button 
                                             onClick={cardProps.onNext}
                                             className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all text-base shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
+                                            onClickCapture={() => handleFieldClick('props.buttonText')}
+                                            data-field="props.buttonText"
                                         >
-                                            Continue
+                                            {config.props.buttonText}
                                         </button>
                                     </div>
                                 </div>
