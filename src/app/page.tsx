@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import appIcon from "./icon.png";
 
 export default function Home() {
   return (
@@ -16,7 +15,7 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image
-              src={appIcon}
+              src="/favicon.ico"
               alt="Praise Garden logo"
               width={28}
               height={28}

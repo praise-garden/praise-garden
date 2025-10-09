@@ -18,13 +18,9 @@ export const metadata: Metadata = {
   title: "Praise Garden",
   description: "Grow your praise garden",
   icons: {
-    icon: [
-      { url: "/Praise_logo.png", type: "image/png", sizes: "32x32" },
-      { url: "/Praise_logo.png", type: "image/png", sizes: "16x16" },
-      { url: "/favicon.ico" }
-    ],
-    shortcut: "/Praise_logo.png",
-    apple: "/Praise_logo.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 
@@ -35,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${jetBrainsMono.variable} antialiased`}>
+      <body className={`${inter.variable} ${jetBrainsMono.variable} antialiased`} suppressHydrationWarning={true}>
         {children}
       </body>
     </html>
