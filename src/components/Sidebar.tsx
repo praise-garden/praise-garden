@@ -16,7 +16,7 @@ const navSections = [
   {
     title: "Collect",
     items: [
-      { label: "Create Forms", icon: "form" },
+      { label: "Create Forms", icon: "form", href: "/dashboard/forms" },
       { label: "Widgets", icon: "widget" },
     ]
   }

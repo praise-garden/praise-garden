@@ -31,6 +31,11 @@ export const createDefaultFormConfig = ({
         createdAt: new Date().toISOString(),
         theme: {
             backgroundColor: '#0A0A0A',
+            logoUrl: '/icon.png',
+            primaryColor: '#A855F7',
+            secondaryColor: '#22C55E',
+            headingFont: 'Inter',
+            bodyFont: 'Inter',
         },
         blocks: [
             {

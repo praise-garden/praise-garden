@@ -159,7 +159,11 @@ export type FormBlock =
 
 export interface FormTheme {
   backgroundColor: string;
-  // Potentially for card backgrounds, etc. in the future
+  logoUrl?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  headingFont: string;
+  bodyFont: string;
 }
 
 export interface FormConfig {

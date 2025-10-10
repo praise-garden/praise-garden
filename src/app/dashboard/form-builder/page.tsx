@@ -12,12 +12,14 @@ import AboutYouCard from '@/components/AboutYouCard';
 import ReadyToSendCard from '@/components/ReadyToSendCard';
 import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
-import { Reorder } from "framer-motion";
+import { Reorder, motion, AnimatePresence } from "framer-motion";
 
 import { FormConfig, FormBlock, FormBlockType } from '@/types/form-config';
 import { createDefaultFormConfig } from '@/lib/default-form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
 import { toast, Toaster } from 'sonner';
+import { FontPicker } from '@/components/ui/font-picker';
+import { useSearchParams } from 'next/navigation';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -58,9 +60,43 @@ const PagesIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
   
 const SettingsIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-      <circle cx="12" cy="12" r="3"></circle>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    {/* Outer ring */}
+    <circle cx="12" cy="12" r="7.25" stroke="currentColor" />
+
+    {/* Inner ring for depth */}
+    <circle cx="12" cy="12" r="4.6" stroke="currentColor" />
+
+    {/* Hub */}
+    <circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none" />
+
+    {/* Teeth (12) */}
+    <g fill="currentColor" stroke="none">
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" />
+      <rect x="11.2" y="19.8" width="1.6" height="3" rx="0.6" transform="rotate(180 12 21.3)" />
+
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(30 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(60 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(90 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(120 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(150 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(210 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(240 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(270 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(300 12 12)" />
+      <rect x="11.2" y="1.2" width="1.6" height="3" rx="0.6" transform="rotate(330 12 12)" />
+    </g>
   </svg>
 );
 
@@ -73,6 +109,47 @@ const RewardIcon = (props: React.SVGProps<SVGSVGElement>) => (
       <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
     </svg>
   );
+
+const FormIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+  
+const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+);
+
+const PRIMARY_COLOR_PRESETS = ['#A855F7', '#6366F1', '#22C55E', '#F97316', '#EC4899', '#0EA5E9', '#FACC15', '#111827'];
+const SECONDARY_COLOR_PRESETS = ['#22C55E', '#14B8A6', '#F97316', '#EF4444', '#8B5CF6', '#0EA5E9', '#F59E0B', '#1F2937'];
+
+const clampColorValue = (value: number) => Math.min(255, Math.max(0, value));
+
+const adjustColor = (hex: string, amount: number) => {
+  if (!hex) return hex;
+  let clean = hex.replace('#', '').trim();
+  if (clean.length === 3) {
+    clean = clean.split('').map((char) => `${char}${char}`).join('');
+  }
+  if (clean.length !== 6) {
+    return hex;
+  }
+  const numeric = parseInt(clean, 16);
+  const r = clampColorValue((numeric >> 16) + amount);
+  const g = clampColorValue(((numeric >> 8) & 0xff) + amount);
+  const b = clampColorValue((numeric & 0xff) + amount);
+  const toHex = (value: number) => value.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const createGradient = (color: string) => {
+  const light = adjustColor(color, 35);
+  return `linear-gradient(135deg, ${light}, ${color})`;
+};
   
   const ChevronRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -84,13 +161,22 @@ const RewardIcon = (props: React.SVGProps<SVGSVGElement>) => (
     children: React.ReactNode;
     icon: React.ReactNode;
     active?: boolean;
+    onClick?: () => void;
   };
-  const NavItem = ({ children, icon, active = false }: NavItemProps) => (
-    <button className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-      active ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-    }`}>
+  
+  const NavItem = ({ children, icon, active = false, onClick }: NavItemProps) => (
+    <button 
+      onClick={onClick}
+      className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+        active 
+          ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-600/25' 
+          : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+      }`}
+    >
+      <div className={`transition-colors ${active ? 'text-white' : 'text-gray-500'}`}>
       {icon}
-      <span className="hidden xl:inline">{children}</span>
+      </div>
+      <span className="font-medium">{children}</span>
     </button>
   );
 
@@ -160,25 +246,43 @@ export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'con
 }
 
 const FormBuilderPage = () => {
+    const searchParams = useSearchParams();
+    const formId = searchParams.get('id');
+    
     const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
     const [activeTab, setActiveTab] = useState<'pages' | 'edit'>('pages');
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [focusedField, setFocusedField] = useState<{ blockId: string; fieldPath: string } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [activeNavTab, setActiveNavTab] = useState<'form' | 'settings' | 'rewards'>('settings');
+    const [isLoading, setIsLoading] = useState(true);
+    
+    // Global settings state
+    const [globalSettings, setGlobalSettings] = useState({
+        logoUrl: '/icon.png',
+        primaryColor: '#A855F7',
+        secondaryColor: '#22C55E',
+        headingFont: 'Inter',
+        bodyFont: 'Inter',
+    });
 
     useEffect(() => {
-        const formId = 'd1b2c3a4-e5f6-7890-1234-567890abcdef'; // Hardcoded for now
+        if (!formId) {
+            toast.error('No form ID provided');
+            setIsLoading(false);
+            return;
+        }
     
         const fetchFormConfig = async () => {
+          setIsLoading(true);
           try {
             const response = await fetch(`/api/forms/${formId}`);
             if (!response.ok) {
               if (response.status === 404) {
                 // If not found, create a default one to start with.
-                // In a real app, you might redirect or show an error.
                 console.warn(`Form ${formId} not found, creating a default config.`);
                 const projectId = '123e4567-e89b-12d3-a456-426614174000' as any;
-                const defaultConfig = createDefaultFormConfig({ projectId, formId });
+                const defaultConfig = createDefaultFormConfig({ projectId, formId: formId as any });
                 setFormConfig(defaultConfig);
               } else {
                 throw new Error('Failed to fetch form configuration');
@@ -186,15 +290,28 @@ const FormBuilderPage = () => {
             } else {
               const data = await response.json();
               setFormConfig(data);
+              
+              // Update global settings from loaded config
+              if (data.theme) {
+                setGlobalSettings({
+                  logoUrl: data.theme.logoUrl || '/icon.png',
+                  primaryColor: data.theme.primaryColor || '#A855F7',
+                  secondaryColor: data.theme.secondaryColor || '#22C55E',
+                  headingFont: data.theme.headingFont || 'Inter',
+                  bodyFont: data.theme.bodyFont || 'Inter',
+                });
+              }
             }
           } catch (error) {
             console.error(error);
             toast.error('Could not load form data.');
+          } finally {
+            setIsLoading(false);
           }
         };
     
         fetchFormConfig();
-      }, []);
+      }, [formId]);
 
     const handleFieldFocus = (blockId: string, fieldPath: string) => {
         setFocusedField({ blockId, fieldPath });
@@ -209,6 +326,22 @@ const FormBuilderPage = () => {
 
     const handlePreviousPage = useCallback(() => {
         setCurrentPageIndex(currentIndex => Math.max(currentIndex - 1, 0));
+    }, []);
+
+    const handleCopyColor = useCallback(async (value: string) => {
+        if (!value) {
+            return;
+        }
+
+        try {
+            if (navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(value);
+                toast.success('Color copied to clipboard');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Unable to copy color');
+        }
     }, []);
 
     const handleSave = async () => {
@@ -311,36 +444,82 @@ const FormBuilderPage = () => {
     };
   }, [handleNextPage, handlePreviousPage]);
 
-  if (!formConfig) {
-      return <div className="flex items-center justify-center h-screen bg-[#0A0A0A] text-white">Loading...</div>;
+  if (isLoading || !formConfig) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen bg-[#0A0A0A] text-white">
+          <div className="flex flex-col items-center gap-4">
+            <div className="size-12 border-4 border-gray-700 border-t-purple-600 rounded-full animate-spin"></div>
+            <p className="text-gray-400">Loading form builder...</p>
+          </div>
+        </div>
+      );
   }
 
   return (
     <div className="flex flex-col w-full h-screen bg-[#0A0A0A] text-white">
         <Toaster position="bottom-right" theme="dark" />
         <header className="relative flex-none flex items-center justify-between h-16 px-6 bg-[#121212] border-b border-gray-800 z-20">
-            <div className="flex items-center gap-3">
-                <button className="text-gray-400 rounded-md p-1 hover:bg-white/10">
-                    <ArrowLeftIcon />
-                </button>
-                <div className="flex items-center gap-2 group cursor-pointer">
-                    <h1 className="text-lg font-medium">{formConfig.name}</h1>
-                    <EditIcon className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            {/* Left Section: Back button and Form Name */}
+                <div className="flex items-center gap-3">
+                <button className="text-gray-400 rounded-md p-1 hover:bg-white/10 transition-colors">
+                        <ArrowLeftIcon />
+                    </button>
+                    <div className="flex items-center gap-2 group cursor-pointer">
+                    <h1 className="text-lg font-medium text-white">{formConfig.name}</h1>
+                    <button className="text-gray-400 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:text-white hover:scale-110">
+                        <EditIcon />
+                    </button>
+                    </div>
                 </div>
-            </div>
 
-            <div className="flex items-center">
-                <Button 
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg text-sm"
-                    onClick={handleSave}
-                    disabled={isSaving}
+            {/* Center Section: Navigation Tabs */}
+            <div className="flex items-center gap-1 bg-gray-900/50 rounded-xl p-1 backdrop-blur-sm">
+                <NavItem 
+                    icon={<SettingsIcon />} 
+                    active={activeNavTab === 'settings'}
+                    onClick={() => setActiveNavTab('settings')}
                 >
-                    {isSaving ? 'Saving...' : 'Save changes'}
-                </Button>
+                    Settings
+                </NavItem>
+                <NavItem 
+                    icon={<FormIcon />} 
+                    active={activeNavTab === 'form'}
+                    onClick={() => setActiveNavTab('form')}
+                >
+                    Form
+                </NavItem>
+                <NavItem 
+                    icon={<RewardIcon />} 
+                    active={activeNavTab === 'rewards'}
+                    onClick={() => setActiveNavTab('rewards')}
+                >
+                    Rewards
+                </NavItem>
+                </div>
+
+            {/* Right Section: Save Button */}
+                <div className="flex items-center">
+                    <Button 
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/25"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? 'Saving...' : 'Save changes'}
+                    </Button>
             </div>
-      </header>
+        </header>
       <div className="flex flex-1 overflow-hidden">
-        <main className="flex-1 relative overflow-hidden bg-[#232325]">
+        {/* Main Content Area with Smooth Transitions */}
+        <AnimatePresence mode="wait">
+          {activeNavTab === 'form' && (
+            <motion.main
+              key="form"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="flex-1 relative overflow-hidden bg-[#232325]"
+            >
             {/* Background pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff12_1px,transparent_1px)] [background-size:16px_16px]"></div>
             
@@ -376,10 +555,291 @@ const FormBuilderPage = () => {
                     })()}
             </div>
             </div>
-        </main>
+            </motion.main>
+          )}
+
+           {/* Settings Tab Content */}
+           {activeNavTab === 'settings' && (
+             <motion.main
+               key="settings"
+               initial={{ opacity: 0, x: 20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: -20 }}
+               transition={{ duration: 0.3, ease: "easeInOut" }}
+               className="flex-1 relative overflow-hidden bg-[#232325]"
+             >
+                 <div className="relative z-10 h-full w-full flex items-center justify-center p-12">
+                     <motion.div 
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: 0.1, duration: 0.4 }}
+                       className="w-full max-w-3xl"
+                     >
+                         {/* Header */}
+                         <div className="mb-8">
+                             <h2 className="text-3xl font-bold text-white mb-2">Global Settings</h2>
+                             <p className="text-gray-400">Configure branding and styling for your entire form</p>
+                         </div>
+
+                         {/* Settings Grid */}
+                         <div className="space-y-5">
+                             {/* Logo Upload */}
+                             <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                 <div className="flex justify-between items-center">
+                                     <div>
+                                         <label className="text-sm font-medium text-gray-300 block">Brand Logo</label>
+                                         <p className="text-xs text-gray-500 mt-1">Click image to upload</p>
+                                     </div>
+                                     <div className="relative group w-20 h-20 rounded-xl bg-[#0A0A0A] border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                         <img 
+                                             src={globalSettings.logoUrl} 
+                                             alt="Logo" 
+                                             className="w-16 h-16 object-contain transition-opacity duration-300 group-hover:opacity-40"
+                                             onError={(e) => {
+                                                 const target = e.currentTarget;
+                                                 target.style.display = 'none';
+                                                 const fallback = target.nextElementSibling as HTMLElement;
+                                                 if (fallback) fallback.style.display = 'flex';
+                                             }}
+                                         />
+                                         <div className="absolute inset-0 hidden flex-col items-center justify-center text-gray-500 pointer-events-none">
+                                             <svg className="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                             <p className="text-xs font-medium">No Logo</p>
+                                         </div>
+                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center cursor-pointer">
+                                             <input
+                                                 type="file"
+                                                 accept="image/*"
+                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                 onChange={(e) => {
+                                                     const file = e.target.files?.[0];
+                                                     if (file) {
+                                                         const reader = new FileReader();
+                                                         reader.onload = (event) => {
+                                                             setGlobalSettings(s => ({ ...s, logoUrl: event.target?.result as string }));
+                                                         };
+                                                         reader.readAsDataURL(file);
+                                                     }
+                                                 }}
+                                             />
+                                             <div className="text-center pointer-events-none">
+                                                 <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                                 <p className="text-xs text-white font-semibold">Change</p>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+
+                             {/* Colors Grid */}
+                             <div className="grid grid-cols-2 gap-5">
+                                 {/* Primary Color */}
+                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                     <div className="flex items-start justify-between mb-4">
+                                         <div>
+                                             <label className="text-sm font-medium text-gray-300 block">Primary Color</label>
+                                             <p className="text-xs text-gray-500 mt-1">Brand accents & CTAs</p>
+                                         </div>
+                                         <button
+                                             onClick={() => handleCopyColor(globalSettings.primaryColor)}
+                                             className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
+                                             aria-label="Copy primary color"
+                                         >
+                                             <CopyIcon />
+                                         </button>
+                                     </div>
+                                     <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
+                                         <label className="relative w-14 h-14 rounded-xl shadow-inner overflow-hidden">
+                                             <input
+                                                 type="color"
+                                                 value={globalSettings.primaryColor}
+                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, primaryColor: e.target.value }))}
+                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                 aria-label="Select primary color"
+                                             />
+                                             <span
+                                                 className="absolute inset-0 rounded-xl border border-gray-700/60"
+                                                 style={{ background: createGradient(globalSettings.primaryColor) }}
+                                             ></span>
+                                         </label>
+                                         <div className="flex items-center gap-2">
+                                             <input
+                                                 type="text"
+                                                 value={globalSettings.primaryColor}
+                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, primaryColor: e.target.value }))}
+                                                 className="flex-1 bg-[#0A0A0A] border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
+                                             />
+                                         </div>
+                                     </div>
+                                     <div className="mt-4">
+                                         <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Presets</p>
+                                         <div className="flex flex-wrap gap-2">
+                                             {PRIMARY_COLOR_PRESETS.map((color) => (
+                                                 <button
+                                                     key={color}
+                                                     onClick={() => setGlobalSettings(s => ({ ...s, primaryColor: color }))}
+                                                     className={`w-8 h-8 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
+                                                         globalSettings.primaryColor === color
+                                                             ? 'border-white ring-2 ring-purple-500/50'
+                                                             : 'border-transparent hover:scale-105'
+                                                     }`}
+                                                     style={{ background: createGradient(color) }}
+                                                     aria-label={`Select ${color} preset`}
+                                                 />
+                                             ))}
+                                         </div>
+                                     </div>
+                                 </div>
+
+                                 {/* Secondary Color */}
+                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                     <div className="flex items-start justify-between mb-4">
+                                         <div>
+                                             <label className="text-sm font-medium text-gray-300 block">Secondary Color</label>
+                                             <p className="text-xs text-gray-500 mt-1">Status chips & highlights</p>
+                                         </div>
+                                         <button
+                                             onClick={() => handleCopyColor(globalSettings.secondaryColor)}
+                                             className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
+                                             aria-label="Copy secondary color"
+                                         >
+                                             <CopyIcon />
+                                         </button>
+                                     </div>
+                                     <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
+                                         <label className="relative w-14 h-14 rounded-xl shadow-inner overflow-hidden">
+                                             <input
+                                                 type="color"
+                                                 value={globalSettings.secondaryColor}
+                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, secondaryColor: e.target.value }))}
+                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                 aria-label="Select secondary color"
+                                             />
+                                             <span
+                                                 className="absolute inset-0 rounded-xl border border-gray-700/60"
+                                                 style={{ background: createGradient(globalSettings.secondaryColor) }}
+                                             ></span>
+                                         </label>
+                                         <div className="flex items-center gap-2">
+                                             <input
+                                                 type="text"
+                                                 value={globalSettings.secondaryColor}
+                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, secondaryColor: e.target.value }))}
+                                                 className="flex-1 bg-[#0A0A0A] border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
+                                             />
+                                         </div>
+                                     </div>
+                                     <div className="mt-4">
+                                         <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Presets</p>
+                                         <div className="flex flex-wrap gap-2">
+                                             {SECONDARY_COLOR_PRESETS.map((color) => (
+                                                 <button
+                                                     key={color}
+                                                     onClick={() => setGlobalSettings(s => ({ ...s, secondaryColor: color }))}
+                                                     className={`w-8 h-8 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
+                                                         globalSettings.secondaryColor === color
+                                                             ? 'border-white ring-2 ring-purple-500/50'
+                                                             : 'border-transparent hover:scale-105'
+                                                     }`}
+                                                     style={{ background: createGradient(color) }}
+                                                     aria-label={`Select ${color} preset`}
+                                                 />
+                                             ))}
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+
+                             {/* Fonts Grid */}
+                             <div className="grid grid-cols-2 gap-5">
+                                 {/* Heading Font */}
+                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                     <label className="text-sm font-medium text-gray-300 mb-3 block">Heading Font</label>
+                                     <FontPicker
+                                         value={globalSettings.headingFont}
+                                         onChange={(value) => setGlobalSettings(s => ({ ...s, headingFont: value }))}
+                                     />
+                                 </div>
+ 
+                                 {/* Body Font */}
+                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                     <label className="text-sm font-medium text-gray-300 mb-3 block">Body Font</label>
+                                     <FontPicker
+                                         value={globalSettings.bodyFont}
+                                         onChange={(value) => setGlobalSettings(s => ({ ...s, bodyFont: value }))}
+                                     />
+                                 </div>
+                             </div>
+                         </div>
+                     </motion.div>
+                 </div>
+             </motion.main>
+           )}
+
+          {/* Rewards Tab Content */}
+          {activeNavTab === 'rewards' && (
+            <motion.main
+              key="rewards"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="flex-1 relative overflow-hidden bg-[#232325]"
+            >
+                <div className="relative z-10 h-full w-full flex flex-col items-center justify-center p-8">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1, duration: 0.4 }}
+                      className="text-center max-w-md"
+                    >
+                        <motion.div
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.2, duration: 0.3 }}
+                        >
+                          <RewardIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                        </motion.div>
+                        <motion.h2 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3, duration: 0.3 }}
+                          className="text-2xl font-semibold text-white mb-2"
+                        >
+                          Rewards & Incentives
+                        </motion.h2>
+                        <motion.p 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4, duration: 0.3 }}
+                          className="text-gray-400 mb-6"
+                        >
+                          Motivate users to leave testimonials with rewards and incentives.
+                        </motion.p>
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5, duration: 0.3 }}
+                          className="bg-gray-800/50 rounded-lg p-6 text-left"
+                        >
+                            <p className="text-sm text-gray-300">Coming soon: Gift cards, Discounts, Free trials, Custom rewards</p>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </motion.main>
+          )}
+        </AnimatePresence>
         
-        {/* PowerPoint-style thumbnail sidebar */}
-        <aside className="w-80 flex-none flex flex-col bg-[#1A1A1A] border-l border-gray-800">
+        {/* PowerPoint-style thumbnail sidebar - Only show for Form tab */}
+        <AnimatePresence>
+          {activeNavTab === 'form' && (
+            <motion.aside
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="w-80 flex-none flex flex-col bg-[#1A1A1A] border-l border-gray-800"
+            >
            <div className="grid grid-cols-2 divide-x divide-gray-800 border-b border-gray-800">
              <button
                onClick={() => setActiveTab('pages')}
@@ -480,7 +940,9 @@ const FormBuilderPage = () => {
                 onUpdateBlock={handleUpdateBlock}
             />
            )}
-        </aside>
+          </motion.aside>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
