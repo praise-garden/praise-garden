@@ -1,48 +1,120 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { formId: string } },
-) {
-  const body = await request.json();
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-
-  const { data, error } = await supabase
-    .from('forms')
-    .update({
-      name: body.name,
-      settings: body,
-    })
-    .eq('id', params.formId)
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
-}
-
+/**
+ * GET /api/forms/[formId]
+ * Get a specific form with authentication and authorization
+ */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { formId: string } },
+  { params }: { params: Promise<{ formId: string }> },
 ) {
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+  const { formId } = await params;
 
-  const { data, error } = await supabase
-    .from('forms')
-    .select('*')
-    .eq('id', params.formId)
-    .single();
+  try {
+    const supabase = await createClient();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+    // 1. Authenticate: Check if user is logged in
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 2. Authorize: Verify user owns this form through its project
+    const { data: form, error } = await supabase
+      .from('forms')
+      .select(`
+        *,
+        project:projects!inner(owner_id)
+      `)
+      .eq('id', formId)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: 'Form not found' }, { status: 404 });
+    }
+
+    // Check ownership
+    if (form.project.owner_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // 3. Execute: Return the form settings with metadata
+    return NextResponse.json({
+      id: form.id,
+      name: form.name,
+      project_id: form.project_id,
+      settings: form.settings,
+    });
+  } catch (e) {
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
   }
+}
 
-  return NextResponse.json(data.settings);
+/**
+ * PUT /api/forms/[formId]
+ * Update a form with authentication and authorization
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ formId: string }> },
+) {
+  const { formId } = await params;
+  try {
+    const supabase = await createClient();
+
+    // 1. Authenticate: Check if user is logged in
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 2. Authorize: Verify user owns this form through its project
+    const { data: existingForm, error: fetchError } = await supabase
+      .from('forms')
+      .select(`
+        id,
+        project:projects!inner(owner_id)
+      `)
+      .eq('id', formId)
+      .single();
+
+    if (fetchError || !existingForm) {
+      return NextResponse.json({ error: 'Form not found' }, { status: 404 });
+    }
+
+    // Check ownership
+    if ('owner_id' in existingForm.project && existingForm.project.owner_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // 3. Execute: Update the form
+    const body = await request.json();
+
+    const { data, error } = await supabase
+      .from('forms')
+      .update({
+        name: body.name,
+        settings: body,
+      })
+      .eq('id', formId)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (e) {
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+  }
 }

@@ -1,5 +1,17 @@
 import { UUID } from 'crypto';
 
+export interface Form {
+  id: string;
+  name: string;
+  project_id: string;
+  created_at: string;
+  settings: any;
+  project?: {
+    id: string;
+    name: string;
+  };
+}
+
 // ---------------------------------------------------------------- //
 //                         Block Types Enum                         //
 // ---------------------------------------------------------------- //

@@ -1,12 +1,10 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createDefaultFormConfig } from '@/lib/default-form-config';
 
 // GET all forms for the current user
 export async function GET() {
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+  const supabase = await createClient();
 
   // Get the current user
   const {
@@ -23,8 +21,9 @@ export async function GET() {
     .from('forms')
     .select(`
       *,
-      project:projects(id, name)
+      project:projects!inner(id, name, owner_id)
     `)
+    .eq('project.owner_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -36,8 +35,7 @@ export async function GET() {
 
 // POST - Create a new form
 export async function POST(request: NextRequest) {
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+  const supabase = await createClient();
 
   // Get the current user
   const {
@@ -96,7 +94,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Create default form configuration
-  const defaultConfig = createDefaultFormConfig();
+  const defaultConfig = createDefaultFormConfig({ projectId: finalProjectId });
 
   // Create the form with default settings
   const { data: form, error: createError } = await supabase

@@ -1,11 +1,9 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/Sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
- 
-
 
 const statCards = [
   { label: "Total Reviews", value: "2,847", change: "+12%" },
@@ -87,9 +85,18 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
   return null;
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50/30 font-sans">
+    <div className="min-h-screen bg-gray-950 text-gray-50 font-sans">
       <div className="grid grid-cols-1 lg:grid-cols-[16rem_1fr] min-h-screen">
         {/* Sidebar */}
         <Sidebar />
@@ -97,11 +104,11 @@ export default function DashboardPage() {
         {/* Main Content */}
         <div className="flex flex-col">
           {/* Header */}
-          <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100/50">
+          <header className="sticky top-0 z-50 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800">
             <div className="flex items-center justify-between h-16 px-6">
               <div className="flex items-center gap-4">
                 <button
-                  className="lg:hidden inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
+                  className="lg:hidden inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-gray-800 transition-colors"
                   aria-label="Open navigation"
                 >
                   <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,16 +118,16 @@ export default function DashboardPage() {
                 </button>
                 <div className="hidden lg:block">
                   <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-                  <p className="text-sm text-gray-500">Welcome back to your testimonials center</p>
+                  <p className="text-sm text-gray-400">Welcome back to your testimonials center</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-4">
                 {/* Breadcrumb or additional navigation could go here */}
-                <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+                <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
                   <span>Acme Corporation</span>
                   <span>/</span>
-                  <span className="text-gray-900">Overview</span>
+                  <span className="text-gray-50">Overview</span>
                 </div>
               </div>
             </div>
@@ -133,13 +140,13 @@ export default function DashboardPage() {
               <h2 id="stats-heading" className="sr-only">Statistics Overview</h2>
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                 {statCards.map((stat, index) => (
-                  <Card key={stat.label} className="bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden">
+                  <Card key={stat.label} className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className={`size-10 rounded-2xl flex items-center justify-center ${
-                          index === 0 ? 'bg-blue-50' : 
-                          index === 1 ? 'bg-green-50' : 
-                          index === 2 ? 'bg-purple-50' : 'bg-orange-50'
+                          index === 0 ? 'bg-blue-900/50' : 
+                          index === 1 ? 'bg-green-900/50' : 
+                          index === 2 ? 'bg-purple-900/50' : 'bg-orange-900/50'
                         }`}>
                           <div className={`size-4 rounded-full ${
                             index === 0 ? 'bg-blue-500' : 
@@ -147,13 +154,13 @@ export default function DashboardPage() {
                             index === 2 ? 'bg-purple-500' : 'bg-orange-500'
                           }`} />
                         </div>
-                        <Badge variant="outline" className="text-xs font-medium border-gray-200 text-gray-600 rounded-full px-2 py-1">
+                        <Badge variant="outline" className="text-xs font-medium border-gray-700 text-gray-300 rounded-full px-2 py-1">
                           {stat.change}
                         </Badge>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600 mb-1">{stat.label}</p>
-                        <p className="text-3xl font-bold text-gray-900 tracking-tight">{stat.value}</p>
+                        <p className="text-sm font-medium text-gray-400 mb-1">{stat.label}</p>
+                        <p className="text-3xl font-bold text-gray-50 tracking-tight">{stat.value}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -164,25 +171,25 @@ export default function DashboardPage() {
             {/* Main Grid */}
             <section className="grid gap-8 xl:grid-cols-3">
               {/* Recent Testimonials */}
-              <Card className="xl:col-span-2 bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden">
+              <Card className="xl:col-span-2 bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
                 <CardHeader className="p-6 pb-4">
                   <CardTitle className="text-xl font-semibold tracking-tight">Recent Testimonials</CardTitle>
-                  <CardDescription className="text-gray-500">Latest customer feedback and reviews</CardDescription>
+                  <CardDescription className="text-gray-400">Latest customer feedback and reviews</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 pt-0">
                   <div className="space-y-4">
                     {testimonials.map((testimonial, index) => (
-                      <div key={index} className="group p-4 rounded-2xl hover:bg-gray-50 transition-colors duration-200">
+                      <div key={index} className="group p-4 rounded-2xl hover:bg-gray-800/50 transition-colors duration-200">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <Avatar className="size-10">
-                              <AvatarFallback className="bg-gray-100 text-gray-700 font-medium text-sm">
+                              <AvatarFallback className="bg-gray-700 text-gray-300 font-medium text-sm">
                                 {testimonial.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-gray-900">{testimonial.name}</p>
-                              <p className="text-sm text-gray-500">{testimonial.company}</p>
+                              <p className="font-medium text-gray-50">{testimonial.name}</p>
+                              <p className="text-sm text-gray-400">{testimonial.company}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -191,10 +198,10 @@ export default function DashboardPage() {
                                 <Icon key={i} name="star" className="size-4 text-yellow-400" />
                               ))}
                             </div>
-                            <span className="text-xs text-gray-400">{testimonial.date}</span>
+                            <span className="text-xs text-gray-500">{testimonial.date}</span>
                           </div>
                         </div>
-                        <p className="text-gray-700 text-sm leading-relaxed">{testimonial.text}</p>
+                        <p className="text-gray-300 text-sm leading-relaxed">{testimonial.text}</p>
                       </div>
                     ))}
                   </div>
@@ -202,18 +209,18 @@ export default function DashboardPage() {
               </Card>
 
               {/* Activity Feed */}
-              <Card className="bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden">
+              <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
                 <CardHeader className="p-6 pb-4">
                   <CardTitle className="text-xl font-semibold tracking-tight">Activity Feed</CardTitle>
-                  <CardDescription className="text-gray-500">Recent system activity</CardDescription>
+                  <CardDescription className="text-gray-400">Recent system activity</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 pt-0">
                   <div className="space-y-4">
                     {activities.map((activity, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200">
-                        <div className="size-2 rounded-full bg-gray-300" />
+                      <div key={index} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800/50 transition-colors duration-200">
+                        <div className="size-2 rounded-full bg-gray-600" />
                         <div className="flex-1">
-                          <p className="text-sm text-gray-700">{activity.text}</p>
+                          <p className="text-sm text-gray-300">{activity.text}</p>
                           <p className="text-xs text-gray-500">{activity.time}</p>
                         </div>
                       </div>
@@ -225,19 +232,19 @@ export default function DashboardPage() {
 
             {/* Analytics Chart */}
             <section>
-              <Card className="bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden">
+              <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
                 <CardHeader className="p-6 pb-4">
                   <CardTitle className="text-xl font-semibold tracking-tight">Performance Analytics</CardTitle>
-                  <CardDescription className="text-gray-500">Review trends and engagement metrics</CardDescription>
+                  <CardDescription className="text-gray-400">Review trends and engagement metrics</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 pt-0">
-                  <div className="h-64 w-full rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-100 flex items-center justify-center">
+                  <div className="h-64 w-full rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800/50 border border-gray-800 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="size-12 rounded-2xl bg-gray-200 mx-auto mb-3 flex items-center justify-center">
-                        <Icon name="chart" className="size-6 text-gray-400" />
+                      <div className="size-12 rounded-2xl bg-gray-800 mx-auto mb-3 flex items-center justify-center">
+                        <Icon name="chart" className="size-6 text-gray-500" />
                       </div>
-                      <p className="text-sm font-medium text-gray-600">Chart visualization</p>
-                      <p className="text-xs text-gray-400">Analytics data will appear here</p>
+                      <p className="text-sm font-medium text-gray-400">Chart visualization</p>
+                      <p className="text-xs text-gray-500">Analytics data will appear here</p>
                     </div>
                   </div>
                 </CardContent>

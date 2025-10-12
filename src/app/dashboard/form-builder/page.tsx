@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import RatingCard from '@/components/RatingCard';
 // import FormBuilderSidebar from '@/components/FormBuilderSidebar';
@@ -14,12 +14,12 @@ import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 
-import { FormConfig, FormBlock, FormBlockType } from '@/types/form-config';
-import { createDefaultFormConfig } from '@/lib/default-form-config';
+import type { FormConfig, FormBlock, FormBlockType, FormTheme } from '@/types/form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
 import { toast, Toaster } from 'sonner';
 import { FontPicker } from '@/components/ui/font-picker';
 import { useSearchParams } from 'next/navigation';
+import { uploadImageToStorage } from '@/lib/storage';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -127,7 +127,37 @@ const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const PRIMARY_COLOR_PRESETS = ['#A855F7', '#6366F1', '#22C55E', '#F97316', '#EC4899', '#0EA5E9', '#FACC15', '#111827'];
 const SECONDARY_COLOR_PRESETS = ['#22C55E', '#14B8A6', '#F97316', '#EF4444', '#8B5CF6', '#0EA5E9', '#F59E0B', '#1F2937'];
 
+const defaultTheme: FormTheme = {
+  backgroundColor: '#0A0A0A',
+  logoUrl: '/icon.png',
+  primaryColor: '#A855F7',
+  secondaryColor: '#22C55E',
+  headingFont: 'Inter',
+  bodyFont: 'Inter',
+};
+
 const clampColorValue = (value: number) => Math.min(255, Math.max(0, value));
+
+const updateTheme = (
+  updater: (theme: FormTheme) => FormTheme,
+  setFormConfig: React.Dispatch<React.SetStateAction<FormConfig | null>>,
+) => {
+  setFormConfig((prev) => {
+    if (!prev) {
+      return prev;
+    }
+
+    const currentTheme = {
+      ...defaultTheme,
+      ...(prev.theme ?? {}),
+    };
+
+    return {
+      ...prev,
+      theme: updater(currentTheme),
+    };
+  });
+};
 
 const adjustColor = (hex: string, amount: number) => {
   if (!hex) return hex;
@@ -201,7 +231,7 @@ export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'con
     onPrevious,
 }) => {
     return (
-        <div className="w-[94%] max-w-[1200px] xl:max-w-[1320px] h-[78vh] xl:h-[82vh] max-h-[820px] mx-auto bg-[#121212] rounded-2xl shadow-2xl overflow-hidden border border-gray-800 flex flex-col">
+        <div className="w-[94%] max-w-[1200px] xl:max-w-[1320px] h-[78vh] xl:h-[82vh] max-h-[820px] mx-auto bg-gray-950 rounded-2xl shadow-2xl overflow-hidden border border-gray-800 flex flex-col">
             <div className="relative px-6 py-4 border-b border-gray-800 flex items-center flex-none">
                 {/* Left Side: Page Number and Title */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -256,16 +286,10 @@ const FormBuilderPage = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [activeNavTab, setActiveNavTab] = useState<'form' | 'settings' | 'rewards'>('settings');
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     
-    // Global settings state
-    const [globalSettings, setGlobalSettings] = useState({
-        logoUrl: '/icon.png',
-        primaryColor: '#A855F7',
-        secondaryColor: '#22C55E',
-        headingFont: 'Inter',
-        bodyFont: 'Inter',
-    });
-
     useEffect(() => {
         if (!formId) {
             toast.error('No form ID provided');
@@ -275,36 +299,33 @@ const FormBuilderPage = () => {
     
         const fetchFormConfig = async () => {
           setIsLoading(true);
+          setError(null);
           try {
             const response = await fetch(`/api/forms/${formId}`);
             if (!response.ok) {
               if (response.status === 404) {
-                // If not found, create a default one to start with.
-                console.warn(`Form ${formId} not found, creating a default config.`);
-                const projectId = '123e4567-e89b-12d3-a456-426614174000' as any;
-                const defaultConfig = createDefaultFormConfig({ projectId, formId: formId as any });
-                setFormConfig(defaultConfig);
+                throw new Error("Form not found. It might have been deleted, or you may not have permission to view it.");
               } else {
                 throw new Error('Failed to fetch form configuration');
               }
             } else {
               const data = await response.json();
-              setFormConfig(data);
-              
-              // Update global settings from loaded config
-              if (data.theme) {
-                setGlobalSettings({
-                  logoUrl: data.theme.logoUrl || '/icon.png',
-                  primaryColor: data.theme.primaryColor || '#A855F7',
-                  secondaryColor: data.theme.secondaryColor || '#22C55E',
-                  headingFont: data.theme.headingFont || 'Inter',
-                  bodyFont: data.theme.bodyFont || 'Inter',
-                });
-              }
+              const mergedConfig = {
+                ...data.settings,
+                id: data.id ?? data.settings?.id ?? formId,
+                name: data.name ?? data.settings?.name ?? 'Untitled Form',
+                projectId: data.project_id,
+                theme: {
+                  ...defaultTheme,
+                  ...(data.settings?.theme ?? {}),
+                },
+              } as FormConfig;
+              setFormConfig(mergedConfig);
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error(error);
-            toast.error('Could not load form data.');
+            toast.error(error.message || 'Could not load form data.');
+            setError(error.message);
           } finally {
             setIsLoading(false);
           }
@@ -345,13 +366,17 @@ const FormBuilderPage = () => {
     }, []);
 
     const handleSave = async () => {
-        if (!formConfig || !formConfig.id) {
+        if (!formConfig) {
             toast.error('Cannot save form without an ID.');
+            return;
+        }
+        if (!formId) {
+            toast.error('No form ID provided');
             return;
         }
         setIsSaving(true);
         try {
-            const response = await fetch(`/api/forms/${formConfig.id}`, {
+            const response = await fetch(`/api/forms/${formId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formConfig),
@@ -444,9 +469,9 @@ const FormBuilderPage = () => {
     };
   }, [handleNextPage, handlePreviousPage]);
 
-  if (isLoading || !formConfig) {
+  if (isLoading) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen bg-[#0A0A0A] text-white">
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-950 text-white">
           <div className="flex flex-col items-center gap-4">
             <div className="size-12 border-4 border-gray-700 border-t-purple-600 rounded-full animate-spin"></div>
             <p className="text-gray-400">Loading form builder...</p>
@@ -455,10 +480,28 @@ const FormBuilderPage = () => {
       );
   }
 
+  if (error || !formConfig) {
+    return (
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-950 text-white">
+            <div className="flex flex-col items-center gap-4 text-center p-4">
+                <div className="text-5xl mb-4">😢</div>
+                <h1 className="text-2xl font-bold">Something went wrong</h1>
+                <p className="text-gray-400 max-w-md">{error || "The form configuration could not be loaded. It might not exist."}</p>
+                <a href="/dashboard/forms">
+                    <Button className="mt-6 bg-purple-600 hover:bg-purple-700 text-white">
+                        <ArrowLeftIcon className="mr-2 h-4 w-4" />
+                        Back to Forms
+                    </Button>
+                </a>
+            </div>
+        </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col w-full h-screen bg-[#0A0A0A] text-white">
+    <div className="flex flex-col w-full h-screen bg-gray-950 text-white">
         <Toaster position="bottom-right" theme="dark" />
-        <header className="relative flex-none flex items-center justify-between h-16 px-6 bg-[#121212] border-b border-gray-800 z-20">
+        <header className="relative flex-none flex items-center justify-between h-16 px-6 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800 z-20">
             {/* Left Section: Back button and Form Name */}
                 <div className="flex items-center gap-3">
                 <button className="text-gray-400 rounded-md p-1 hover:bg-white/10 transition-colors">
@@ -473,7 +516,7 @@ const FormBuilderPage = () => {
                 </div>
 
             {/* Center Section: Navigation Tabs */}
-            <div className="flex items-center gap-1 bg-gray-900/50 rounded-xl p-1 backdrop-blur-sm">
+            <div className="flex items-center gap-1 bg-gray-900 rounded-xl p-1 backdrop-blur-sm border border-gray-800">
                 <NavItem 
                     icon={<SettingsIcon />} 
                     active={activeNavTab === 'settings'}
@@ -518,7 +561,7 @@ const FormBuilderPage = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="flex-1 relative overflow-hidden bg-[#232325]"
+              className="flex-1 relative overflow-hidden bg-gray-900"
             >
             {/* Background pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff12_1px,transparent_1px)] [background-size:16px_16px]"></div>
@@ -566,7 +609,7 @@ const FormBuilderPage = () => {
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: -20 }}
                transition={{ duration: 0.3, ease: "easeInOut" }}
-               className="flex-1 relative overflow-hidden bg-[#232325]"
+               className="flex-1 relative overflow-hidden bg-gray-900"
              >
                  <div className="relative z-10 h-full w-full flex items-center justify-center p-12">
                      <motion.div 
@@ -584,15 +627,15 @@ const FormBuilderPage = () => {
                          {/* Settings Grid */}
                          <div className="space-y-5">
                              {/* Logo Upload */}
-                             <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                             <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
                                  <div className="flex justify-between items-center">
                                      <div>
                                          <label className="text-sm font-medium text-gray-300 block">Brand Logo</label>
                                          <p className="text-xs text-gray-500 mt-1">Click image to upload</p>
                                      </div>
-                                     <div className="relative group w-20 h-20 rounded-xl bg-[#0A0A0A] border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                     <div className="relative group w-20 h-20 rounded-xl bg-gray-950 border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                                          <img 
-                                             src={globalSettings.logoUrl} 
+                                             src={formConfig.theme?.logoUrl ?? defaultTheme.logoUrl} 
                                              alt="Logo" 
                                              className="w-16 h-16 object-contain transition-opacity duration-300 group-hover:opacity-40"
                                              onError={(e) => {
@@ -607,41 +650,85 @@ const FormBuilderPage = () => {
                                              <p className="text-xs font-medium">No Logo</p>
                                          </div>
                                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center cursor-pointer">
-                                             <input
-                                                 type="file"
-                                                 accept="image/*"
-                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                 onChange={(e) => {
-                                                     const file = e.target.files?.[0];
-                                                     if (file) {
-                                                         const reader = new FileReader();
-                                                         reader.onload = (event) => {
-                                                             setGlobalSettings(s => ({ ...s, logoUrl: event.target?.result as string }));
-                                                         };
-                                                         reader.readAsDataURL(file);
-                                                     }
-                                                 }}
-                                             />
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) {
+                                                      return;
+                                                    }
+
+                                                    if (!formConfig?.projectId) {
+                                                      toast.error('Unable to upload logo: missing project context. Please reload the form.');
+                                                      if (fileInputRef.current) {
+                                                        fileInputRef.current.value = '';
+                                                      }
+                                                      return;
+                                                    }
+
+                                                    setIsUploadingLogo(true);
+                                                    try {
+                                                        const uploadResult = await uploadImageToStorage({
+                                                          file,
+                                                          context: {
+                                                            type: 'project',
+                                                            projectId: formConfig.projectId,
+                                                            namespace: 'form-assets/logos',
+                                                          },
+                                                        });
+
+                                                        updateTheme(
+                                                          (theme) => ({
+                                                            ...theme,
+                                                            logoUrl: uploadResult.url,
+                                                          }),
+                                                          setFormConfig,
+                                                        );
+
+                                                        toast.success('Logo uploaded successfully');
+                                                    } catch (uploadError: any) {
+                                                        console.error(uploadError);
+                                                        toast.error(uploadError.message || 'Failed to upload logo');
+                                                    } finally {
+                                                        setIsUploadingLogo(false);
+                                                    }
+
+                                                    if (fileInputRef.current) {
+                                                      fileInputRef.current.value = '';
+                                                    }
+                                                }}
+                                            />
                                              <div className="text-center pointer-events-none">
-                                                 <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                                 <p className="text-xs text-white font-semibold">Change</p>
+                                                {isUploadingLogo ? (
+                                                  <>
+                                                    <div className="w-6 h-6 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                                    <p className="text-xs text-white font-semibold">Uploading…</p>
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                                    <p className="text-xs text-white font-semibold">Change</p>
+                                                  </>
+                                                )}
                                              </div>
                                          </div>
                                      </div>
                                  </div>
-                             </div>
 
                              {/* Colors Grid */}
                              <div className="grid grid-cols-2 gap-5">
                                  {/* Primary Color */}
-                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
                                      <div className="flex items-start justify-between mb-4">
                                          <div>
                                              <label className="text-sm font-medium text-gray-300 block">Primary Color</label>
                                              <p className="text-xs text-gray-500 mt-1">Brand accents & CTAs</p>
                                          </div>
                                          <button
-                                             onClick={() => handleCopyColor(globalSettings.primaryColor)}
+                                             onClick={() => handleCopyColor(formConfig.theme?.primaryColor ?? defaultTheme.primaryColor)}
                                              className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
                                              aria-label="Copy primary color"
                                          >
@@ -652,22 +739,34 @@ const FormBuilderPage = () => {
                                          <label className="relative w-14 h-14 rounded-xl shadow-inner overflow-hidden">
                                              <input
                                                  type="color"
-                                                 value={globalSettings.primaryColor}
-                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, primaryColor: e.target.value }))}
+                                                 value={formConfig.theme?.primaryColor ?? defaultTheme.primaryColor}
+                                                 onChange={(e) => updateTheme(
+                                                   (theme) => ({
+                                                     ...theme,
+                                                     primaryColor: e.target.value,
+                                                   }),
+                                                   setFormConfig,
+                                                 )}
                                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                  aria-label="Select primary color"
                                              />
                                              <span
                                                  className="absolute inset-0 rounded-xl border border-gray-700/60"
-                                                 style={{ background: createGradient(globalSettings.primaryColor) }}
+                                                 style={{ background: createGradient(formConfig.theme?.primaryColor ?? defaultTheme.primaryColor) }}
                                              ></span>
                                          </label>
                                          <div className="flex items-center gap-2">
                                              <input
                                                  type="text"
-                                                 value={globalSettings.primaryColor}
-                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, primaryColor: e.target.value }))}
-                                                 className="flex-1 bg-[#0A0A0A] border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
+                                                 value={formConfig.theme?.primaryColor ?? defaultTheme.primaryColor}
+                                                 onChange={(e) => updateTheme(
+                                                   (theme) => ({
+                                                     ...theme,
+                                                     primaryColor: e.target.value,
+                                                   }),
+                                                   setFormConfig,
+                                                 )}
+                                                 className="flex-1 bg-gray-950 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
                                              />
                                          </div>
                                      </div>
@@ -677,9 +776,15 @@ const FormBuilderPage = () => {
                                              {PRIMARY_COLOR_PRESETS.map((color) => (
                                                  <button
                                                      key={color}
-                                                     onClick={() => setGlobalSettings(s => ({ ...s, primaryColor: color }))}
+                                                     onClick={() => updateTheme(
+                                                       (theme) => ({
+                                                         ...theme,
+                                                         primaryColor: color,
+                                                       }),
+                                                       setFormConfig,
+                                                     )}
                                                      className={`w-8 h-8 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
-                                                         globalSettings.primaryColor === color
+                                                         (formConfig.theme?.primaryColor ?? defaultTheme.primaryColor) === color
                                                              ? 'border-white ring-2 ring-purple-500/50'
                                                              : 'border-transparent hover:scale-105'
                                                      }`}
@@ -692,14 +797,14 @@ const FormBuilderPage = () => {
                                  </div>
 
                                  {/* Secondary Color */}
-                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
                                      <div className="flex items-start justify-between mb-4">
                                          <div>
                                              <label className="text-sm font-medium text-gray-300 block">Secondary Color</label>
                                              <p className="text-xs text-gray-500 mt-1">Status chips & highlights</p>
                                          </div>
                                          <button
-                                             onClick={() => handleCopyColor(globalSettings.secondaryColor)}
+                                             onClick={() => handleCopyColor(formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor)}
                                              className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
                                              aria-label="Copy secondary color"
                                          >
@@ -710,22 +815,34 @@ const FormBuilderPage = () => {
                                          <label className="relative w-14 h-14 rounded-xl shadow-inner overflow-hidden">
                                              <input
                                                  type="color"
-                                                 value={globalSettings.secondaryColor}
-                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, secondaryColor: e.target.value }))}
+                                                 value={formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor}
+                                                 onChange={(e) => updateTheme(
+                                                   (theme) => ({
+                                                     ...theme,
+                                                     secondaryColor: e.target.value,
+                                                   }),
+                                                   setFormConfig,
+                                                 )}
                                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                  aria-label="Select secondary color"
                                              />
                                              <span
                                                  className="absolute inset-0 rounded-xl border border-gray-700/60"
-                                                 style={{ background: createGradient(globalSettings.secondaryColor) }}
+                                                 style={{ background: createGradient(formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor) }}
                                              ></span>
                                          </label>
                                          <div className="flex items-center gap-2">
                                              <input
                                                  type="text"
-                                                 value={globalSettings.secondaryColor}
-                                                 onChange={(e) => setGlobalSettings(s => ({ ...s, secondaryColor: e.target.value }))}
-                                                 className="flex-1 bg-[#0A0A0A] border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
+                                                 value={formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor}
+                                                 onChange={(e) => updateTheme(
+                                                   (theme) => ({
+                                                     ...theme,
+                                                     secondaryColor: e.target.value,
+                                                   }),
+                                                   setFormConfig,
+                                                 )}
+                                                 className="flex-1 bg-gray-950 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
                                              />
                                          </div>
                                      </div>
@@ -735,9 +852,15 @@ const FormBuilderPage = () => {
                                              {SECONDARY_COLOR_PRESETS.map((color) => (
                                                  <button
                                                      key={color}
-                                                     onClick={() => setGlobalSettings(s => ({ ...s, secondaryColor: color }))}
+                                                     onClick={() => updateTheme(
+                                                       (theme) => ({
+                                                         ...theme,
+                                                         secondaryColor: color,
+                                                       }),
+                                                       setFormConfig,
+                                                     )}
                                                      className={`w-8 h-8 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
-                                                         globalSettings.secondaryColor === color
+                                                         (formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor) === color
                                                              ? 'border-white ring-2 ring-purple-500/50'
                                                              : 'border-transparent hover:scale-105'
                                                      }`}
@@ -753,21 +876,34 @@ const FormBuilderPage = () => {
                              {/* Fonts Grid */}
                              <div className="grid grid-cols-2 gap-5">
                                  {/* Heading Font */}
-                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
                                      <label className="text-sm font-medium text-gray-300 mb-3 block">Heading Font</label>
                                      <FontPicker
-                                         value={globalSettings.headingFont}
-                                         onChange={(value) => setGlobalSettings(s => ({ ...s, headingFont: value }))}
+                                         value={formConfig.theme?.headingFont ?? defaultTheme.headingFont}
+                                         onChange={(value) => updateTheme(
+                                           (theme) => ({
+                                             ...theme,
+                                             headingFont: theme.headingFont === value ? defaultTheme.headingFont : value,
+                                           }),
+                                           setFormConfig,
+                                         )}
                                      />
                                  </div>
  
                                  {/* Body Font */}
-                                 <div className="bg-gradient-to-br from-[#1E1E1E] to-[#171717] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
                                      <label className="text-sm font-medium text-gray-300 mb-3 block">Body Font</label>
                                      <FontPicker
-                                         value={globalSettings.bodyFont}
-                                         onChange={(value) => setGlobalSettings(s => ({ ...s, bodyFont: value }))}
+                                         value={formConfig.theme?.bodyFont ?? defaultTheme.bodyFont}
+                                         onChange={(value) => updateTheme(
+                                           (theme) => ({
+                                             ...theme,
+                                             bodyFont: theme.bodyFont === value ? defaultTheme.bodyFont : value,
+                                           }),
+                                           setFormConfig,
+                                         )}
                                      />
+                                 </div>
                                  </div>
                              </div>
                          </div>
@@ -784,7 +920,7 @@ const FormBuilderPage = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="flex-1 relative overflow-hidden bg-[#232325]"
+              className="flex-1 relative overflow-hidden bg-gray-900"
             >
                 <div className="relative z-10 h-full w-full flex flex-col items-center justify-center p-8">
                     <motion.div 
@@ -820,7 +956,7 @@ const FormBuilderPage = () => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5, duration: 0.3 }}
-                          className="bg-gray-800/50 rounded-lg p-6 text-left"
+                          className="bg-gray-800/50 rounded-lg p-6 text-left border border-gray-700/50"
                         >
                             <p className="text-sm text-gray-300">Coming soon: Gift cards, Discounts, Free trials, Custom rewards</p>
                         </motion.div>
@@ -838,13 +974,13 @@ const FormBuilderPage = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="w-80 flex-none flex flex-col bg-[#1A1A1A] border-l border-gray-800"
+              className="w-80 flex-none flex flex-col bg-gray-950 border-l border-gray-800"
             >
            <div className="grid grid-cols-2 divide-x divide-gray-800 border-b border-gray-800">
              <button
                onClick={() => setActiveTab('pages')}
                className={`flex items-center justify-center gap-2 px-4 py-3 text-center transition-colors ${
-                 activeTab === 'pages' ? 'bg-[#2A2A2A]' : 'bg-transparent'
+                 activeTab === 'pages' ? 'bg-gray-800' : 'bg-transparent'
                }`}
              >
                <PagesIcon className={activeTab === 'pages' ? 'text-purple-400' : 'text-gray-500'} />
@@ -853,7 +989,7 @@ const FormBuilderPage = () => {
              <button
                onClick={() => setActiveTab('edit')}
                className={`flex items-center justify-center gap-2 px-4 py-3 text-center transition-colors ${
-                 activeTab === 'edit' ? 'bg-[#2A2A2A]' : 'bg-transparent'
+                 activeTab === 'edit' ? 'bg-gray-800' : 'bg-transparent'
                }`}
              >
                <SettingsIcon className={activeTab === 'edit' ? 'text-purple-400' : 'text-gray-500'} />
@@ -880,7 +1016,7 @@ const FormBuilderPage = () => {
                        onClick={() => block.enabled && handlePageClick(enabledIndex)}
                      >
                        {/* Thumbnail preview */}
-                       <div className="aspect-video bg-[#121212] rounded-t-md border-b border-gray-700 overflow-hidden relative pointer-events-none">
+                       <div className="aspect-video bg-gray-900 rounded-t-md border-b border-gray-700 overflow-hidden relative pointer-events-none">
                           <ThumbnailPreview pageType={block.type} />
                            
                            {/* Page number badge */}

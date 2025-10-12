@@ -83,12 +83,12 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
   const [activeTab, setActiveTab] = useState<'Pages' | 'Design'>('Pages');
 
   return (
-    <aside className="w-[26rem] flex-none flex flex-col bg-[#1E1E1E] h-screen border-l border-gray-800 text-white">
+    <aside className="w-[26rem] flex-none flex flex-col bg-gray-950 h-screen border-l border-gray-800 text-white">
       <div className="grid grid-cols-2 divide-x divide-gray-800 border-b border-gray-800">
         <button
           onClick={() => setActiveTab('Pages')}
           className={`flex items-center justify-center gap-2 px-4 py-4 text-center transition-colors ${
-            activeTab === 'Pages' ? 'bg-[#2A2A2A]' : 'bg-[#1E1E1E]'
+            activeTab === 'Pages' ? 'bg-gray-800' : 'bg-transparent'
           }`}
         >
           <PagesIcon className={activeTab === 'Pages' ? 'text-purple-500' : 'text-gray-400'} />
@@ -97,7 +97,7 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
         <button
           onClick={() => setActiveTab('Design')}
           className={`flex items-center justify-center gap-2 px-4 py-4 text-center transition-colors ${
-            activeTab === 'Design' ? 'bg-[#2A2A2A]' : 'bg-[#1E1E1E]'
+            activeTab === 'Design' ? 'bg-gray-800' : 'bg-transparent'
           }`}
         >
           <DesignIcon className={activeTab === 'Design' ? 'text-purple-500' : 'text-gray-400'} />
@@ -116,7 +116,7 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
                 <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
-              <button className="text-sm border border-gray-600 rounded-md px-4 py-2 hover:bg-gray-700">
+              <button className="text-sm border border-gray-700 rounded-md px-4 py-2 hover:bg-gray-800">
                 Upload avatar
               </button>
             </div>
@@ -124,7 +124,7 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">Logo</label>
-            <div className="bg-black/50 rounded-lg p-6 flex items-center justify-center">
+            <div className="bg-black/20 rounded-lg p-6 flex items-center justify-center border border-gray-800">
               <Image src="/icon.png" alt="PraiseGarden Logo" width={32} height={32} className="mr-2" />
               <span className="text-white text-3xl font-bold">PraiseGarden</span>
             </div>
@@ -132,7 +132,7 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
           
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">Primary Color</label>
-            <div className="flex items-center gap-2 border border-gray-700 bg-[#2A2A2A] rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 border border-gray-800 bg-gray-900 rounded-md px-3 py-2">
               <div className="w-6 h-6 rounded-md bg-[#6701E6]"></div>
               <input type="text" defaultValue="#6701E6" className="bg-transparent text-white w-full focus:outline-none" />
             </div>
@@ -140,14 +140,14 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">Heading Font</label>
-            <select className="w-full bg-[#2A2A2A] border border-gray-700 rounded-md px-3 py-2 text-white">
+            <select className="w-full bg-gray-900 border border-gray-800 rounded-md px-3 py-2 text-white">
               <option>Default</option>
             </select>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">Body Font</label>
-            <select className="w-full bg-[#2A2A2A] border border-gray-700 rounded-md px-3 py-2 text-white">
+            <select className="w-full bg-gray-900 border border-gray-800 rounded-md px-3 py-2 text-white">
               <option>DM Sans</option>
             </select>
           </div>
@@ -168,11 +168,11 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
         <div className="flex-grow overflow-y-auto p-6">
           <div className="relative flex flex-col items-center">
             {/* Dotted line */}
-            <div className="absolute top-0 left-1/2 w-px h-full -translate-x-1/2 bg-[repeating-linear-gradient(0deg,transparent,transparent_4px,theme(colors.gray.700)_4px,theme(colors.gray.700)_8px)]"></div>
+            <div className="absolute top-0 left-1/2 w-px h-full -translate-x-1/2 bg-[repeating-linear-gradient(0deg,transparent,transparent_4px,theme(colors.gray.800)_4px,theme(colors.gray.800)_8px)]"></div>
 
             <div className="flex flex-col gap-4 w-full">
                 {pages.map((page) => (
-                    <div key={page.id} className="relative bg-[#2A2A2A] border border-gray-700 rounded-lg p-4 w-full z-10">
+                    <div key={page.id} className="relative bg-gray-900 border border-gray-800 rounded-lg p-4 w-full z-10">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 {getPageIcon(page.key)}
@@ -188,7 +188,7 @@ const FormBuilderSidebar = ({ pages, onTogglePage }: Props) => {
                                 />
                                 <label
                                     htmlFor={`page-toggle-${page.id}`}
-                                    className="flex items-center cursor-pointer w-12 h-6 bg-gray-700 rounded-full p-1 transition-colors peer-checked:bg-purple-600"
+                                    className="flex items-center cursor-pointer w-12 h-6 bg-gray-800 rounded-full p-1 transition-colors peer-checked:bg-purple-600"
                                 >
                                     <span className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 translate-x-0 peer-checked:translate-x-6"></span>
                                 </label>
