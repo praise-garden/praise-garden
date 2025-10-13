@@ -1,258 +1,312 @@
+"use client";
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/Sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-const statCards = [
-  { label: "Total Reviews", value: "2,847", change: "+12%" },
-  { label: "Avg Rating", value: "4.8", change: "+0.2" },
-  { label: "This Month", value: "284", change: "+23%" },
-  { label: "Response Rate", value: "94%", change: "+2%" },
-];
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const testimonials = [
-  { name: "Sarah Johnson", company: "TechCorp", rating: 5, text: "Outstanding service and support", date: "2 hours ago" },
-  { name: "Michael Chen", company: "StartupXYZ", rating: 5, text: "Exceeded all expectations", date: "5 hours ago" },
-  { name: "Emily Davis", company: "DesignStudio", rating: 4, text: "Great experience overall", date: "1 day ago" },
-  { name: "David Wilson", company: "Enterprise Inc", rating: 5, text: "Highly recommend this service", date: "2 days ago" },
+  {
+    id: 1,
+    name: "Bert",
+    email: "h@gmail.com",
+    title: "Co-Founder of Startups",
+    rating: 5,
+    text: "This is a fantastic product! It has completely changed my workflow.",
+    source: "Web Form",
+    status: "Public",
+    date: "Sep 23, 2025",
+    avatar: "B"
+  },
+  {
+    id: 2,
+    name: "Alice",
+    email: "alice@example.com",
+    title: "Lead Designer",
+    rating: 4,
+    text: "Great design and easy to use. I would recommend it to my colleagues.",
+    source: "Import",
+    status: "Public",
+    date: "Sep 22, 2025",
+    avatar: "A"
+  },
+  {
+    id: 3,
+    name: "Charlie",
+    email: "charlie@startup.io",
+    title: "CEO",
+    rating: 5,
+    text: "A game-changer for our company. We've seen a huge increase in engagement.",
+    source: "Web Form",
+    status: "Hidden",
+    date: "Sep 21, 2025",
+    avatar: "C"
+  },
+  {
+    id: 4,
+    name: "Diana",
+    email: "diana@service.com",
+    title: "Marketing Manager",
+    rating: 5,
+    text: "Incredible tool that has helped us gather valuable feedback.",
+    source: "Email",
+    status: "Public",
+    date: "Sep 20, 2025",
+    avatar: "D"
+  },
+  {
+    id: 5,
+    name: "Ethan",
+    email: "ethan@e-corp.com",
+    title: "Software Engineer",
+    rating: 3,
+    text: "It's a good tool, but there are a few features I'd like to see added.",
+    source: "Import",
+    status: "Hidden",
+    date: "Sep 19, 2025",
+    avatar: "E"
+  }
 ];
 
-const activities = [
-  { text: "New testimonial from TechCorp", time: "2h" },
-  { text: "Rating updated to 4.8 stars", time: "5h" },
-  { text: "Monthly report generated", time: "1d" },
-  { text: "Integration with Slack completed", time: "2d" },
-];
+interface Testimonial {
+  id: number;
+  name: string;
+  email: string;
+  title: string;
+  rating: number;
+  text: string;
+  source: string;
+  status: string;
+  date: string;
+  avatar: string;
+}
 
 const Icon = ({ name, className }: { name: string; className?: string }) => {
-  if (name === "home") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="currentColor"/></svg>
-    );
-  }
-  if (name === "star") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/></svg>
-    );
-  }
-  if (name === "form") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 13H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 9H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-    );
-  }
-  if (name === "widget") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-    );
-  }
-  if (name === "plus") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-    );
-  }
-  if (name === "code") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-    );
-  }
-  if (name === "upload") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-    );
-  }
-  if (name === "check") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M20.3 5.7a1 1 0 0 1 0 1.4l-10 10a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.4L9 14.59 18.9 5.7a1 1 0 0 1 1.4 0z" fill="currentColor"/></svg>
-    );
-  }
-  if (name === "chart") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M4 19a1 1 0 0 1-1-1V5a1 1 0 1 1 2 0v13a1 1 0 0 1-1 1zm6 0a1 1 0 0 1-1-1V9a1 1 0 1 1 2 0v9a1 1 0 0 1-1 1zm6 0a1 1 0 0 1-1-1V6a1 1 0 1 1 2 0v12a1 1 0 0 1-1 1z" fill="currentColor"/></svg>
-    );
-  }
-  if (name === "gear") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm9.4 4a7.4 7.4 0 0 0-.2-1.6l2-1.5-2-3.5-2.3 1a7.7 7.7 0 0 0-2.7-1.6l-.3-2.5H10l-.3 2.5a7.7 7.7 0 0 0-2.7 1.6l-2.3-1-2 3.5 2 1.5A7.4 7.4 0 0 0 2.6 12c0 .54.07 1.07.2 1.6l-2 1.5 2 3.5 2.3-1a7.7 7.7 0 0 0 2.7 1.6l.3 2.5h4.8l.3-2.5a7.7 7.7 0 0 0 2.7-1.6l2.3 1 2-3.5-2-1.5c.13-.52.2-1.05.2-1.6z" fill="currentColor"/></svg>
-    );
-  }
-  if (name === "chevron-down") {
-    return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-    );
-  }
-  return null;
+  const iconProps = {
+    className: `size-4 ${className}`,
+    "aria-hidden": "true",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  };
+
+  const icons: { [key: string]: React.ReactNode } = {
+    star: <svg {...iconProps} fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+    search: <svg {...iconProps}><path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>,
+    "chevron-down": <svg {...iconProps}><path d="m6 9 6 6 6-6"/></svg>,
+    "chevron-left": <svg {...iconProps}><path d="m15 18-6-6 6-6"/></svg>,
+    "chevron-right": <svg {...iconProps}><path d="m9 18 6-6-6-6"/></svg>,
+    edit: <svg {...iconProps}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    delete: <svg {...iconProps}><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-5v6"/></svg>,
+    import: <svg {...iconProps}><path d="M12 13V3m0 0-3 3m3-3 3 3m-3 14v-3h6v3a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-3h6z"/></svg>,
+    copy: <svg {...iconProps}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
+    "eye-open": <svg {...iconProps}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    "eye-closed": <svg {...iconProps}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  };
+
+  return icons[name] || null;
 };
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function DashboardPage() {
+  // Not using server-side auth for now as we need client-side interactions
+  // const supabase = await createClient();
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
+  // if (!user) {
+  //   redirect("/login");
+  // }
+  
+  const [testimonialData, setTestimonialData] = useState<Testimonial[]>(testimonials);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+
+  const handleStatusChange = (id: number) => {
+    setTestimonialData(testimonialData.map(t => 
+      t.id === id ? { ...t, status: t.status === 'Public' ? 'Hidden' : 'Public' } : t
+    ));
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this testimonial?")) {
+      setTestimonialData(testimonialData.filter(t => t.id !== id));
+    }
+  };
+
+  const openEditDialog = (testimonial: Testimonial) => {
+    setEditingTestimonial({ ...testimonial });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    if (editingTestimonial) {
+      setTestimonialData(testimonialData.map(t => t.id === editingTestimonial.id ? editingTestimonial : t));
+      setIsEditDialogOpen(false);
+      setEditingTestimonial(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-50 font-sans">
       <div className="grid grid-cols-1 lg:grid-cols-[16rem_1fr] min-h-screen">
-        {/* Sidebar */}
         <Sidebar />
-
-        {/* Main Content */}
-        <div className="flex flex-col">
-          {/* Header */}
-          <header className="sticky top-0 z-50 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800">
-            <div className="flex items-center justify-between h-16 px-6">
-              <div className="flex items-center gap-4">
-                <button
-                  className="lg:hidden inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-gray-800 transition-colors"
-                  aria-label="Open navigation"
-                >
-                  <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  Menu
-                </button>
-                <div className="hidden lg:block">
-                  <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-                  <p className="text-sm text-gray-400">Welcome back to your testimonials center</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                {/* Breadcrumb or additional navigation could go here */}
-                <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-                  <span>Acme Corporation</span>
-                  <span>/</span>
-                  <span className="text-gray-50">Overview</span>
-                </div>
-              </div>
+        <main className="flex-1 p-6 space-y-6">
+          
+          <div className="flex items-center justify-between">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Testimonials</h1>
+                <p className="text-gray-400">Organize the testimonials you have received or imported.</p>
             </div>
-          </header>
+            <div className="flex items-center gap-2">
+                <Button variant="outline" className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">
+                    <Icon name="import" className="size-4 mr-2" />
+                    Import
+                </Button>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 p-1 bg-gray-900 border border-gray-800 rounded-lg">
+              {["Show All", "Pending", "Public", "Hidden"].map(filter => 
+                <Button key={filter} variant="ghost" className={`text-gray-300 px-3 py-1 h-auto text-sm transition-colors ${filter === "Show All" ? "bg-gray-700 hover:bg-gray-700" : "hover:bg-gray-800"}`}>{filter}</Button>
+              )}
+               <Button variant="ghost" className="text-gray-300 px-3 py-1 h-auto text-sm hover:bg-gray-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2s2-.9 2-2V5c0-1.1-.9-2-2-2Zm-4 6c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2c0-1.1-.9-2-2-2Zm8 0c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2c0-1.1-.9-2-2-2Z" />
+                </svg>
+                Filters
+                </Button>
+            </div>
+            <div className="relative">
+              <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+              <Input placeholder="Search a testimonial..." className="pl-9 bg-gray-900 border-gray-700 focus:ring-2 focus:ring-blue-500/50 transition-shadow" />
+            </div>
+          </div>
 
-          {/* Content */}
-          <main className="flex-1 p-6 space-y-8">
-            {/* Stats Grid */}
-            <section aria-labelledby="stats-heading">
-              <h2 id="stats-heading" className="sr-only">Statistics Overview</h2>
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                {statCards.map((stat, index) => (
-                  <Card key={stat.label} className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={`size-10 rounded-2xl flex items-center justify-center ${
-                          index === 0 ? 'bg-blue-900/50' : 
-                          index === 1 ? 'bg-green-900/50' : 
-                          index === 2 ? 'bg-purple-900/50' : 'bg-orange-900/50'
-                        }`}>
-                          <div className={`size-4 rounded-full ${
-                            index === 0 ? 'bg-blue-500' : 
-                            index === 1 ? 'bg-green-500' : 
-                            index === 2 ? 'bg-purple-500' : 'bg-orange-500'
-                          }`} />
-                        </div>
-                        <Badge variant="outline" className="text-xs font-medium border-gray-700 text-gray-300 rounded-full px-2 py-1">
-                          {stat.change}
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-400 mb-1">{stat.label}</p>
-                        <p className="text-3xl font-bold text-gray-50 tracking-tight">{stat.value}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+          <div className="flex items-center gap-2">
+            {[...Array(5)].map((_,i) => <Icon key={i} name="star" className="text-yellow-400 size-5" />)}
+            <span className="text-gray-400 text-sm font-medium">Rated 5 out of 5</span>
+            <span className="text-gray-500 text-sm">| 1 reviews</span>
+          </div>
+          
+          {/* Testimonials Table */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div className="grid grid-cols-[40px_1fr_2fr_1fr_1fr_1fr_100px] items-center p-4 border-b border-gray-800 text-sm font-medium text-gray-400 bg-gray-900">
+              <input type="checkbox" className="rounded bg-gray-800 border-gray-600 text-blue-500 focus:ring-blue-500/50" />
+              <span>Reviewer</span>
+              <span>Testimonial</span>
+              <span>Source</span>
+              <span>Status</span>
+              <span>Date</span>
+              <span></span>
               </div>
-            </section>
-
-            {/* Main Grid */}
-            <section className="grid gap-8 xl:grid-cols-3">
-              {/* Recent Testimonials */}
-              <Card className="xl:col-span-2 bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
-                <CardHeader className="p-6 pb-4">
-                  <CardTitle className="text-xl font-semibold tracking-tight">Recent Testimonials</CardTitle>
-                  <CardDescription className="text-gray-400">Latest customer feedback and reviews</CardDescription>
-                </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <div className="space-y-4">
-                    {testimonials.map((testimonial, index) => (
-                      <div key={index} className="group p-4 rounded-2xl hover:bg-gray-800/50 transition-colors duration-200">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-10">
-                              <AvatarFallback className="bg-gray-700 text-gray-300 font-medium text-sm">
-                                {testimonial.name.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-gray-50">{testimonial.name}</p>
-                              <p className="text-sm text-gray-400">{testimonial.company}</p>
+            {testimonialData.map(testimonial => (
+                <div key={testimonial.id} className="grid grid-cols-[40px_1fr_2fr_1fr_1fr_1fr_100px] items-start p-4 border-b border-gray-800 last:border-b-0 hover:bg-gray-800/50 transition-colors group">
+                    <input type="checkbox" className="rounded bg-gray-800 border-gray-600 text-blue-500 focus:ring-blue-500/50 mt-3" />
+                    <div className="flex items-start gap-3">
+                        <Avatar className="size-10 flex-shrink-0">
+                            <AvatarFallback className="bg-red-500/80 text-white font-semibold">{testimonial.avatar}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{testimonial.name}</p>
+                            <p className="text-sm text-gray-400">{testimonial.email}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{testimonial.title}</p>
+                            <div className="flex items-center gap-0.5 mt-1.5">
+                                {[...Array(testimonial.rating)].map((_,i) => <Icon key={i} name="star" className="text-yellow-400 size-3.5" />)}
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex gap-1">
-                              {[...Array(testimonial.rating)].map((_, i) => (
-                                <Icon key={i} name="star" className="size-4 text-yellow-400" />
-                              ))}
-                            </div>
-                            <span className="text-xs text-gray-500">{testimonial.date}</span>
-                          </div>
-                        </div>
-                        <p className="text-gray-300 text-sm leading-relaxed">{testimonial.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Activity Feed */}
-              <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
-                <CardHeader className="p-6 pb-4">
-                  <CardTitle className="text-xl font-semibold tracking-tight">Activity Feed</CardTitle>
-                  <CardDescription className="text-gray-400">Recent system activity</CardDescription>
-                </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <div className="space-y-4">
-                    {activities.map((activity, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800/50 transition-colors duration-200">
-                        <div className="size-2 rounded-full bg-gray-600" />
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-300">{activity.text}</p>
-                          <p className="text-xs text-gray-500">{activity.time}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-
-            {/* Analytics Chart */}
-            <section>
-              <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-3xl overflow-hidden">
-                <CardHeader className="p-6 pb-4">
-                  <CardTitle className="text-xl font-semibold tracking-tight">Performance Analytics</CardTitle>
-                  <CardDescription className="text-gray-400">Review trends and engagement metrics</CardDescription>
-                </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <div className="h-64 w-full rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800/50 border border-gray-800 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="size-12 rounded-2xl bg-gray-800 mx-auto mb-3 flex items-center justify-center">
-                        <Icon name="chart" className="size-6 text-gray-500" />
-                      </div>
-                      <p className="text-sm font-medium text-gray-400">Chart visualization</p>
-                      <p className="text-xs text-gray-500">Analytics data will appear here</p>
+                    <p className="text-gray-300 text-sm pr-4">{testimonial.text}</p>
+                    <p className="text-gray-300 text-sm">{testimonial.source}</p>
+                    <div>
+                      <Button 
+                        onClick={() => handleStatusChange(testimonial.id)} 
+                        variant="outline" 
+                        className={`h-auto py-1 px-3 text-xs transition-all flex items-center gap-2 ${
+                          testimonial.status === 'Public' 
+                            ? 'bg-green-500/10 text-green-300 border-green-500/20 hover:bg-green-500/20 hover:text-green-200' 
+                            : 'bg-gray-700/50 text-gray-400 border-gray-600/80 hover:bg-gray-700 hover:text-gray-300'
+                        }`}
+                      >
+                        <Icon 
+                          name={testimonial.status === 'Public' ? 'eye-open' : 'eye-closed'} 
+                          className={`size-4 transition-all ${testimonial.status === 'Hidden' ? 'opacity-70' : ''}`} 
+                        />
+                        <span>{testimonial.status}</span>
+                      </Button>
+                        </div>
+                    <p className="text-gray-300 text-sm">{testimonial.date}</p>
+                    <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white"><Icon name="copy" className="size-4" /></Button>
+                        <Button onClick={() => openEditDialog(testimonial)} variant="ghost" size="icon" className="text-gray-400 hover:text-white"><Icon name="edit" className="size-4" /></Button>
+                        <Button onClick={() => handleDelete(testimonial.id)} variant="ghost" size="icon" className="text-red-500/80 hover:text-red-500"><Icon name="delete" className="size-4" /></Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </section>
+                ))}
+              </div>
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <p className="font-medium">Showing 1 to {testimonialData.length} of {testimonialData.length} results</p>
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">Date Added (Newest First) <Icon name="chevron-down" className="size-4 ml-2" /></Button>
+                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">25 per page <Icon name="chevron-down" className="size-4 ml-2" /></Button>
+                <div className="flex items-center bg-gray-800 border border-gray-700 rounded-lg">
+                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white rounded-r-none"><Icon name="chevron-left" className="size-5" /></Button>
+                    <span className="px-3 border-x border-gray-700">1</span>
+                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white rounded-l-none"><Icon name="chevron-right" className="size-5" /></Button>
+                </div>
+            </div>
+          </div>
           </main>
-        </div>
       </div>
+
+      {editingTestimonial && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-gray-50">
+            <DialogHeader>
+              <DialogTitle>Edit Testimonial</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Name</Label>
+                <Input id="name" value={editingTestimonial.name} onChange={(e) => setEditingTestimonial({...editingTestimonial, name: e.target.value})} className="col-span-3 bg-gray-800 border-gray-700" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">Email</Label>
+                <Input id="email" value={editingTestimonial.email} onChange={(e) => setEditingTestimonial({...editingTestimonial, email: e.target.value})} className="col-span-3 bg-gray-800 border-gray-700" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="text" className="text-right">Testimonial</Label>
+                <Textarea id="text" value={editingTestimonial.text} onChange={(e) => setEditingTestimonial({...editingTestimonial, text: e.target.value})} className="col-span-3 bg-gray-800 border-gray-700" />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleSave}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
