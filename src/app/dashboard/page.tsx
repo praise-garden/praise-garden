@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/Sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -17,8 +16,20 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DateRange } from "react-day-picker";
+import { CustomDateRangeDropdown } from "@/components/customdatepicker";
+import { PraiseWidget } from "@/components/praise/PraiseWidget";
+import { PraiseTestimonial } from "@/components/praise/PraiseTestimonialCard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 const testimonials = [
   {
@@ -99,13 +110,13 @@ interface Testimonial {
 const Icon = ({ name, className }: { name: string; className?: string }) => {
   const iconProps = {
     className: `size-4 ${className}`,
-    "aria-hidden": "true",
+    "aria-hidden": true,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const
   };
 
   const icons: { [key: string]: React.ReactNode } = {
@@ -120,6 +131,10 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
     copy: <svg {...iconProps}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
     "eye-open": <svg {...iconProps}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
     "eye-closed": <svg {...iconProps}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+    sparkles: <svg {...iconProps} strokeWidth="1.5"><path d="M9.42 6.2L8 3.5 6.58 6.2 4 7l2.58 2.8L6 12.5l2-1.62 2 1.62-.58-2.7L12 7l-2.58-.8zM20 9.5l-2.58.8L15 7.5l-1.42 2.8L11 11l2.58.8L15 14.5l1.42-2.8L19 11z"/></svg>,
+    "check-circle": <svg {...iconProps} strokeWidth="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>,
+    tag: <svg {...iconProps}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01"/></svg>,
+    calendar: <svg {...iconProps}><path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V6h14v14z"/></svg>,
   };
 
   return icons[name] || null;
@@ -139,6 +154,44 @@ export default function DashboardPage() {
   const [testimonialData, setTestimonialData] = useState<Testimonial[]>(testimonials);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [date, setDate] = useState<DateRange | undefined>();
+  
+  // Widget preview state
+  const [widgetLayout, setWidgetLayout] = useState<"grid" | "list" | "carousel">("grid");
+  const [widgetColumns, setWidgetColumns] = useState<1 | 2 | 3 | 4>(3);
+  const [showRating, setShowRating] = useState(true);
+  const [showSource, setShowSource] = useState(true);
+  const [compact, setCompact] = useState(false);
+
+  const filteredTestimonials = testimonialData.filter(testimonial => {
+    // Status filter
+    const statusMatch = statusFilter === "All" || testimonial.status === statusFilter;
+    
+    // Search query filter
+    const searchMatch = searchQuery === "" || 
+      testimonial.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      testimonial.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      testimonial.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Date range filter
+    if (!date?.from) {
+      return statusMatch && searchMatch;
+    }
+
+    const testimonialDate = new Date(testimonial.date);
+    const fromDate = new Date(date.from);
+    fromDate.setHours(0, 0, 0, 0);
+
+    if (date.to) {
+      const toDate = new Date(date.to);
+      toDate.setHours(23, 59, 59, 999);
+      return statusMatch && searchMatch && testimonialDate >= fromDate && testimonialDate <= toDate;
+    }
+
+    return statusMatch && searchMatch && testimonialDate >= fromDate;
+  });
 
   const handleStatusChange = (id: number) => {
     setTestimonialData(testimonialData.map(t => 
@@ -165,53 +218,139 @@ export default function DashboardPage() {
     }
   };
 
+  // Convert testimonials to widget format
+  const convertToWidgetTestimonials = (testimonials: Testimonial[]): PraiseTestimonial[] => {
+    return testimonials
+      .filter(t => t.status === 'Public') // Only show public testimonials in widgets
+      .map(t => ({
+        id: t.id.toString(),
+        authorName: t.name,
+        authorTitle: t.title,
+        authorAvatarUrl: undefined,
+        rating: t.rating,
+        content: t.text,
+        source: t.source,
+        date: t.date,
+      }));
+  };
+
+  const widgetTestimonials = convertToWidgetTestimonials(filteredTestimonials);
+
+  const copyEmbedSnippet = () => {
+    const payload = {
+      layout: widgetLayout,
+      columns: widgetColumns,
+      showRating,
+      showSource,
+      compact,
+    };
+    const snippet = `<div id="praisegarden-widget" data-layout="${widgetLayout}" data-columns="${widgetColumns}" data-show-rating="${showRating}" data-show-source="${showSource}" data-compact="${compact}"></div>
+<script>
+(function(){
+  var el = document.getElementById('praisegarden-widget');
+  if(!el) return;
+  var layout = el.getAttribute('data-layout') || 'grid';
+  var columns = parseInt(el.getAttribute('data-columns') || '3', 10);
+  var showRating = el.getAttribute('data-show-rating') !== 'false';
+  var showSource = el.getAttribute('data-show-source') !== 'false';
+  var compact = el.getAttribute('data-compact') === 'true';
+  
+  var placeholder = document.createElement('div');
+  placeholder.style.border = '1px dashed #ccc';
+  placeholder.style.padding = '12px';
+  placeholder.style.borderRadius = '10px';
+  placeholder.style.fontFamily = 'ui-sans-serif, system-ui, sans-serif';
+  placeholder.innerText = 'PraiseGarden widget placeholder (no backend yet).\\n' +
+    'layout=' + layout + ', columns=' + columns + ', showRating=' + showRating + ', showSource=' + showSource + ', compact=' + compact;
+  el.appendChild(placeholder);
+})();
+</script>`;
+    
+    navigator.clipboard.writeText(snippet);
+    // You could add a toast notification here
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-50 font-sans">
+    <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans">
       <div className="grid grid-cols-1 lg:grid-cols-[16rem_1fr] min-h-screen">
         <Sidebar />
-        <main className="flex-1 p-6 space-y-6">
+        <main className="flex-1 p-8 space-y-8">
           
           <div className="flex items-center justify-between">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight">Testimonials</h1>
-                <p className="text-gray-400">Organize the testimonials you have received or imported.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-zinc-50">Testimonials</h1>
+                <p className="text-zinc-400 mt-1">Organize the testimonials you have received or imported.</p>
             </div>
             <div className="flex items-center gap-2">
-                <Button variant="outline" className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">
+                <Button variant="outline" className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-colors">
                     <Icon name="import" className="size-4 mr-2" />
                     Import
                 </Button>
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 p-1 bg-gray-900 border border-gray-800 rounded-lg">
-              {["Show All", "Pending", "Public", "Hidden"].map(filter => 
-                <Button key={filter} variant="ghost" className={`text-gray-300 px-3 py-1 h-auto text-sm transition-colors ${filter === "Show All" ? "bg-gray-700 hover:bg-gray-700" : "hover:bg-gray-800"}`}>{filter}</Button>
-              )}
-               <Button variant="ghost" className="text-gray-300 px-3 py-1 h-auto text-sm hover:bg-gray-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2s2-.9 2-2V5c0-1.1-.9-2-2-2Zm-4 6c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2c0-1.1-.9-2-2-2Zm8 0c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2c0-1.1-.9-2-2-2Z" />
-                </svg>
-                Filters
-                </Button>
-            </div>
-            <div className="relative">
-              <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
-              <Input placeholder="Search a testimonial..." className="pl-9 bg-gray-900 border-gray-700 focus:ring-2 focus:ring-blue-500/50 transition-shadow" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 w-full">
+              <div className="relative w-full">
+                <Icon name="sparkles" className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-zinc-400" />
+                <Input 
+                  placeholder="Search for your testimonials" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-4 py-3 bg-zinc-900/80 border-zinc-700/60 focus:border-zinc-600 focus:ring-2 focus:ring-violet-500/50 transition-all duration-200 h-12 text-md placeholder:text-zinc-500 rounded-xl w-full" 
+                />
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600 transition-all duration-200 h-12 px-5 shadow-sm min-w-max"
+                  >
+                    <Icon name="check-circle" className="size-5 mr-2.5" />
+                    <span className="text-md font-medium">{statusFilter}</span>
+                    <Icon name="chevron-down" className="size-5 ml-2.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-zinc-900 border-zinc-800/60 text-zinc-50 shadow-xl">
+                  <DropdownMenuItem 
+                    className="hover:bg-zinc-800/80 cursor-pointer text-md"
+                    onSelect={() => setStatusFilter("All")}
+                  >
+                    All
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="hover:bg-zinc-800/80 cursor-pointer text-md"
+                    onSelect={() => setStatusFilter("Public")}
+                  >
+                    Public
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="hover:bg-zinc-800/80 cursor-pointer text-md"
+                    onSelect={() => setStatusFilter("Hidden")}
+                  >
+                    Hidden
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="hover:bg-zinc-800/80 cursor-pointer text-md"
+                    onSelect={() => setStatusFilter("Pending")}
+                  >
+                    Pending
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <CustomDateRangeDropdown
+                dateRange={date}
+                onChange={(r) => setDate(r)}
+              />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {[...Array(5)].map((_,i) => <Icon key={i} name="star" className="text-yellow-400 size-5" />)}
-            <span className="text-gray-400 text-sm font-medium">Rated 5 out of 5</span>
-            <span className="text-gray-500 text-sm">| 1 reviews</span>
-          </div>
-          
           {/* Testimonials Table */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg shadow-sm overflow-hidden">
-            <div className="grid grid-cols-[40px_1fr_2fr_1fr_1fr_1fr_100px] items-center p-4 border-b border-gray-800 text-sm font-medium text-gray-400 bg-gray-900">
-              <input type="checkbox" className="rounded bg-gray-800 border-gray-600 text-blue-500 focus:ring-blue-500/50" />
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg shadow-sm overflow-hidden">
+            <div className="grid grid-cols-[40px_1fr_2fr_1fr_1fr_1fr_100px] items-center p-4 border-b border-zinc-800 text-sm font-medium text-zinc-400 bg-zinc-900">
+              <input type="checkbox" className="rounded bg-zinc-800 border-zinc-600 text-violet-500 focus:ring-violet-500/50" />
               <span>Reviewer</span>
               <span>Testimonial</span>
               <span>Source</span>
@@ -219,24 +358,30 @@ export default function DashboardPage() {
               <span>Date</span>
               <span></span>
               </div>
-            {testimonialData.map(testimonial => (
-                <div key={testimonial.id} className="grid grid-cols-[40px_1fr_2fr_1fr_1fr_1fr_100px] items-start p-4 border-b border-gray-800 last:border-b-0 hover:bg-gray-800/50 transition-colors group">
-                    <input type="checkbox" className="rounded bg-gray-800 border-gray-600 text-blue-500 focus:ring-blue-500/50 mt-3" />
+            {filteredTestimonials.map(testimonial => (
+                <div key={testimonial.id} className="grid grid-cols-[40px_1fr_2fr_1fr_1fr_1fr_100px] items-start p-4 border-b border-zinc-800 last:border-b-0 hover:bg-zinc-800/50 transition-colors group">
+                  <input type="checkbox" className="rounded bg-zinc-800 border-zinc-600 text-violet-500 focus:ring-violet-500/50 mt-3" />
                     <div className="flex items-start gap-3">
                         <Avatar className="size-10 flex-shrink-0">
-                            <AvatarFallback className="bg-red-500/80 text-white font-semibold">{testimonial.avatar}</AvatarFallback>
+                            <AvatarFallback className="bg-violet-500/80 text-white font-semibold">{testimonial.avatar}</AvatarFallback>
                         </Avatar>
                         <div>
                             <p className="font-semibold">{testimonial.name}</p>
-                            <p className="text-sm text-gray-400">{testimonial.email}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">{testimonial.title}</p>
-                            <div className="flex items-center gap-0.5 mt-1.5">
-                                {[...Array(testimonial.rating)].map((_,i) => <Icon key={i} name="star" className="text-yellow-400 size-3.5" />)}
-                            </div>
+                            <p className="text-sm text-zinc-400">{testimonial.email}</p>
+                            <p className="text-xs text-zinc-500 mt-0.5">{testimonial.title}</p>
+                          <div className="flex items-center gap-1 mt-1.5">
+                            {Array.from({ length: 5 }).map((_, index) => (
+                              <Icon
+                                key={index}
+                                name="star"
+                                className={`size-3.5 ${index < testimonial.rating ? "text-amber-400" : "text-zinc-700"}`}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    <p className="text-gray-300 text-sm pr-4">{testimonial.text}</p>
-                    <p className="text-gray-300 text-sm">{testimonial.source}</p>
+                    <p className="text-zinc-300 text-sm pr-4">{testimonial.text}</p>
+                    <p className="text-zinc-300 text-sm">{testimonial.source}</p>
                     <div>
                       <Button 
                         onClick={() => handleStatusChange(testimonial.id)} 
@@ -244,7 +389,7 @@ export default function DashboardPage() {
                         className={`h-auto py-1 px-3 text-xs transition-all flex items-center gap-2 ${
                           testimonial.status === 'Public' 
                             ? 'bg-green-500/10 text-green-300 border-green-500/20 hover:bg-green-500/20 hover:text-green-200' 
-                            : 'bg-gray-700/50 text-gray-400 border-gray-600/80 hover:bg-gray-700 hover:text-gray-300'
+                            : 'bg-zinc-700/50 text-zinc-400 border-zinc-600/80 hover:bg-zinc-700 hover:text-zinc-300'
                         }`}
                       >
                         <Icon 
@@ -254,25 +399,139 @@ export default function DashboardPage() {
                         <span>{testimonial.status}</span>
                       </Button>
                         </div>
-                    <p className="text-gray-300 text-sm">{testimonial.date}</p>
+                    <p className="text-zinc-300 text-sm">{testimonial.date}</p>
                     <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white"><Icon name="copy" className="size-4" /></Button>
-                        <Button onClick={() => openEditDialog(testimonial)} variant="ghost" size="icon" className="text-gray-400 hover:text-white"><Icon name="edit" className="size-4" /></Button>
+                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white"><Icon name="copy" className="size-4" /></Button>
+                        <Button onClick={() => openEditDialog(testimonial)} variant="ghost" size="icon" className="text-zinc-400 hover:text-white"><Icon name="edit" className="size-4" /></Button>
                         <Button onClick={() => handleDelete(testimonial.id)} variant="ghost" size="icon" className="text-red-500/80 hover:text-red-500"><Icon name="delete" className="size-4" /></Button>
                     </div>
                   </div>
                 ))}
               </div>
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            <p className="font-medium">Showing 1 to {testimonialData.length} of {testimonialData.length} results</p>
+          <div className="flex items-center justify-between text-sm text-zinc-400">
+            <p className="font-medium">Showing 1 to {filteredTestimonials.length} of {filteredTestimonials.length} results</p>
             <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">Date Added (Newest First) <Icon name="chevron-down" className="size-4 ml-2" /></Button>
-                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">25 per page <Icon name="chevron-down" className="size-4 ml-2" /></Button>
-                <div className="flex items-center bg-gray-800 border border-gray-700 rounded-lg">
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white rounded-r-none"><Icon name="chevron-left" className="size-5" /></Button>
-                    <span className="px-3 border-x border-gray-700">1</span>
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white rounded-l-none"><Icon name="chevron-right" className="size-5" /></Button>
+                <Button variant="outline" size="sm" className="bg-zinc-800 border-zinc-700 hover:bg-zinc-700 transition-colors">Date Added (Newest First) <Icon name="chevron-down" className="size-4 ml-2" /></Button>
+                <Button variant="outline" size="sm" className="bg-zinc-800 border-zinc-700 hover:bg-zinc-700 transition-colors">25 per page <Icon name="chevron-down" className="size-4 ml-2" /></Button>
+                <div className="flex items-center bg-zinc-800 border border-zinc-700 rounded-lg">
+                    <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white rounded-r-none"><Icon name="chevron-left" className="size-5" /></Button>
+                    <span className="px-3 border-x border-zinc-700">1</span>
+                    <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white rounded-l-none"><Icon name="chevron-right" className="size-5" /></Button>
                 </div>
+            </div>
+          </div>
+
+          {/* Widget Preview Section */}
+          <div className="mt-12 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-zinc-50">Widget Preview</h2>
+                <p className="text-zinc-400 mt-1">Preview how your testimonials will look as embeddable widgets.</p>
+              </div>
+              <Button 
+                onClick={copyEmbedSnippet}
+                variant="outline" 
+                className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-colors"
+              >
+                <Icon name="copy" className="size-4 mr-2" />
+                Copy Embed Code
+              </Button>
+            </div>
+
+            {/* Widget Controls */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
+                <Label htmlFor="widget-layout" className="text-sm font-medium">Layout</Label>
+                <Select value={widgetLayout} onValueChange={(v) => setWidgetLayout(v as any)}>
+                  <SelectTrigger id="widget-layout" className="w-32 bg-zinc-900 border-zinc-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    <SelectItem value="grid">Grid</SelectItem>
+                    <SelectItem value="list">List</SelectItem>
+                    <SelectItem value="carousel">Carousel</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {widgetLayout === "grid" && (
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
+                  <Label htmlFor="widget-columns" className="text-sm font-medium">Columns</Label>
+                  <Select value={String(widgetColumns)} onValueChange={(v) => setWidgetColumns(Number(v) as any)}>
+                    <SelectTrigger id="widget-columns" className="w-20 bg-zinc-900 border-zinc-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-800">
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
+                <Label htmlFor="show-rating" className="text-sm font-medium">Show Rating</Label>
+                <Switch 
+                  id="show-rating" 
+                  checked={showRating} 
+                  onCheckedChange={setShowRating}
+                  className="data-[state=checked]:bg-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
+                <Label htmlFor="show-source" className="text-sm font-medium">Show Source</Label>
+                <Switch 
+                  id="show-source" 
+                  checked={showSource} 
+                  onCheckedChange={setShowSource}
+                  className="data-[state=checked]:bg-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
+                <Label htmlFor="compact-mode" className="text-sm font-medium">Compact Mode</Label>
+                <Switch 
+                  id="compact-mode" 
+                  checked={compact} 
+                  onCheckedChange={setCompact}
+                  className="data-[state=checked]:bg-violet-500"
+                />
+              </div>
+            </div>
+
+            {/* Widget Preview */}
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Live Preview</h3>
+                <span className="text-sm text-zinc-400">
+                  {widgetTestimonials.length} public testimonial{widgetTestimonials.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              
+              {widgetTestimonials.length > 0 ? (
+                <div className="bg-white rounded-lg p-6">
+                  <PraiseWidget
+                    testimonials={widgetTestimonials}
+                    layout={widgetLayout}
+                    columns={widgetColumns}
+                    showRating={showRating}
+                    showSource={showSource}
+                    compact={compact}
+                    ariaLabel="PraiseGarden widget preview"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-12 text-zinc-400">
+                  <div className="text-center">
+                    <Icon name="eye-closed" className="size-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">No public testimonials to preview</p>
+                    <p className="text-sm">Make some testimonials public to see the widget preview</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           </main>
@@ -280,22 +539,22 @@ export default function DashboardPage() {
 
       {editingTestimonial && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-gray-50">
+          <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-50">
             <DialogHeader>
               <DialogTitle>Edit Testimonial</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">Name</Label>
-                <Input id="name" value={editingTestimonial.name} onChange={(e) => setEditingTestimonial({...editingTestimonial, name: e.target.value})} className="col-span-3 bg-gray-800 border-gray-700" />
+                <Input id="name" value={editingTestimonial.name} onChange={(e) => setEditingTestimonial({...editingTestimonial, name: e.target.value})} className="col-span-3 bg-zinc-800 border-zinc-700" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="email" className="text-right">Email</Label>
-                <Input id="email" value={editingTestimonial.email} onChange={(e) => setEditingTestimonial({...editingTestimonial, email: e.target.value})} className="col-span-3 bg-gray-800 border-gray-700" />
+                <Input id="email" value={editingTestimonial.email} onChange={(e) => setEditingTestimonial({...editingTestimonial, email: e.target.value})} className="col-span-3 bg-zinc-800 border-zinc-700" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="text" className="text-right">Testimonial</Label>
-                <Textarea id="text" value={editingTestimonial.text} onChange={(e) => setEditingTestimonial({...editingTestimonial, text: e.target.value})} className="col-span-3 bg-gray-800 border-gray-700" />
+                <Textarea id="text" value={editingTestimonial.text} onChange={(e) => setEditingTestimonial({...editingTestimonial, text: e.target.value})} className="col-span-3 bg-zinc-800 border-zinc-700" />
               </div>
             </div>
             <DialogFooter>
