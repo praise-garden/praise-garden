@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { FormCardProps } from '@/app/dashboard/form-builder/page';
-import { FormCard } from '@/app/dashboard/form-builder/page';
+import { FormCardProps } from '@/app/form-builder/page';
+import { FormCard } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RatingBlockConfig } from '@/types/form-config';
 
@@ -52,20 +52,20 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
 
   return (
     <FormCard {...props}>
-      <div className="flex-grow flex flex-col items-center justify-center p-10 text-center overflow-hidden relative">
+      <div className="flex-grow flex flex-col items-center justify-center px-16 py-10 text-center overflow-hidden relative">
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-radial from-purple-500/5 via-transparent to-transparent blur-3xl"></div>
         
-        <div className="relative z-10 w-full max-w-2xl mx-auto space-y-10">
+        <div className="relative z-10 w-full max-w-3xl mx-auto space-y-8">
           {/* Brand Logo */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex justify-center items-center gap-3 mb-8"
+            className="flex justify-center items-center gap-2.5"
           >
-            <Image src="/icon.png" alt="PraiseGarden Logo" width={40} height={40} className="object-contain" />
-            <span className="text-white text-3xl font-bold">PraiseGarden</span>
+            <Image src="/icon.png" alt="PraiseGarden Logo" width={32} height={32} className="object-contain" />
+            <span className="text-white text-xl font-bold">PraiseGarden</span>
           </motion.div>
 
           {/* Main Heading */}
@@ -76,7 +76,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
             className="space-y-3"
           >
             <h2 
-                className="text-3xl sm:text-4xl font-bold text-white leading-tight"
+                className="text-2xl sm:text-3xl font-bold text-white leading-tight"
                 style={{ color: config.props.titleColor }}
                 onClick={() => handleFieldClick('props.title')}
                 data-field="props.title"
@@ -84,7 +84,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
                 {config.props.title}
             </h2>
             <p 
-                className="text-gray-400 text-base sm:text-lg"
+                className="text-gray-400 text-sm sm:text-base"
                 style={{ color: config.props.descriptionColor }}
                 onClick={() => handleFieldClick('props.description')}
                 data-field="props.description"
@@ -93,14 +93,14 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
             </p>
           </motion.div>
 
-          {/* Star Rating */}
+          {/* Star Rating - Keep stars well-sized */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="py-8"
+            className="py-6"
           >
-            <div className="flex justify-center items-center gap-3 sm:gap-4 mb-6">
+            <div className="flex justify-center items-center gap-2.5 sm:gap-3 mb-5">
               {[1, 2, 3, 4, 5].map((rating) => {
                 const isHovered = hoveredStar !== null && rating <= hoveredStar;
                 const isSelected = selectedRating !== null && rating <= selectedRating;
@@ -134,15 +134,15 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
                         >
                           <StarIcon 
                             filled={true} 
-                            className="w-12 h-12 sm:w-14 sm:h-14 absolute inset-0 text-yellow-400 blur-sm opacity-60" 
+                            className="w-11 h-11 sm:w-12 sm:h-12 absolute inset-0 text-yellow-400 blur-sm opacity-60" 
                           />
                         </motion.div>
                       )}
                       
-                      {/* Main star */}
+                      {/* Main star - Kept at good size */}
                       <StarIcon 
                         filled={isFilled} 
-                        className={`w-12 h-12 sm:w-14 sm:h-14 relative z-10 transition-all duration-300 ${
+                        className={`w-11 h-11 sm:w-12 sm:h-12 relative z-10 transition-all duration-300 ${
                           isFilled 
                             ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] filter brightness-110' 
                             : 'group-hover:drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]'
@@ -171,7 +171,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="text-lg font-medium text-purple-400"
+                  className="text-base font-medium text-purple-400"
                 >
                   {ratingLabels[(hoveredStar || selectedRating)! - 1]}
                 </motion.p>
@@ -183,7 +183,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
             onClick={props.onNext}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-lg shadow-purple-500/30"
+            className="bg-purple-600 text-white font-semibold py-2.5 px-7 rounded-full text-base transition-all duration-300 shadow-lg shadow-purple-500/30"
             onClickCapture={() => handleFieldClick('props.buttonText')}
             data-field="props.buttonText"
         >

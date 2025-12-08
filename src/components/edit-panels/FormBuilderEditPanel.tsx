@@ -51,12 +51,32 @@ const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBloc
     }
   };
 
+  const getPageTitle = (type: FormBlockType) => {
+    const titles: Record<FormBlockType, string> = {
+      [FormBlockType.Welcome]: 'Welcome page',
+      [FormBlockType.Rating]: 'Rating page',
+      [FormBlockType.Question]: 'Question page',
+      [FormBlockType.NegativeFeedback]: 'Negative feedback page',
+      [FormBlockType.PrivateFeedback]: 'Private feedback page',
+      [FormBlockType.Consent]: 'Consent page',
+      [FormBlockType.AboutYou]: 'About you page',
+      [FormBlockType.ReadyToSend]: 'Ready to send page',
+      [FormBlockType.ThankYou]: 'Thank you page',
+    };
+    return titles[type] || type;
+  };
+
   return (
-    <div className="flex-grow overflow-y-auto p-6 space-y-6">
-      <div>
-        <h3 className="text-base font-medium text-gray-300 mb-4">
-          Editing: <span className="text-purple-400 capitalize">{focusedBlock.type.replace('-', ' ')}</span>
+    <div className="flex flex-col h-full">
+      {/* Header Section */}
+      <div className="border-b border-gray-800 px-6 py-4 flex-none">
+        <h3 className="text-base font-medium text-gray-300">
+          {getPageTitle(focusedBlock.type)}
         </h3>
+      </div>
+      
+      {/* Scrollable Content */}
+      <div className="flex-grow overflow-y-auto px-6 pt-6 pb-16">
         {renderPanel()}
       </div>
     </div>

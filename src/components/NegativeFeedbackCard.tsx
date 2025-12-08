@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FormCard, FormCardProps } from '@/app/dashboard/form-builder/page';
+import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion } from 'framer-motion';
 import AppBar from '@/components/ui/app-bar';
 import { NegativeFeedbackBlockConfig } from '@/types/form-config';
@@ -33,21 +33,21 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             onBack={props.onPrevious}
                             showBackButton={Boolean(props.onPrevious)}
                             maxWidthClass="max-w-sm"
-                            paddingXClass="px-6"
+                            paddingXClass="px-8"
                         />
                     </div>
-                    <div className="flex-grow flex items-center justify-center px-6 pb-12">
+                    <div className="flex-grow flex items-center justify-center px-8 pb-10">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                             className="text-center"
                         >
-                            <div className="p-4 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 inline-block">
-                               <MessageCircleIcon className="text-amber-400" />
+                            <div className="p-3.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3.5 inline-block">
+                               <MessageCircleIcon className="text-amber-400 w-10 h-10" />
                             </div>
                             <h2 
-                                className="text-2xl font-bold text-white mb-2"
+                                className="text-xl font-bold text-white mb-2"
                                 style={{ color: config.props.titleColor }}
                                 onClick={() => handleFieldClick('props.title')}
                                 data-field="props.title"
@@ -55,7 +55,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                                 {config.props.title}
                             </h2>
                             <p 
-                                className="text-gray-300 text-sm max-w-xs mx-auto"
+                                className="text-gray-300 text-xs max-w-xs mx-auto leading-relaxed"
                                 style={{ color: config.props.descriptionColor }}
                                 onClick={() => handleFieldClick('props.description')}
                                 data-field="props.description"
@@ -67,29 +67,29 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                 </div>
 
                 {/* Right Side: Feedback Form */}
-                <div className="w-full md:w-3/5 p-8 flex flex-col justify-center">
+                <div className="w-full md:w-3/5 px-10 py-8 flex flex-col justify-center">
                     <motion.div
                          initial={{ opacity: 0, x: 20 }}
                          animate={{ opacity: 1, x: 0 }}
                          transition={{ duration: 0.5, delay: 0.4 }}
-                         className="w-full max-w-md mx-auto"
+                         className="w-full max-w-lg mx-auto"
                     >
-                        <label htmlFor="feedback-textarea" className="text-lg font-medium text-white mb-3 block text-left">Could you please tell us more?</label>
+                        <label htmlFor="feedback-textarea" className="text-base font-medium text-white mb-2.5 block text-left">Could you please tell us more?</label>
                         <textarea
                             id="feedback-textarea"
                             placeholder="Please share as much detail as possible..."
-                            className="w-full h-36 bg-[#1E1E1E] border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all"
+                            className="w-full h-32 bg-[#1E1E1E] border border-gray-700 rounded-lg p-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all"
                         ></textarea>
                         
                         {/* Simplified Promise */}
-                        <p className="text-center text-xs text-gray-500 mt-4">
+                        <p className="text-center text-[11px] text-gray-500 mt-3">
                             We value your feedback and review every submission carefully.
                         </p>
 
                         {/* CTAs */}
-                        <div className="flex items-center gap-3 mt-6">
+                        <div className="flex items-center gap-3 mt-5">
                             <button 
-                                className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 px-4 rounded-lg transition-all text-sm"
+                                className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2.5 px-4 rounded-lg transition-all text-sm"
                                 onClick={props.onNext}
                                 onClickCapture={() => handleFieldClick('props.buttonText')}
                                 data-field="props.buttonText"

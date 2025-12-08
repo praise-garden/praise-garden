@@ -14,7 +14,7 @@ import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 
-import type { FormConfig, FormBlock, FormBlockType, FormTheme } from '@/types/form-config';
+import { type FormConfig, type FormBlock, FormBlockType, type FormTheme } from '@/types/form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
 import { toast, Toaster } from 'sonner';
 import { FontPicker } from '@/components/ui/font-picker';
@@ -231,38 +231,37 @@ export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'con
     onPrevious,
 }) => {
     return (
-        <div className="w-[94%] max-w-[1200px] xl:max-w-[1320px] h-[78vh] xl:h-[82vh] max-h-[820px] mx-auto bg-gray-950 rounded-2xl shadow-2xl overflow-hidden border border-gray-800 flex flex-col">
-            <div className="relative px-6 py-4 border-b border-gray-800 flex items-center flex-none">
+        <div className="w-[96%] max-w-[1400px] 2xl:max-w-[1600px] h-[70vh] min-h-[600px] max-h-[700px] mx-auto bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-800/50 flex flex-col">
+            <div className="relative px-8 py-3 border-b border-gray-800/50 flex items-center flex-none">
                 {/* Left Side: Page Number and Title */}
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <span className="bg-green-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center flex-none">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <span className="bg-green-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center flex-none">
                         {currentPage}
                     </span>
-                    {/* <span className="text-gray-300 font-semibold tracking-wider text-xs uppercase truncate">{page.title}</span> */}
                 </div>
                 
                 {/* Center: Navigation (Absolutely Centered) */}
-                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                     <button
                         onClick={onPrevious}
                         disabled={currentPage === 1}
-                        className="p-2 rounded-lg border border-gray-700 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-1.5 rounded-lg border border-gray-700/50 hover:bg-gray-800/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         aria-label="Previous page"
                     >
-                        <ArrowLeftIcon className="w-4 h-4" />
+                        <ArrowLeftIcon className="w-3.5 h-3.5" />
                     </button>
-                    <div className="flex items-center gap-2 px-2">
-                        <span className="text-sm font-semibold text-white">{currentPage}</span>
-                        <span className="text-sm text-gray-600">/</span>
-                        <span className="text-sm text-gray-400">{totalPages}</span>
+                    <div className="flex items-center gap-1.5 px-2">
+                        <span className="text-xs font-semibold text-white">{currentPage}</span>
+                        <span className="text-xs text-gray-600">/</span>
+                        <span className="text-xs text-gray-400">{totalPages}</span>
                     </div>
                     <button
                         onClick={onNext}
                         disabled={currentPage === totalPages}
-                        className="p-2 rounded-lg border border-gray-700 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-1.5 rounded-lg border border-gray-700/50 hover:bg-gray-800/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         aria-label="Next page"
                     >
-                        <ArrowRightIcon className="w-4 h-4" />
+                        <ArrowRightIcon className="w-3.5 h-3.5" />
                     </button>
                 </div>
 
@@ -658,10 +657,22 @@ const FormBuilderPage = () => {
                                                 onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     if (!file) {
+                                                      console.warn('[FormBuilder] Logo upload aborted: no file selected');
                                                       return;
                                                     }
 
+                                                    console.info('[FormBuilder] Logo upload initiated', {
+                                                      formId,
+                                                      projectId: formConfig?.projectId,
+                                                      file: {
+                                                        name: file.name,
+                                                        size: file.size,
+                                                        type: file.type,
+                                                      },
+                                                    });
+
                                                     if (!formConfig?.projectId) {
+                                                      console.error('[FormBuilder] Missing projectId in formConfig during logo upload');
                                                       toast.error('Unable to upload logo: missing project context. Please reload the form.');
                                                       if (fileInputRef.current) {
                                                         fileInputRef.current.value = '';
@@ -680,6 +691,10 @@ const FormBuilderPage = () => {
                                                           },
                                                         });
 
+                                                        console.info('[FormBuilder] Logo upload completed', {
+                                                          uploadResult,
+                                                        });
+
                                                         updateTheme(
                                                           (theme) => ({
                                                             ...theme,
@@ -690,7 +705,10 @@ const FormBuilderPage = () => {
 
                                                         toast.success('Logo uploaded successfully');
                                                     } catch (uploadError: any) {
-                                                        console.error(uploadError);
+                                                        console.error('[FormBuilder] Logo upload failed', {
+                                                          errorMessage: uploadError?.message,
+                                                          error: uploadError,
+                                                        });
                                                         toast.error(uploadError.message || 'Failed to upload logo');
                                                     } finally {
                                                         setIsUploadingLogo(false);
@@ -974,26 +992,38 @@ const FormBuilderPage = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="w-80 flex-none flex flex-col bg-gray-950 border-l border-gray-800"
+              className="w-96 flex-none flex flex-col bg-gray-950 border-l border-gray-800"
             >
            <div className="grid grid-cols-2 divide-x divide-gray-800 border-b border-gray-800">
              <button
                onClick={() => setActiveTab('pages')}
-               className={`flex items-center justify-center gap-2 px-4 py-3 text-center transition-colors ${
-                 activeTab === 'pages' ? 'bg-gray-800' : 'bg-transparent'
+               className={`flex items-center justify-center gap-2.5 px-4 py-5 text-center transition-all duration-200 ${
+                 activeTab === 'pages' 
+                   ? 'bg-gray-900 shadow-inner' 
+                   : 'bg-transparent hover:bg-gray-900/30'
                }`}
              >
-               <PagesIcon className={activeTab === 'pages' ? 'text-purple-400' : 'text-gray-500'} />
-               <span className={`text-sm font-medium ${activeTab === 'pages' ? 'text-white' : 'text-gray-400'}`}>Pages</span>
+               <div className={`transition-all duration-200 ${activeTab === 'pages' ? 'scale-110' : ''}`}>
+                 <PagesIcon className={activeTab === 'pages' ? 'text-purple-400' : 'text-gray-500'} />
+               </div>
+               <span className={`text-sm font-semibold transition-colors ${activeTab === 'pages' ? 'text-white' : 'text-gray-400'}`}>
+                 Pages
+               </span>
              </button>
              <button
                onClick={() => setActiveTab('edit')}
-               className={`flex items-center justify-center gap-2 px-4 py-3 text-center transition-colors ${
-                 activeTab === 'edit' ? 'bg-gray-800' : 'bg-transparent'
+               className={`flex items-center justify-center gap-2.5 px-4 py-5 text-center transition-all duration-200 ${
+                 activeTab === 'edit' 
+                   ? 'bg-gray-900 shadow-inner' 
+                   : 'bg-transparent hover:bg-gray-900/30'
                }`}
              >
-               <SettingsIcon className={activeTab === 'edit' ? 'text-purple-400' : 'text-gray-500'} />
-               <span className={`text-sm font-medium ${activeTab === 'edit' ? 'text-white' : 'text-gray-400'}`}>Edit</span>
+               <div className={`transition-all duration-200 ${activeTab === 'edit' ? 'scale-110' : ''}`}>
+                 <SettingsIcon className={activeTab === 'edit' ? 'text-purple-400' : 'text-gray-500'} />
+               </div>
+               <span className={`text-sm font-semibold transition-colors ${activeTab === 'edit' ? 'text-white' : 'text-gray-400'}`}>
+                 Edit
+               </span>
              </button>
            </div>
            

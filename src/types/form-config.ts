@@ -48,6 +48,8 @@ export interface WelcomeBlockConfig extends BaseBlockConfig {
     title: string;
     description: string;
     buttonText: string;
+    timingMessage: string;
+    consentMessage: string;
     logoUrl?: string;
     brandName?: string;
     titleColor: string;

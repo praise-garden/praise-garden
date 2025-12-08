@@ -1,7 +1,10 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import Image from "next/image";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
@@ -17,18 +20,18 @@ const navSections = [
   {
     title: "Testimonials",
     items: [
-      { label: "Testimonials", icon: "star", href: "/dashboard" },
-      { label: "Video Testimonial", icon: "video", href: "/dashboard/video-testimonial" },
-      { label: "Import Testimonials", icon: "upload" },
-    ]
+      { label: "All Testimonials", icon: "star", href: "/dashboard" },
+      { label: "Video Testimonials", icon: "video", href: "/dashboard/video-testimonial" },
+      { label: "Import", icon: "upload" },
+    ],
   },
   {
-    title: "Collect",
+    title: "Collection",
     items: [
-      { label: "Create Forms", icon: "form", href: "/dashboard/forms" },
+      { label: "Form Builder", icon: "form", href: "/dashboard/forms" },
       { label: "Widgets", icon: "widget" },
-    ]
-  }
+    ],
+  },
 ];
 
 const Icon = ({ name, className }: { name: string; className?: string }) => {
@@ -88,34 +91,175 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
   return null;
 };
 
-export default function Sidebar() {
+type ProfileSummary = {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+  plan: string | null;
+  active_project_id: string | null;
+} | null;
+
+type ProjectSummary = {
+  id: string;
+  name: string | null;
+};
+
+type SidebarProps = {
+  user: User;
+  profile: ProfileSummary;
+  projects: ProjectSummary[];
+};
+
+const getInitials = (value: string) => {
+  return value
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.at(0)?.toUpperCase())
+    .join("")
+    .slice(0, 2);
+};
+
+const formatProjectName = (project: ProjectSummary | undefined) => {
+  if (!project) {
+    return "No Project";
+  }
+
+  return project.name?.trim() || "Untitled Project";
+};
+
+const formatPlanLabel = (plan: string | null | undefined) => {
+  if (!plan) {
+    return "hacker";
+  }
+
+  return plan.toLowerCase();
+};
+
+const Sidebar = ({ user, profile, projects }: SidebarProps) => {
   const pathname = usePathname();
+
+  const displayName = useMemo(() => {
+    if (profile?.full_name?.trim()) {
+      return profile.full_name.trim();
+    }
+
+    if (user.user_metadata?.full_name) {
+      return String(user.user_metadata.full_name).trim();
+    }
+
+    if (profile?.username?.trim()) {
+      return profile.username.trim();
+    }
+
+    if (user.email) {
+      return user.email.split("@")[0];
+    }
+
+    return "New User";
+  }, [profile?.full_name, profile?.username, user.email, user.user_metadata?.full_name]);
+
+  const emailAddress = user.email ?? "";
+
+  const activeProject = useMemo(() => {
+    if (!projects.length) {
+      return undefined;
+    }
+
+    if (profile?.active_project_id) {
+      const matched = projects.find((project) => project.id === profile.active_project_id);
+      if (matched) {
+        return matched;
+      }
+    }
+
+    return projects[0];
+  }, [profile?.active_project_id, projects]);
+
+  const otherProjects = useMemo(() => {
+    return projects.filter((project) => project.id !== activeProject?.id);
+  }, [activeProject?.id, projects]);
+
+  const projectInitials = getInitials(formatProjectName(activeProject));
+  const userInitials = getInitials(displayName);
+  const planLabel = formatPlanLabel(profile?.plan);
+
   return (
-    <aside aria-label="Primary" className="bg-gray-900 border-r border-gray-800 lg:block hidden lg:sticky lg:top-0 h-screen">
+    <aside
+      aria-label="Primary navigation"
+      className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
+    >
       <div className="flex h-full flex-col">
-        {/* Top: Project Selector */}
-        <div className="p-6">
-          <button className="w-full flex items-center justify-between p-3 rounded-2xl bg-gray-800 hover:bg-gray-700 transition-all border border-gray-700 shadow-sm hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600">
-            <div className="flex items-center gap-2">
-              <div className="size-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white text-[10px] font-semibold">AC</span>
-              </div>
-              <div className="text-left min-w-0 max-w-[10rem]">
-                <p className="font-medium text-gray-50 text-sm md:text-[0.95rem] leading-tight truncate" title="Acme Corporation">Acme Corporation</p>
-              </div>
+        {/* 1. PraiseGarden Logo Section - Top */}
+        <div className="flex-shrink-0 p-6">
+          <div className="flex items-center gap-3">
+            <div className="size-9 flex items-center justify-center">
+              <Image src="/icon.png" alt="PraiseGarden Logo" width={36} height={36} />
             </div>
-            <Icon name="chevrons-vertical" className="size-4 text-gray-400" />
-          </button>
-          <div className="mt-4 h-px w-full bg-gray-800" />
+            <div>
+              <h1 className="text-lg font-bold text-white tracking-tight">PraiseGarden</h1>
+            </div>
+          </div>
         </div>
 
-        {/* Middle: Scrollable Navigation */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
-          <nav className="space-y-6" role="navigation">
+        {/* 2. Navigation & Project Section - Middle (scrollable) */}
+        <div className="flex-1 overflow-y-auto px-6 py-2">
+          {/* Project Selector */}
+          <div className="mb-8">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="group w-full flex items-center justify-between p-3 rounded-2xl bg-gray-800/60 hover:bg-gray-800/80 transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+                  aria-label="Select project"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shadow-md group-hover:shadow-lg transition-shadow">
+                      {projectInitials || "PG"}
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p
+                        className="truncate text-sm font-semibold text-gray-50 group-hover:text-white transition-colors"
+                        title={formatProjectName(activeProject)}
+                      >
+                        {formatProjectName(activeProject)}
+                      </p>
+                    </div>
+                  </div>
+                  <Icon name="chevrons-vertical" className="size-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-72" align="start">
+                <DropdownMenuLabel className="text-xs uppercase text-gray-400 font-semibold tracking-wider">Projects</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {activeProject ? (
+                  <DropdownMenuItem className="flex flex-col items-start gap-1 text-sm p-3" disabled>
+                    <span className="font-semibold text-gray-50">{formatProjectName(activeProject)}</span>
+                    <span className="text-xs text-gray-500">Currently active</span>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem className="text-sm text-gray-500 p-3" disabled>
+                    No projects yet
+                  </DropdownMenuItem>
+                )}
+                {otherProjects.length > 0 && <DropdownMenuSeparator />}
+                {otherProjects.length > 0 ? (
+                  otherProjects.map((project) => (
+                    <DropdownMenuItem key={project.id} className="flex flex-col items-start gap-1 text-sm p-3" disabled>
+                      <span className="font-medium text-gray-100">{formatProjectName(project)}</span>
+                      <span className="text-xs text-gray-500">Project switching coming soon</span>
+                    </DropdownMenuItem>
+                  ))
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-8" role="navigation">
             {navSections.map((section, sectionIndex) => (
               <div key={sectionIndex}>
                 {section.title && (
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">
+                  <h3 className="mb-3 px-3 text-xs font-bold uppercase tracking-wider text-gray-500">
                     {section.title}
                   </h3>
                 )}
@@ -128,13 +272,18 @@ export default function Sidebar() {
                         key={item.label}
                         href={href}
                         aria-current={isActive ? "page" : undefined}
-                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600 ${
+                        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
                           isActive
-                            ? 'bg-gray-800 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                            ? "bg-emerald-500/10 text-emerald-300"
+                            : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
                         }`}
                       >
-                        <Icon name={item.icon} className="size-4" />
+                        <Icon
+                          name={item.icon}
+                          className={`size-4 transition-colors ${
+                            isActive ? "text-emerald-400" : "text-gray-500 group-hover:text-gray-300"
+                          }`}
+                        />
                         <span className="truncate">{item.label}</span>
                       </Link>
                     );
@@ -145,46 +294,53 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        {/* Bottom: Account Section */}
-        <div className="p-6 border-t border-gray-800 bg-gray-900/60 backdrop-blur">
-          <div className="flex items-center gap-3 p-3 rounded-2xl border border-gray-800 bg-gray-800/50 hover:bg-gray-800 transition-all shadow-sm">
-            <Avatar className="size-8">
-              <AvatarImage alt="" src="" />
-              <AvatarFallback className="bg-gray-700 text-gray-300 font-medium text-sm">JD</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-50 truncate" title="John Doe">John Doe</p>
-              <p className="text-xs text-gray-400 truncate" title="john@example.com">john@example.com</p>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  aria-label="Account settings"
-                  className="inline-flex items-center justify-center size-8 rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600"
-                >
-                  <Icon name="gear" className="size-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">John Doe</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      john@example.com
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <SignOutButton />
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        {/* 3. User Profile Section - Bottom */}
+        <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-800/50">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="group w-full flex items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-gray-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50">
+                <Avatar className="size-9 ring-2 ring-gray-700/50 group-hover:ring-emerald-500/50 transition-all">
+                  <AvatarImage alt={displayName} src={user.user_metadata?.avatar_url ?? ""} />
+                  <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-sm font-semibold text-gray-200">
+                    {userInitials || "PG"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="truncate text-sm font-semibold text-gray-50" title={displayName}>
+                    {displayName}
+                  </p>
+                  <p className="truncate text-xs text-gray-400" title={emailAddress}>
+                    {emailAddress || "No email"}
+                  </p>
+                </div>
+                <div className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-all ${
+                  planLabel === 'hacker'
+                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                    : 'border border-blue-500/30 bg-blue-500/10 text-blue-400'
+                }`}>
+                  {planLabel}
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-72" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-semibold leading-none text-gray-50">{displayName}</p>
+                  <p className="text-xs leading-none text-gray-400">{emailAddress || "No email"}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <SignOutButton />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </aside>
   );
-}
+};
+
+export default Sidebar;
 
 

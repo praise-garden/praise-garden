@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
-import { PageItem, FormCardProps } from '@/app/dashboard/form-builder/page';
-import { FormCard } from '@/app/dashboard/form-builder/page';
+import { PageItem, FormCardProps } from '@/app/form-builder/page';
+import { FormCard } from '@/app/form-builder/page';
 
 interface AboutCompanyCardProps extends FormCardProps {}
 

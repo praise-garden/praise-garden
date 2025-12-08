@@ -1,13 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
-import { FormCardProps } from '@/app/dashboard/form-builder/page';
-import { FormCard } from '@/app/dashboard/form-builder/page';
+import { FormCardProps } from '@/app/form-builder/page';
+import { FormCard } from '@/app/form-builder/page';
 import { motion } from 'framer-motion';
 import AppBar from '@/components/ui/app-bar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AboutYouBlockConfig } from '@/types/form-config';
 
-interface AboutYouCardProps extends FormCardProps {
+interface AboutYouCardProps extends Omit<FormCardProps, 'config' | 'onFieldFocus'> {
     config: AboutYouBlockConfig;
     onFieldFocus?: (blockId: string, fieldPath: string) => void;
 }
@@ -21,8 +21,8 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, ...pr
     return (
     <FormCard {...props}>
       <div className="flex-grow flex flex-col items-center justify-start overflow-y-auto">
-        <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-6 sm:px-12" />
-        <div className="w-full px-6 sm:px-12 pb-8 pt-10 sm:pt-12">
+        <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" />
+        <div className="w-full px-8 sm:px-14 pb-8 pt-8 sm:pt-10">
             <div className="mx-auto flex w-full max-w-2xl flex-col items-stretch">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -30,14 +30,14 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, ...pr
                   transition={{ duration: 0.6 }}
                 >
                   <h1 
-                    className="text-2xl sm:text-3xl font-bold leading-normal text-white mb-2"
+                    className="text-xl sm:text-2xl font-bold leading-normal text-white mb-2"
                     style={{ color: config.props.titleColor }}
                     onClick={() => handleFieldClick('props.title')}
                     data-field="props.title"
                   >
                       {config.props.title}
                   </h1>
-                  <div className="content text-sm text-gray-400 sm:text-base mb-6">
+                  <div className="content text-xs text-gray-400 sm:text-sm mb-5 leading-relaxed">
                     <p>Share a little more about yourself.</p>
                   </div>
                 </motion.div>
@@ -159,18 +159,18 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, ...pr
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
-                    className="mt-4"
+                    className="mt-3"
                   >
                     <button
                       type="button"
                       onClick={props.onNext}
-                      className="w-full block rounded-lg border border-white/10 p-1 shadow-md duration-200 bg-purple-600 hover:bg-purple-700 active:scale-[.98]"
+                      className="w-full block rounded-lg border border-white/10 p-0.5 shadow-md duration-200 bg-purple-600 hover:bg-purple-700 active:scale-[.98]"
                       onClickCapture={() => handleFieldClick('props.buttonText')}
                       data-field="props.buttonText"
                     >
-                      <div className="relative overflow-hidden rounded-md px-6 py-2.5 text-sm text-white">
+                      <div className="relative overflow-hidden rounded-md px-6 py-2 text-sm text-white">
                         <div className="relative flex items-center justify-center w-full">
-                          <span className="pointer-events-auto font-medium tracking-wide">{config.props.buttonText}</span>
+                          <span className="pointer-events-auto font-semibold tracking-wide">{config.props.buttonText}</span>
                         </div>
                       </div>
                     </button>

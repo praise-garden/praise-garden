@@ -46,6 +46,8 @@ export const createDefaultFormConfig = ({
                     title: 'Leave us a Testimonial',
                     description: 'Testimonials help us getting discovered by others. We appreciate every single one and read them all!',
                     buttonText: 'Continue',
+                    timingMessage: 'Takes less than 3 minutes',
+                    consentMessage: "You control what's shared",
                     brandName: 'PraiseGarden',
                     logoUrl: '/icon.png',
                     titleColor: '#FFFFFF',

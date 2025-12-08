@@ -194,7 +194,7 @@ const FormsPageClient: React.FC<FormsPageClientProps> = ({ initialForms }) => {
       const newForm = await response.json();
       toast.success("Form created successfully!");
 
-      router.push(`/dashboard/form-builder?id=${newForm.id}`);
+      router.push(`/form-builder?id=${newForm.id}`);
     } catch (error) {
       console.error("Error creating form:", error);
       toast.error("Failed to create form");
@@ -379,7 +379,7 @@ const FormsPageClient: React.FC<FormsPageClientProps> = ({ initialForms }) => {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2 pt-2">
-                          <Link href={`/dashboard/form-builder?id=${form.id}`} className="flex-1">
+                          <Link href={`/form-builder?id=${form.id}`} className="flex-1">
                             <Button 
                               variant="default"
                               className="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"

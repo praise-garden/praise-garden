@@ -87,7 +87,7 @@ export default function FormsPageClient({ initialForms }: FormsPageClientProps) 
 
             const newForm = await response.json();
             toast.success('Form created successfully!');
-            router.push(`/dashboard/form-builder?id=${newForm.id}`);
+            router.push(`/form-builder?id=${newForm.id}`);
         } catch (error) {
             console.error('Error creating form:', error);
             toast.error('Failed to create form');
@@ -173,7 +173,7 @@ export default function FormsPageClient({ initialForms }: FormsPageClientProps) 
                                     </div>
                                     <div className="flex items-center gap-2 text-xs text-gray-400"><CalendarIcon className="size-3.5" /><span>Created {formatDate(form.created_at)}</span></div>
                                     <div className="flex items-center gap-2 pt-2">
-                                        <Link href={`/dashboard/form-builder?id=${form.id}`} className="flex-1">
+                                        <Link href={`/form-builder?id=${form.id}`} className="flex-1">
                                             <Button variant="default" className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"><EditIcon className="mr-2" />Edit Form</Button>
                                         </Link>
                                         <Button variant="outline" className="px-3 rounded-xl border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-300"><MoreVerticalIcon /></Button>

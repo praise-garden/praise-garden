@@ -66,6 +66,45 @@ export const getUserWithProjects = async () => {
   return { user, projects: projects || [] };
 };
 
+export const getUserProfileWithProjects = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return null;
+  }
+
+  const [{ data: profile, error: profileError }, { data: projects, error: projectsError }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, username, full_name, plan, active_project_id")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("projects")
+      .select("*")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  if (profileError) {
+    console.error("Error fetching profile:", profileError);
+  }
+
+  if (projectsError) {
+    console.error("Error fetching projects:", projectsError);
+  }
+
+  return {
+    user,
+    profile: profile ?? null,
+    projects: projects ?? [],
+  };
+};
+
 /**
  * Verify if a user owns a specific project
  * 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormCardProps, FormCard } from '@/app/dashboard/form-builder/page';
+import { FormCardProps, FormCard } from '@/app/form-builder/page';
 import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -69,21 +69,20 @@ const QuestionCard = ({
                             onBack={cardProps.onPrevious}
                             showBackButton={Boolean(cardProps.onPrevious)}
                             maxWidthClass="max-w-lg"
-                            paddingXClass="px-6 md:px-12"
+                            paddingXClass="px-8 md:px-14"
                         />
                     </div>
-                    <div className="flex-grow overflow-y-auto px-6 md:px-12 pb-12">
+                    <div className="flex-grow overflow-y-auto px-8 md:px-14 pb-10">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
-                            className="w-full max-w-lg mx-auto pt-12 md:pt-16"
+                            className="w-full max-w-lg mx-auto pt-10 md:pt-12"
                         >
-                            {/* Question Section - Compact & Original */}
-                            <div className="mb-6">
-                               
+                            {/* Question Section */}
+                            <div className="mb-8 space-y-3">
                                 <h1 
-                                    className="mt-4 text-2xl md:text-3xl font-semibold text-white break-words leading-tight tracking-tight"
+                                    className="text-xl md:text-2xl font-semibold text-white break-words leading-tight tracking-tight"
                                     style={{ color: config.props.questionColor }}
                                     onClick={() => handleFieldClick('props.question')}
                                     data-field="props.question"
@@ -91,7 +90,7 @@ const QuestionCard = ({
                                     {config.props.question}
                                 </h1>
                                 <p 
-                                    className="mt-2 text-sm text-gray-400 break-words leading-relaxed"
+                                    className="text-xs md:text-sm text-gray-400 break-words leading-relaxed"
                                     style={{ color: config.props.descriptionColor }}
                                     onClick={() => handleFieldClick('props.description')}
                                     data-field="props.description"
@@ -100,22 +99,22 @@ const QuestionCard = ({
                                 </p>
                             </div>
 
-                            {/* Guidance Section with Better Layout */}
-                            <div className="space-y-4 px-2">
-                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Tips for great testimonials:</h3>
+                            {/* Guidance Section */}
+                            <div className="space-y-3">
+                                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tips for great testimonials:</h3>
                                 
                                 <motion.div 
-                                    className="space-y-3"
+                                    className="space-y-2.5"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.3, duration: 0.5 }}
                                 >
-                                    <div className="flex items-start gap-3 group">
+                                    <div className="flex items-start gap-2.5 group">
                                         <div className="mt-0.5">
-                                            <CheckCircleIcon className="text-emerald-500 w-5 h-5 flex-shrink-0" />
+                                            <CheckCircleIcon className="text-emerald-500 w-4 h-4 flex-shrink-0" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-sm text-gray-300 leading-relaxed">
+                                            <p className="text-xs text-gray-300 leading-relaxed">
                                                 <span className="font-medium text-white">Share specific results</span>
                                                 <br />
                                                 <span className="text-gray-400">e.g. "Our conversion rate increased by 30%"</span>
@@ -123,12 +122,12 @@ const QuestionCard = ({
                                         </div>
                                     </div>
 
-                                    <div className="flex items-start gap-3 group">
+                                    <div className="flex items-start gap-2.5 group">
                                         <div className="mt-0.5">
-                                            <CheckCircleIcon className="text-emerald-500 w-5 h-5 flex-shrink-0" />
+                                            <CheckCircleIcon className="text-emerald-500 w-4 h-4 flex-shrink-0" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-sm text-gray-300 leading-relaxed">
+                                            <p className="text-xs text-gray-300 leading-relaxed">
                                                 <span className="font-medium text-white">Mention your timeline</span>
                                                 <br />
                                                 <span className="text-gray-400">e.g. "In just 2 months of using this..."</span>
@@ -136,12 +135,12 @@ const QuestionCard = ({
                                         </div>
                                     </div>
 
-                                    <div className="flex items-start gap-3 group">
+                                    <div className="flex items-start gap-2.5 group">
                                         <div className="mt-0.5">
-                                            <CheckCircleIcon className="text-emerald-500 w-5 h-5 flex-shrink-0" />
+                                            <CheckCircleIcon className="text-emerald-500 w-4 h-4 flex-shrink-0" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-sm text-gray-300 leading-relaxed">
+                                            <p className="text-xs text-gray-300 leading-relaxed">
                                                 <span className="font-medium text-white">Highlight a favorite feature</span>
                                                 <br />
                                                 <span className="text-gray-400">e.g. "The automation saved us 10 hours/week"</span>
@@ -152,8 +151,8 @@ const QuestionCard = ({
                             </div>
 
                             {/* Optional: Add a subtle decorative element */}
-                            <div className="mt-8 flex justify-center">
-                                <div className="h-px w-24 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+                            <div className="mt-6 flex justify-center">
+                                <div className="h-px w-20 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
                             </div>
                         </motion.div>
                     </div>
@@ -176,59 +175,59 @@ const QuestionCard = ({
                                 initial="hidden"
                                 animate="visible"
                                 exit="exit"
-                                className="w-full max-w-md mx-auto space-y-4 relative z-10"
+                                className="w-full max-w-lg mx-auto space-y-3 relative z-10 px-6"
                             >
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.2 }}
-                                    className="text-center mb-6"
+                                    className="text-center mb-4"
                                 >
-                                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Choose how to share</h3>
+                                    <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Choose how to share</h3>
                                 </motion.div>
 
                                 <div 
-                                    className="group relative p-8 bg-gradient-to-br from-purple-600/5 via-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-2xl text-center cursor-pointer transition-all duration-300 hover:border-purple-400/40 hover:from-purple-600/10 hover:via-purple-500/20 hover:to-purple-600/10 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20"
+                                    className="group relative p-6 bg-gradient-to-br from-purple-600/5 via-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl text-center cursor-pointer transition-all duration-300 hover:border-purple-400/40 hover:from-purple-600/10 hover:via-purple-500/20 hover:to-purple-600/10 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20"
                                     onClick={cardProps.onNext}
                                     role="button"
                                     tabIndex={0}
                                 >
                                     {/* Enhanced Glow Effect */}
-                                    <div className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-purple-600/20 via-purple-500/30 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
+                                    <div className="absolute -inset-2 rounded-xl bg-gradient-to-r from-purple-600/20 via-purple-500/30 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
                                     
                                     <div className="relative">
-                                        <div className="mx-auto w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-500/20 transition-colors">
-                                            <VideoIcon className="text-purple-400 group-hover:text-purple-300 transition-colors" />
+                                        <div className="mx-auto w-14 h-14 bg-purple-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors">
+                                            <VideoIcon className="text-purple-400 group-hover:text-purple-300 transition-colors w-7 h-7" />
                                         </div>
-                                        <h3 className="text-xl font-semibold text-white group-hover:text-purple-100 transition-colors">Record a video</h3>
-                                        <p className="mt-2 text-sm text-gray-400 group-hover:text-gray-300 transition-colors">2-minute video testimonial</p>
+                                        <h3 className="text-lg font-semibold text-white group-hover:text-purple-100 transition-colors">Record a video</h3>
+                                        <p className="mt-1.5 text-xs text-gray-400 group-hover:text-gray-300 transition-colors">2-minute video testimonial</p>
                                     </div>
                                 </div>
 
-                                <div className="relative py-2">
+                                <div className="relative py-1.5">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-gray-700"></div>
                                     </div>
-                                    <div className="relative flex justify-center text-sm">
-                                        <span className="px-3 bg-gradient-to-r from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F] text-gray-500">OR</span>
+                                    <div className="relative flex justify-center text-xs">
+                                        <span className="px-2.5 bg-gradient-to-r from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F] text-gray-500">OR</span>
                                     </div>
                                 </div>
 
                                 <div 
-                                    className="group relative p-8 bg-gradient-to-br from-lime-600/5 via-lime-500/10 to-lime-600/5 border border-lime-500/20 rounded-2xl text-center cursor-pointer transition-all duration-300 hover:border-lime-400/40 hover:from-lime-600/10 hover:via-lime-500/20 hover:to-lime-600/10 hover:scale-[1.02] hover:shadow-2xl hover:shadow-lime-500/20"
+                                    className="group relative p-6 bg-gradient-to-br from-lime-600/5 via-lime-500/10 to-lime-600/5 border border-lime-500/20 rounded-xl text-center cursor-pointer transition-all duration-300 hover:border-lime-400/40 hover:from-lime-600/10 hover:via-lime-500/20 hover:to-lime-600/10 hover:scale-[1.02] hover:shadow-2xl hover:shadow-lime-500/20"
                                     onClick={() => setMode('text')}
                                     role="button"
                                     tabIndex={0}
                                 >
                                     {/* Enhanced Glow Effect */}
-                                    <div className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-lime-600/20 via-lime-500/30 to-lime-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
+                                    <div className="absolute -inset-2 rounded-xl bg-gradient-to-r from-lime-600/20 via-lime-500/30 to-lime-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
                                     
                                     <div className="relative">
-                                        <div className="mx-auto w-16 h-16 bg-lime-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-lime-500/20 transition-colors">
-                                            <TypeIcon className="text-lime-400 group-hover:text-lime-300 transition-colors" />
+                                        <div className="mx-auto w-14 h-14 bg-lime-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-lime-500/20 transition-colors">
+                                            <TypeIcon className="text-lime-400 group-hover:text-lime-300 transition-colors w-7 h-7" />
                                         </div>
-                                        <h3 className="text-xl font-semibold text-white group-hover:text-lime-100 transition-colors">Write your story</h3>
-                                        <p className="mt-2 text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Text testimonial</p>
+                                        <h3 className="text-lg font-semibold text-white group-hover:text-lime-100 transition-colors">Write your story</h3>
+                                        <p className="mt-1.5 text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Text testimonial</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -244,20 +243,20 @@ const QuestionCard = ({
                                 className="w-full h-full flex flex-col"
                             >
                                 <AppBar onBack={() => setMode('options')} showBackButton={true} />
-                                <div className="flex-grow flex flex-col p-6 md:p-12 justify-center">
+                                <div className="flex-grow flex flex-col px-8 md:px-14 py-8 justify-center">
                                     <textarea
                                         placeholder={config.props.placeholder}
-                                        className="w-full h-56 md:h-64 bg-[#232325] rounded-lg p-4 text-white text-lg placeholder-gray-500 focus:outline-none resize-none transition-all focus:ring-2 focus:ring-purple-500/50"
+                                        className="w-full h-48 md:h-56 bg-[#232325] rounded-lg p-4 text-white text-base placeholder-gray-500 focus:outline-none resize-none transition-all focus:ring-2 focus:ring-purple-500/50"
                                         onChange={(e) => {
                                             // onUpdate would go here later
                                         }}
                                         onClick={() => handleFieldClick('props.placeholder')}
                                         data-field="props.placeholder"
                                     ></textarea>
-                                    <div className="mt-6 flex-shrink-0">
+                                    <div className="mt-5 flex-shrink-0">
                                         <button 
                                             onClick={cardProps.onNext}
-                                            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all text-base shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
+                                            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all text-sm shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
                                             onClickCapture={() => handleFieldClick('props.buttonText')}
                                             data-field="props.buttonText"
                                         >

@@ -51,12 +51,22 @@ const buildStoragePath = (file: File, context: UploadContext) => {
       throw new Error('Project ID is required to upload project assets');
     }
 
-    const namespace = sanitizePathSegment(context.namespace ?? 'assets');
+    const namespaceParts = (context.namespace ?? 'assets')
+      .split('/')
+      .map(sanitizePathSegment)
+      .filter(Boolean);
+      
+    const namespace = namespaceParts.join('/');
     const projectSegment = sanitizePathSegment(context.projectId);
     return `projects/${projectSegment}/${namespace}/${crypto.randomUUID()}.${extension}`;
   }
 
-  const namespace = sanitizePathSegment(context.namespace ?? 'avatars');
+  const namespaceParts = (context.namespace ?? 'avatars')
+    .split('/')
+    .map(sanitizePathSegment)
+    .filter(Boolean);
+
+  const namespace = namespaceParts.join('/');
   const userSegment = sanitizePathSegment(context.userId);
   const fileStem = context.fileName ? sanitizePathSegment(context.fileName) : crypto.randomUUID();
 
@@ -113,24 +123,51 @@ export const uploadImageToStorage = async ({
   }
 
   const supabaseClient = ensureSupabaseClient(supabase);
+  console.info('[uploadImageToStorage] Ensured Supabase client instance');
+
+  const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+  console.info('[uploadImageToStorage] Session inspection', {
+    hasSession: Boolean(sessionData?.session),
+    userId: sessionData?.session?.user?.id ?? null,
+    sessionError: sessionError?.message ?? null,
+  });
+
   const storage = supabaseClient.storage;
   const path = buildStoragePath(file, context);
+  console.info('[uploadImageToStorage] Prepared upload payload', {
+    bucket,
+    path,
+    access,
+    cacheControl,
+    expireInSeconds,
+  });
 
   const { error: uploadError } = await storage
     .from(bucket)
     .upload(path, file, {
       cacheControl,
       upsert: true,
-      contentType: file.type,
     });
 
   if (uploadError) {
+    console.error('[uploadImageToStorage] Upload failed', {
+      bucket,
+      path,
+      storageError: uploadError,
+    });
     throw new Error(uploadError.message || 'Failed to upload image');
   }
 
   const url = access === 'public'
     ? getPublicUrl(storage, bucket, path)
     : await getSignedUrl(storage, bucket, path, expireInSeconds ?? DEFAULT_SIGNED_EXPIRY);
+
+  console.info('[uploadImageToStorage] Upload succeeded', {
+    bucket,
+    path,
+    access,
+    url,
+  });
 
   if (!url) {
     throw new Error('Unable to generate a URL for the uploaded image');

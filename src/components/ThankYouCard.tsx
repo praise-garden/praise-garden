@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
-import { FormCardProps } from '@/app/dashboard/form-builder/page';
-import { FormCard } from '@/app/dashboard/form-builder/page';
+import { FormCardProps } from '@/app/form-builder/page';
+import { FormCard } from '@/app/form-builder/page';
 import AppBar from '@/components/ui/app-bar';
 import { ThankYouBlockConfig } from '@/types/form-config';
 
@@ -54,11 +54,11 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
         <FormCard {...props}>
             <div className="flex-grow flex overflow-hidden">
                 <div className="flex-grow flex flex-col items-center overflow-y-auto">
-                    <AppBar showBackButton={false} maxWidthClass="max-w-3xl" paddingXClass="px-6" />
-                    <div className="w-full px-6 pt-8 pb-6">
+                    <AppBar showBackButton={false} maxWidthClass="max-w-3xl" paddingXClass="px-8" />
+                    <div className="w-full px-8 pt-8 pb-6">
                     <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch">
                         <h1 
-                            className="text-xl sm:text-2xl font-bold leading-normal text-white"
+                            className="text-lg sm:text-xl font-bold leading-normal text-white"
                             style={{ color: config.props.titleColor }}
                             onClick={() => handleFieldClick('props.title')}
                             data-field="props.title"
@@ -66,16 +66,16 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
                             {config.props.title}
                         </h1>
                         <div 
-                            className="content text-sm text-gray-400 sm:text-base mt-2"
+                            className="content text-xs text-gray-400 sm:text-sm mt-2 leading-relaxed"
                             style={{ color: config.props.descriptionColor }}
                             onClick={() => handleFieldClick('props.description')}
                             data-field="props.description"
                         >
                             <p>{config.props.description}</p>
                         </div>
-                        <div className="my-6">
-                            <button className="mt-4 flex w-full items-center justify-center gap-4 rounded-lg border border-gray-700 bg-[#1E1E1E] px-4 py-2 text-center text-2xl tracking-wider text-gray-400 font-mono">
-                                EXAMPLECODE <CopyIcon className="text-gray-500 w-6 h-6" />
+                        <div className="my-5">
+                            <button className="mt-3 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-700 bg-[#1E1E1E] px-4 py-2 text-center text-lg tracking-wider text-gray-400 font-mono">
+                                EXAMPLECODE <CopyIcon className="text-gray-500 w-5 h-5" />
                             </button>
                         </div>
                         

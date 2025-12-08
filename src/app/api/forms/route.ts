@@ -76,13 +76,14 @@ export async function POST(request: NextRequest) {
       const { data: newProject, error: createProjectError } = await supabase
         .from('projects')
         .insert({
-          owner_id: user.id,
+          owner_id: user.id, // Ensure this is explicitly set
           name: 'My First Project',
         })
-        .select()
+        .select('id')
         .single();
 
       if (createProjectError || !newProject) {
+        console.error('Failed to create project:', createProjectError);
         return NextResponse.json(
           { error: 'Failed to create project' },
           { status: 500 }
