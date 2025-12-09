@@ -19,6 +19,12 @@ type DefaultConfigOptions = {
     name?: string;
 };
 
+export const DEFAULT_TESTIMONIAL_TIPS = [
+    'Share specific results',
+    'Mention your timeline',
+    'Highlight a favorite feature',
+];
+
 export const createDefaultFormConfig = ({
     projectId,
     formId = randomUUID(),
@@ -75,20 +81,32 @@ export const createDefaultFormConfig = ({
                 props: {
                     question: 'What do you like the most about PraiseGarden?',
                     description: 'Be specific and honest. Your feedback will help us improve our product.',
-                    placeholder: 'Type your answer here...',
-                    buttonText: 'Continue',
                     questionColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
+                    enableTextTestimonial: true,
+                    enableVideoTestimonial: true,
+                    videoOptionTitle: 'Record a video',
+                    videoOptionDescription: '2-minute video testimonial',
+                    textOptionTitle: 'Write your story',
+                    textOptionDescription: 'Text testimonial',
+                    tips: [
+                        'Share specific results',
+                        'Mention your timeline',
+                        'Highlight a favorite feature',
+                    ],
                 },
             },
             {
                 id: 'negative_feedback_1',
                 type: FormBlockType.NegativeFeedback,
-                enabled: false, 
+                enabled: false,
                 props: {
                     title: 'What can we do better?',
                     description: 'We are sorry to hear that you had a bad experience. Please let us know what we can do to improve.',
                     buttonText: 'Continue',
+                    feedbackQuestion: 'Could you please tell us more?',
+                    feedbackPlaceholder: 'Please share as much detail as possible...',
+                    feedbackHelperText: 'We value your feedback and review every submission carefully.',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
                 },
@@ -96,9 +114,10 @@ export const createDefaultFormConfig = ({
             {
                 id: 'private_feedback_1',
                 type: FormBlockType.PrivateFeedback,
-                enabled: false, 
+                enabled: false,
                 props: {
                     title: 'Would you like to send us a private feedback instead?',
+                    description: 'This stays between us and helps us improve. It will never appear on your public testimonial.',
                     placeholder: 'Type your private feedback here...',
                     buttonText: 'Send Private Feedback',
                     titleColor: '#FFFFFF',
@@ -113,6 +132,7 @@ export const createDefaultFormConfig = ({
                     description: 'We would love to share your feedback with our community. Are you okay with us using your name and testimonial on our website and social media?',
                     checkboxLabel: 'I consent to my testimonial being used publicly.',
                     buttonText: 'Continue',
+                    trustNote: 'Your privacy is important to us. We\'ll always respect your choice.',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
                 },
@@ -123,13 +143,14 @@ export const createDefaultFormConfig = ({
                 enabled: true,
                 props: {
                     title: 'Tell us a bit about yourself',
+                    description: 'Share a little more about yourself.',
                     buttonText: 'Continue',
                     titleColor: '#FFFFFF',
                     fields: {
-                        name: { enabled: true, label: 'Full Name', placeholder: 'John Doe' },
-                        title: { enabled: true, label: 'Title / Role', placeholder: 'CEO at Example.com' },
-                        company: { enabled: false, label: 'Company', placeholder: 'Example.com' },
-                        avatar: { enabled: true, label: 'Upload your photo' },
+                        name: { enabled: true, required: true, label: 'Full Name', placeholder: 'John Doe' },
+                        title: { enabled: true, required: true, label: 'Title / Role', placeholder: 'CEO at Example.com' },
+                        company: { enabled: false, required: false, label: 'Company', placeholder: 'Example.com' },
+                        avatar: { enabled: true, required: false, label: 'Upload your photo' },
                     },
                 },
             },
@@ -153,6 +174,7 @@ export const createDefaultFormConfig = ({
                     title: 'Thank you for your testimonial!',
                     description: 'We will review it and let you know when it is published.',
                     showSocials: true,
+                    showAnimations: true,
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
                 },

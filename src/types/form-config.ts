@@ -75,32 +75,41 @@ export interface QuestionBlockConfig extends BaseBlockConfig {
   props: {
     question: string;
     description: string;
-    placeholder: string;
-    buttonText: string;
     questionColor: string;
     descriptionColor: string;
+    enableTextTestimonial: boolean;
+    enableVideoTestimonial: boolean;
+    videoOptionTitle: string;
+    videoOptionDescription: string;
+    textOptionTitle: string;
+    textOptionDescription: string;
+    tips: string[];
   };
 }
 
 export interface NegativeFeedbackBlockConfig extends BaseBlockConfig {
-    type: FormBlockType.NegativeFeedback;
-    props: {
-        title: string;
-        description: string;
-        buttonText: string;
-        titleColor: string;
-        descriptionColor: string;
-    };
+  type: FormBlockType.NegativeFeedback;
+  props: {
+    title: string;
+    description: string;
+    feedbackQuestion: string;
+    feedbackPlaceholder: string;
+    feedbackHelperText: string;
+    buttonText: string;
+    titleColor: string;
+    descriptionColor: string;
+  };
 }
 
 export interface PrivateFeedbackBlockConfig extends BaseBlockConfig {
-    type: FormBlockType.PrivateFeedback;
-    props: {
-        title: string;
-        placeholder: string;
-        buttonText: string;
-        titleColor: string;
-    };
+  type: FormBlockType.PrivateFeedback;
+  props: {
+    title: string;
+    description: string;
+    placeholder: string;
+    buttonText: string;
+    titleColor: string;
+  };
 }
 
 export interface ConsentBlockConfig extends BaseBlockConfig {
@@ -110,6 +119,7 @@ export interface ConsentBlockConfig extends BaseBlockConfig {
     description: string;
     checkboxLabel: string;
     buttonText: string;
+    trustNote: string;
     titleColor: string;
     descriptionColor: string;
   };
@@ -119,26 +129,27 @@ export interface AboutYouBlockConfig extends BaseBlockConfig {
   type: FormBlockType.AboutYou;
   props: {
     title: string;
+    description: string;
     buttonText: string;
     titleColor: string;
     fields: {
-      name: { enabled: boolean; label: string; placeholder: string };
-      title: { enabled: boolean; label: string; placeholder: string };
-      company: { enabled: boolean; label: string; placeholder: string };
-      avatar: { enabled: boolean; label: string };
+      name: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      title: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      company: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      avatar: { enabled: boolean; required: boolean; label: string };
     };
   };
 }
 
 export interface ReadyToSendBlockConfig extends BaseBlockConfig {
-    type: FormBlockType.ReadyToSend;
-    props: {
-        title: string;
-        description: string;
-        buttonText: string;
-        titleColor: string;
-        descriptionColor: string;
-    };
+  type: FormBlockType.ReadyToSend;
+  props: {
+    title: string;
+    description: string;
+    buttonText: string;
+    titleColor: string;
+    descriptionColor: string;
+  };
 }
 
 export interface ThankYouBlockConfig extends BaseBlockConfig {
@@ -147,6 +158,7 @@ export interface ThankYouBlockConfig extends BaseBlockConfig {
     title: string;
     description: string;
     showSocials: boolean;
+    showAnimations: boolean;
     titleColor: string;
     descriptionColor: string;
   };

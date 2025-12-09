@@ -8,31 +8,35 @@ import { PrivateFeedbackBlockConfig } from '@/types/form-config';
 
 
 interface PrivateFeedbackCardProps extends FormCardProps {
-    config: PrivateFeedbackBlockConfig;
-    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+  config: PrivateFeedbackBlockConfig;
+  onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
 const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFieldFocus, ...props }) => {
-    
-    const handleFieldClick = (fieldPath: string) => {
-        onFieldFocus?.(config.id, fieldPath);
-    };
 
-    return (
+  const handleFieldClick = (fieldPath: string) => {
+    onFieldFocus(config.id, fieldPath);
+  };
+
+  return (
     <FormCard {...props}>
       <div className="flex-grow flex flex-col items-center justify-center overflow-y-auto">
         <AppBar onBack={props.onPrevious} />
         <ContentContainer className="pb-10 pt-10">
-          <h1 
+          <h1
             className="text-lg sm:text-xl font-bold leading-normal text-white"
             style={{ color: config.props.titleColor }}
             onClick={() => handleFieldClick('props.title')}
             data-field="props.title"
           >
-              {config.props.title}
+            {config.props.title}
           </h1>
-          <div className="content text-xs text-gray-400 sm:text-sm mt-2 leading-relaxed">
-            <p>This stays between us and helps us improve. It will never appear on your public testimonial.</p>
+          <div
+            className="content text-xs text-gray-400 sm:text-sm mt-2 leading-relaxed"
+            onClickCapture={() => handleFieldClick('props.description')}
+            data-field="props.description"
+          >
+            <p>{config.props.description || "This stays between us and helps us improve. It will never appear on your public testimonial."}</p>
           </div>
           <form className="mt-6 flex flex-col gap-4">
             <textarea
@@ -44,11 +48,11 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
               onClick={() => handleFieldClick('props.placeholder')}
               data-field="props.placeholder"
             ></textarea>
-            <button 
-                className="w-full block rounded-xl border border-white/20 p-1 shadow-lg duration-200 hover:scale-[1.02] hover:shadow-purple-600/20 active:scale-[.98]"
-                onClick={props.onNext}
-                onClickCapture={() => handleFieldClick('props.buttonText')}
-                data-field="props.buttonText"
+            <button
+              className="w-full block rounded-xl border border-white/20 p-1 shadow-lg duration-200 hover:scale-[1.02] hover:shadow-purple-600/20 active:scale-[.98]"
+              onClick={props.onNext}
+              onClickCapture={() => handleFieldClick('props.buttonText')}
+              data-field="props.buttonText"
             >
               <div className="relative overflow-hidden rounded-lg bg-gradient-to-b from-purple-600 to-purple-500 px-6 py-2.5 text-sm text-white">
                 <div className="relative flex items-center justify-center w-full">

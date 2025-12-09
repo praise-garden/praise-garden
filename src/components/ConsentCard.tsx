@@ -27,22 +27,22 @@ const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 interface ConsentCardProps extends FormCardProps {
-    config: ConsentBlockConfig;
-    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+  config: ConsentBlockConfig;
+  onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
 const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...props }) => {
   const [consented, setConsented] = useState<boolean>(false);
 
   const handleFieldClick = (fieldPath: string) => {
-    onFieldFocus?.(config.id, fieldPath);
+    onFieldFocus(config.id, fieldPath);
   };
 
   return (
     <FormCard {...props}>
       <div className="flex-grow flex flex-col overflow-hidden">
         <AppBar onBack={props.onPrevious} />
-        
+
         <div className="flex-grow flex flex-col items-center justify-center px-10 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
           >
             {/* Header Section */}
             <div className="text-center">
-              <h1 
+              <h1
                 className="text-base md:text-lg font-semibold text-white mb-2.5"
                 style={{ color: config.props.titleColor }}
                 onClick={() => handleFieldClick('props.title')}
@@ -60,7 +60,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
               >
                 {config.props.title}
               </h1>
-              <p 
+              <p
                 className="text-xs md:text-sm text-gray-400 leading-relaxed"
                 style={{ color: config.props.descriptionColor }}
                 onClick={() => handleFieldClick('props.description')}
@@ -75,26 +75,24 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className={`group relative p-3.5 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                consented
-                  ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20' 
+              className={`group relative p-3.5 rounded-lg border-2 cursor-pointer transition-all duration-300 ${consented
+                  ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20'
                   : 'border-gray-700 bg-[#1A1A1A] hover:border-gray-600 hover:bg-[#222222]'
-              }`}
+                }`}
               onClick={() => setConsented(!consented)}
             >
               <div className="flex items-start gap-3.5">
-                <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                  consented 
-                    ? 'border-purple-500 bg-purple-500' 
+                <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${consented
+                    ? 'border-purple-500 bg-purple-500'
                     : 'border-gray-600 group-hover:border-gray-500'
-                }`}>
+                  }`}>
                   {consented && (
                     <CheckIcon className="w-3.5 h-3.5 text-white" />
                   )}
                 </div>
-                
+
                 <div className="flex-1">
-                  <p 
+                  <p
                     className="text-xs md:text-sm text-white leading-relaxed"
                     onClick={(e) => { e.stopPropagation(); handleFieldClick('props.checkboxLabel'); }}
                     data-field="props.checkboxLabel"
@@ -111,7 +109,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <button 
+              <button
                 onClick={props.onNext}
                 className={`w-full py-2.5 px-4 mt-2 rounded-lg font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-[1.02]`}
                 onClickCapture={() => handleFieldClick('props.buttonText')}
@@ -128,8 +126,12 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
               transition={{ delay: 0.5, duration: 0.5 }}
               className="text-center"
             >
-              <p className="text-[11px] text-gray-500">
-                Your privacy is important to us. We'll always respect your choice.
+              <p
+                className="text-[11px] text-gray-500"
+                onClickCapture={() => handleFieldClick('props.trustNote')}
+                data-field="props.trustNote"
+              >
+                {config.props.trustNote || "Your privacy is important to us. We'll always respect your choice."}
               </p>
             </motion.div>
           </motion.div>

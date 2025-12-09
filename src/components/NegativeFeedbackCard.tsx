@@ -14,13 +14,13 @@ const MessageCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 interface NegativeFeedbackCardProps extends FormCardProps {
     config: NegativeFeedbackBlockConfig;
-    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+    onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
 const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onFieldFocus, ...props }) => {
-    
+
     const handleFieldClick = (fieldPath: string) => {
-        onFieldFocus?.(config.id, fieldPath);
+        onFieldFocus(config.id, fieldPath);
     };
 
     return (
@@ -44,9 +44,9 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             className="text-center"
                         >
                             <div className="p-3.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3.5 inline-block">
-                               <MessageCircleIcon className="text-amber-400 w-10 h-10" />
+                                <MessageCircleIcon className="text-amber-400 w-10 h-10" />
                             </div>
-                            <h2 
+                            <h2
                                 className="text-xl font-bold text-white mb-2"
                                 style={{ color: config.props.titleColor }}
                                 onClick={() => handleFieldClick('props.title')}
@@ -54,7 +54,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             >
                                 {config.props.title}
                             </h2>
-                            <p 
+                            <p
                                 className="text-gray-300 text-xs max-w-xs mx-auto leading-relaxed"
                                 style={{ color: config.props.descriptionColor }}
                                 onClick={() => handleFieldClick('props.description')}
@@ -69,26 +69,39 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                 {/* Right Side: Feedback Form */}
                 <div className="w-full md:w-3/5 px-10 py-8 flex flex-col justify-center">
                     <motion.div
-                         initial={{ opacity: 0, x: 20 }}
-                         animate={{ opacity: 1, x: 0 }}
-                         transition={{ duration: 0.5, delay: 0.4 }}
-                         className="w-full max-w-lg mx-auto"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="w-full max-w-lg mx-auto"
                     >
-                        <label htmlFor="feedback-textarea" className="text-base font-medium text-white mb-2.5 block text-left">Could you please tell us more?</label>
+                        <label
+                            htmlFor="feedback-textarea"
+                            className="text-base font-medium text-white mb-2.5 block text-left"
+                            onClickCapture={() => handleFieldClick('props.feedbackQuestion')}
+                            data-field="props.feedbackQuestion"
+                        >
+                            {config.props.feedbackQuestion || 'Could you please tell us more?'}
+                        </label>
                         <textarea
                             id="feedback-textarea"
-                            placeholder="Please share as much detail as possible..."
+                            placeholder={config.props.feedbackPlaceholder || 'Please share as much detail as possible...'}
                             className="w-full h-32 bg-[#1E1E1E] border border-gray-700 rounded-lg p-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all"
+                            onClickCapture={() => handleFieldClick('props.feedbackPlaceholder')}
+                            data-field="props.feedbackPlaceholder"
                         ></textarea>
-                        
+
                         {/* Simplified Promise */}
-                        <p className="text-center text-[11px] text-gray-500 mt-3">
-                            We value your feedback and review every submission carefully.
+                        <p
+                            className="text-center text-[11px] text-gray-500 mt-3"
+                            onClickCapture={() => handleFieldClick('props.feedbackHelperText')}
+                            data-field="props.feedbackHelperText"
+                        >
+                            {config.props.feedbackHelperText || 'We value your feedback and review every submission carefully.'}
                         </p>
 
                         {/* CTAs */}
                         <div className="flex items-center gap-3 mt-5">
-                            <button 
+                            <button
                                 className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2.5 px-4 rounded-lg transition-all text-sm"
                                 onClick={props.onNext}
                                 onClickCapture={() => handleFieldClick('props.buttonText')}

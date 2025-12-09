@@ -15,9 +15,10 @@ import ThankYouEditPanel from './ThankYouEditPanel';
 interface FormBuilderEditPanelProps {
   focusedBlock: FormBlock | null;
   onUpdateBlock: (blockId: string, updatedProps: any) => void;
+  focusedField?: { blockId: string; fieldPath: string } | null;
 }
 
-const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBlock, onUpdateBlock }) => {
+const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBlock, onUpdateBlock, focusedField }) => {
   if (!focusedBlock) {
     return (
       <div className="text-center text-gray-500 pt-12">
@@ -33,19 +34,19 @@ const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBloc
       case FormBlockType.Rating:
         return <RatingEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
       case FormBlockType.Question:
-        return <QuestionEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
+        return <QuestionEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.NegativeFeedback:
-        return <NegativeFeedbackEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
+        return <NegativeFeedbackEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.PrivateFeedback:
-        return <PrivateFeedbackEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
+        return <PrivateFeedbackEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.Consent:
-        return <ConsentEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
+        return <ConsentEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.AboutYou:
-        return <AboutYouEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
+        return <AboutYouEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.ReadyToSend:
         return <ReadyToSendEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
       case FormBlockType.ThankYou:
-        return <ThankYouEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
+        return <ThankYouEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       default:
         return <div>Unknown block type</div>;
     }
@@ -74,7 +75,7 @@ const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBloc
           {getPageTitle(focusedBlock.type)}
         </h3>
       </div>
-      
+
       {/* Scrollable Content */}
       <div className="flex-grow overflow-y-auto px-6 pt-6 pb-16">
         {renderPanel()}
