@@ -29,7 +29,7 @@ const navSections = [
     title: "Collection",
     items: [
       { label: "Form Builder", icon: "form", href: "/dashboard/forms" },
-      { label: "Widgets", icon: "widget" },
+      { label: "Widgets", icon: "widget", href: "/dashboard/widgets" },
     ],
   },
 ];
