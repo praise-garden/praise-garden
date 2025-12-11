@@ -61,7 +61,7 @@ const Confetti = () => {
 // Animated success checkmark
 const SuccessCheckmark = () => (
     <motion.div
-        className="relative w-24 h-24 mx-auto mb-8"
+        className="relative w-16 h-16 mx-auto mb-6"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
@@ -75,11 +75,11 @@ const SuccessCheckmark = () => (
         />
 
         {/* Main circle */}
-        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg shadow-green-500/30 flex items-center justify-center">
+        <div className="absolute inset-1.5 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg shadow-green-500/30 flex items-center justify-center">
             {/* Checkmark */}
             <motion.svg
-                width="40"
-                height="40"
+                width="28"
+                height="28"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -180,7 +180,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
 
     return (
         <FormCard {...props}>
-            <div className="flex-grow flex overflow-hidden relative">
+            <div className="flex-grow flex overflow-hidden relative bg-black">
 
                 {/* Confetti (only for a few seconds, when animations enabled) */}
                 <AnimatePresence>
@@ -191,7 +191,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
                 {(config.props.showAnimations ?? true) && <FloatingElements />}
 
                 {/* Main content area */}
-                <div className={`flex-grow flex flex-col items-center overflow-y-auto relative z-10 ${config.props.showSocials ? '' : 'justify-center'}`}>
+                <div className={`flex-grow flex flex-col items-center overflow-hidden relative z-10 ${config.props.showSocials ? '' : 'justify-center'}`}>
                     {config.props.showSocials && (
                         <AppBar showBackButton={false} maxWidthClass="max-w-3xl" paddingXClass="px-8" />
                     )}
@@ -203,7 +203,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
 
                             {/* Title with gradient */}
                             <motion.h1
-                                className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight bg-gradient-to-r from-white via-green-100 to-emerald-200 bg-clip-text text-transparent"
+                                className="text-xl sm:text-2xl font-bold leading-tight bg-gradient-to-r from-white via-green-100 to-emerald-200 bg-clip-text text-transparent"
                                 style={{ color: config.props.titleColor }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -216,7 +216,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
 
                             {/* Description */}
                             <motion.p
-                                className="mt-4 text-base sm:text-lg text-gray-300 leading-relaxed max-w-md"
+                                className="mt-3 text-sm sm:text-base text-gray-300 leading-relaxed max-w-sm"
                                 style={{ color: config.props.descriptionColor }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -229,16 +229,16 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
 
                             {/* Promo code (if shown) */}
                             <motion.div
-                                className="my-8 w-full max-w-sm"
+                                className="my-6 w-full max-w-xs"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.7 }}
                             >
-                                <button className="group w-full flex items-center justify-center gap-3 rounded-xl border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm px-6 py-4 text-center text-lg tracking-wider text-gray-300 font-mono hover:border-green-500/30 hover:bg-gray-800/70 transition-all duration-300">
+                                <button className="group w-full flex items-center justify-center gap-2 rounded-lg border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm px-4 py-3 text-center text-base tracking-wider text-gray-300 font-mono hover:border-green-500/30 hover:bg-gray-800/70 transition-all duration-300">
                                     <span className="text-green-400">THANKYOU20</span>
                                     <CopyIcon className="text-gray-500 group-hover:text-green-400 transition-colors" />
                                 </button>
-                                <p className="text-xs text-gray-500 mt-2">Use this code for 20% off your next purchase</p>
+                                <p className="text-xs text-gray-500 mt-1.5">Use this code for 20% off your next purchase</p>
                             </motion.div>
 
                             {/* Celebration message when no socials */}
@@ -263,13 +263,13 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
                 {/* Social sharing panel (when enabled) */}
                 {config.props.showSocials && (
                     <motion.div
-                        className="flex-none lg:w-1/2 bg-gray-900/80 backdrop-blur-md border-l border-gray-800"
+                        className="flex-none lg:w-1/2 bg-gray-900/80 backdrop-blur-md border-l border-gray-800 overflow-hidden"
                         initial={{ x: 100, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <div className="flex h-full w-full flex-col p-6">
-                            <div className="mx-auto my-2 flex max-w-sm flex-col items-center gap-5 text-center">
+                        <div className="flex h-full w-full flex-col p-6 overflow-hidden">
+                            <div className="mx-auto my-2 flex max-w-sm flex-col items-center gap-4 text-center">
                                 {/* Share on X section */}
                                 <div className="font-sans mb-2 flex items-center gap-4 text-center text-xs font-medium text-gray-500 w-full">
                                     <hr className="w-full border-gray-700" />

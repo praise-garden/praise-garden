@@ -5,9 +5,8 @@ import { FormCard } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RatingBlockConfig } from '@/types/form-config';
 
-interface RatingCardProps extends FormCardProps {
-    config: RatingBlockConfig;
-    onFieldFocus?: (blockId: string, fieldPath: string) => void;
+interface RatingCardProps extends Omit<FormCardProps, 'config'> {
+  config: RatingBlockConfig;
 }
 
 const StarIcon = ({ filled, className }: { filled: boolean; className?: string }) => (
@@ -28,22 +27,26 @@ const StarIcon = ({ filled, className }: { filled: boolean; className?: string }
 const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props }) => {
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const ratingLabels = [
     "Not satisfied",
-    "Could be better", 
+    "Could be better",
     "Good",
     "Great",
     "Excellent!"
   ];
 
   const handleStarClick = (rating: number) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     setSelectedRating(rating);
-    // Add slight delay before continuing for better UX
+
+    // Auto-advance with a delay so user sees their selection
     setTimeout(() => {
-        // Here we can decide if we want to automatically go next
-        // For now, let's just keep the rating
-    }, 400);
+      props.onNext();
+    }, 600);
   };
 
   const handleFieldClick = (fieldPath: string) => {
@@ -52,13 +55,13 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
 
   return (
     <FormCard {...props}>
-      <div className="flex-grow flex flex-col items-center justify-center px-16 py-10 text-center overflow-hidden relative">
+      <div className="flex-grow flex flex-col items-center justify-center px-8 sm:px-16 py-10 text-center overflow-hidden relative">
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-radial from-purple-500/5 via-transparent to-transparent blur-3xl"></div>
-        
+
         <div className="relative z-10 w-full max-w-3xl mx-auto space-y-8">
           {/* Brand Logo */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -75,21 +78,21 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
             transition={{ duration: 0.6, delay: 0.1 }}
             className="space-y-3"
           >
-            <h2 
-                className="text-2xl sm:text-3xl font-bold text-white leading-tight"
-                style={{ color: config.props.titleColor }}
-                onClick={() => handleFieldClick('props.title')}
-                data-field="props.title"
+            <h2
+              className="text-2xl sm:text-3xl font-bold text-white leading-tight"
+              style={{ color: config.props.titleColor }}
+              onClick={() => handleFieldClick('props.title')}
+              data-field="props.title"
             >
-                {config.props.title}
+              {config.props.title}
             </h2>
-            <p 
-                className="text-gray-400 text-sm sm:text-base"
-                style={{ color: config.props.descriptionColor }}
-                onClick={() => handleFieldClick('props.description')}
-                data-field="props.description"
+            <p
+              className="text-gray-400 text-sm sm:text-base max-w-lg mx-auto"
+              style={{ color: config.props.descriptionColor }}
+              onClick={() => handleFieldClick('props.description')}
+              data-field="props.description"
             >
-                {config.props.description}
+              {config.props.description}
             </p>
           </motion.div>
 
@@ -98,31 +101,36 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="py-6"
+            className="py-4 sm:py-6"
           >
-            <div className="flex justify-center items-center gap-2.5 sm:gap-3 mb-5">
+            <div className="flex justify-center items-center gap-2.5 sm:gap-3 mb-6">
               {[1, 2, 3, 4, 5].map((rating) => {
                 const isHovered = hoveredStar !== null && rating <= hoveredStar;
                 const isSelected = selectedRating !== null && rating <= selectedRating;
                 const isFilled = isSelected || isHovered;
 
+                // Dim other stars if a selection is made
+                const isDimmed = selectedRating !== null && rating > selectedRating;
+
                 return (
                   <div
                     key={rating}
                     className="relative group"
-                    onMouseEnter={() => setHoveredStar(rating)}
-                    onMouseLeave={() => setHoveredStar(null)}
+                    onMouseEnter={() => !isSubmitting && setHoveredStar(rating)}
+                    onMouseLeave={() => !isSubmitting && setHoveredStar(null)}
                   >
                     <motion.button
                       onClick={() => handleStarClick(rating)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                      className={`relative cursor-pointer transition-all duration-300 ease-out ${
-                        isFilled 
-                          ? 'text-yellow-400' 
+                      disabled={isSubmitting}
+                      whileHover={!isSubmitting ? { scale: 1.1 } : {}}
+                      whileTap={!isSubmitting ? { scale: 0.95 } : {}}
+                      animate={isSelected ? { scale: [1, 1.2, 1] } : { opacity: isDimmed ? 0.3 : 1 }}
+                      transition={{ duration: 0.3 }}
+                      className={`relative cursor-pointer transition-all duration-300 ease-out ${isSubmitting ? 'cursor-default' : ''
+                        } ${isFilled
+                          ? 'text-yellow-400'
                           : 'text-gray-600 group-hover:text-yellow-300'
-                      }`}
+                        }`}
                       aria-label={`Rate ${rating} stars`}
                     >
                       {/* Glow effect for filled stars */}
@@ -132,63 +140,57 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
                           animate={{ opacity: 1, scale: 1 }}
                           className="absolute inset-0"
                         >
-                          <StarIcon 
-                            filled={true} 
-                            className="w-11 h-11 sm:w-12 sm:h-12 absolute inset-0 text-yellow-400 blur-sm opacity-60" 
+                          <StarIcon
+                            filled={true}
+                            className="w-11 h-11 sm:w-12 sm:h-12 absolute inset-0 text-yellow-400 blur-sm opacity-60"
                           />
                         </motion.div>
                       )}
-                      
+
                       {/* Main star - Kept at good size */}
-                      <StarIcon 
-                        filled={isFilled} 
-                        className={`w-11 h-11 sm:w-12 sm:h-12 relative z-10 transition-all duration-300 ${
-                          isFilled 
-                            ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] filter brightness-110' 
-                            : 'group-hover:drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]'
-                        }`}
+                      <StarIcon
+                        filled={isFilled}
+                        className={`w-11 h-11 sm:w-12 sm:h-12 relative z-10 transition-all duration-300 ${isFilled
+                          ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] filter brightness-110'
+                          : 'group-hover:drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]'
+                          }`}
                       />
-                      
+
                       {/* Hover pulse effect */}
-                      <motion.div
-                        className="absolute inset-0 rounded-full bg-yellow-400/20 scale-0 group-hover:scale-110 transition-transform duration-300"
-                        initial={{ scale: 0 }}
-                        whileHover={{ scale: 1.2 }}
-                        transition={{ duration: 0.3 }}
-                      />
+                      {!isSubmitting && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-yellow-400/20 scale-0 group-hover:scale-110 transition-transform duration-300"
+                          initial={{ scale: 0 }}
+                          whileHover={{ scale: 1.2 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
                     </motion.button>
                   </div>
                 );
               })}
             </div>
 
-            {/* Rating Label */}
-            <AnimatePresence mode="wait">
-              {(hoveredStar !== null || selectedRating !== null) && (
-                <motion.p
-                  key={hoveredStar || selectedRating}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-base font-medium text-purple-400"
-                >
-                  {ratingLabels[(hoveredStar || selectedRating)! - 1]}
-                </motion.p>
-              )}
-            </AnimatePresence>
+            {/* Rating Label and Selection Feedback */}
+            <div className="h-8">
+              <AnimatePresence mode="wait">
+                {(hoveredStar !== null || selectedRating !== null) && (
+                  <motion.p
+                    key={hoveredStar || selectedRating}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className={`text-lg font-medium ${selectedRating ? 'text-yellow-400 font-semibold' : 'text-purple-400'}`}
+                  >
+                    {selectedRating ? `You selected ${ratingLabels[selectedRating - 1]}` : ratingLabels[hoveredStar! - 1]}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
-          <motion.button
-            onClick={props.onNext}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-purple-600 text-white font-semibold py-2.5 px-7 rounded-full text-base transition-all duration-300 shadow-lg shadow-purple-500/30"
-            onClickCapture={() => handleFieldClick('props.buttonText')}
-            data-field="props.buttonText"
-        >
-            {config.props.buttonText}
-        </motion.button>
+          {/* Removed Manual Button - selection now auto-advances */}
         </div>
       </div>
     </FormCard>

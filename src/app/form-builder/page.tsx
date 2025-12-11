@@ -14,12 +14,12 @@ import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 
-import { type FormConfig, type FormBlock, FormBlockType, type FormTheme } from '@/types/form-config';
+import { type FormConfig, type FormBlock, FormBlockType, type FormTheme, type QuestionBlockConfig } from '@/types/form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
+import PagesPanel from '@/components/form-builder/PagesPanel';
+import GlobalSettingsPanel from '@/components/form-builder/GlobalSettingsPanel';
 import { toast, Toaster } from 'sonner';
-import { FontPicker } from '@/components/ui/font-picker';
 import { useSearchParams } from 'next/navigation';
-import { uploadImageToStorage } from '@/lib/storage';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -124,8 +124,7 @@ const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const PRIMARY_COLOR_PRESETS = ['#A855F7', '#6366F1', '#22C55E', '#F97316', '#EC4899', '#0EA5E9', '#FACC15', '#111827'];
-const SECONDARY_COLOR_PRESETS = ['#22C55E', '#14B8A6', '#F97316', '#EF4444', '#8B5CF6', '#0EA5E9', '#F59E0B', '#1F2937'];
+
 
 const defaultTheme: FormTheme = {
   backgroundColor: '#0A0A0A',
@@ -134,51 +133,6 @@ const defaultTheme: FormTheme = {
   secondaryColor: '#22C55E',
   headingFont: 'Inter',
   bodyFont: 'Inter',
-};
-
-const clampColorValue = (value: number) => Math.min(255, Math.max(0, value));
-
-const updateTheme = (
-  updater: (theme: FormTheme) => FormTheme,
-  setFormConfig: React.Dispatch<React.SetStateAction<FormConfig | null>>,
-) => {
-  setFormConfig((prev) => {
-    if (!prev) {
-      return prev;
-    }
-
-    const currentTheme = {
-      ...defaultTheme,
-      ...(prev.theme ?? {}),
-    };
-
-    return {
-      ...prev,
-      theme: updater(currentTheme),
-    };
-  });
-};
-
-const adjustColor = (hex: string, amount: number) => {
-  if (!hex) return hex;
-  let clean = hex.replace('#', '').trim();
-  if (clean.length === 3) {
-    clean = clean.split('').map((char) => `${char}${char}`).join('');
-  }
-  if (clean.length !== 6) {
-    return hex;
-  }
-  const numeric = parseInt(clean, 16);
-  const r = clampColorValue((numeric >> 16) + amount);
-  const g = clampColorValue(((numeric >> 8) & 0xff) + amount);
-  const b = clampColorValue((numeric & 0xff) + amount);
-  const toHex = (value: number) => value.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
-
-const createGradient = (color: string) => {
-  const light = adjustColor(color, 35);
-  return `linear-gradient(135deg, ${light}, ${color})`;
 };
 
 const ChevronRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -219,7 +173,9 @@ export interface FormCardProps {
   onFieldFocus: (blockId: string, fieldPath: string) => void;
   // onToggle: (id: string) => void; - This will be handled in the main page
   // onDelete?: (id: string) => void; - This will be handled in the main page
+  // onDelete?: (id: string) => void; - This will be handled in the main page
   // isDeletable?: boolean;
+  theme: FormTheme;
 }
 
 export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'config' | 'onFieldFocus'>>> = ({
@@ -285,8 +241,6 @@ const FormBuilderPage = () => {
   const [activeNavTab, setActiveNavTab] = useState<'form' | 'settings' | 'rewards'>('settings');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!formId) {
@@ -347,21 +301,7 @@ const FormBuilderPage = () => {
     setCurrentPageIndex(currentIndex => Math.max(currentIndex - 1, 0));
   }, []);
 
-  const handleCopyColor = useCallback(async (value: string) => {
-    if (!value) {
-      return;
-    }
 
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value);
-        toast.success('Color copied to clipboard');
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Unable to copy color');
-    }
-  }, []);
 
   const handleSave = async () => {
     if (!formConfig) {
@@ -412,15 +352,93 @@ const FormBuilderPage = () => {
   };
 
   const handleReorder = (newOrder: FormBlock[]) => {
-    // This logic needs to be updated for the new structure
+    setFormConfig(prevConfig => {
+      if (!prevConfig) return null;
+      return {
+        ...prevConfig,
+        blocks: newOrder,
+      };
+    });
   };
 
   const handleAddPage = () => {
-    // This logic needs to be updated for the new structure
+    setFormConfig(prevConfig => {
+      if (!prevConfig) return null;
+
+      // Create a new Question block
+      const newBlock: QuestionBlockConfig = {
+        id: `question-${Date.now()}`,
+        type: FormBlockType.Question,
+        enabled: true,
+        props: {
+          question: 'What made you choose us?',
+          description: 'Share your experience with us',
+          questionColor: '#FFFFFF',
+          descriptionColor: '#9CA3AF',
+          enableTextTestimonial: true,
+          enableVideoTestimonial: true,
+          videoOptionTitle: 'Record a video',
+          videoOptionDescription: '2-minute video testimonial',
+          textOptionTitle: 'Write your story',
+          textOptionDescription: 'Text testimonial',
+          tips: [
+            'Be specific about what you liked',
+            'Mention any results or outcomes',
+            'Share how it helped you',
+          ],
+        },
+      };
+
+      // Insert the new block before the last block (ThankYou) if it exists
+      // Otherwise just add it at the end
+      const blocks = [...prevConfig.blocks];
+      const thankYouIndex = blocks.findIndex(b => b.type === FormBlockType.ThankYou);
+
+      if (thankYouIndex !== -1) {
+        blocks.splice(thankYouIndex, 0, newBlock);
+      } else {
+        blocks.push(newBlock);
+      }
+
+      toast.success('New question page added!');
+
+      return {
+        ...prevConfig,
+        blocks,
+      };
+    });
   };
 
   const handleDeletePage = (id: string) => {
-    // This logic needs to be updated for the new structure
+    setFormConfig(prevConfig => {
+      if (!prevConfig) return null;
+
+      const blockToDelete = prevConfig.blocks.find(b => b.id === id);
+      if (!blockToDelete) return prevConfig;
+
+      // Prevent deleting core pages (Welcome and ThankYou)
+      const coreTypes = [FormBlockType.Welcome, FormBlockType.ThankYou];
+      if (coreTypes.includes(blockToDelete.type)) {
+        toast.error(`Cannot delete ${blockToDelete.type} page - it's required for the form`);
+        return prevConfig;
+      }
+
+      // Filter out the deleted block
+      const newBlocks = prevConfig.blocks.filter(b => b.id !== id);
+
+      // Adjust currentPageIndex if needed
+      const newEnabledBlocks = newBlocks.filter(b => b.enabled);
+      if (currentPageIndex >= newEnabledBlocks.length) {
+        setCurrentPageIndex(Math.max(0, newEnabledBlocks.length - 1));
+      }
+
+      toast.success('Page deleted');
+
+      return {
+        ...prevConfig,
+        blocks: newBlocks,
+      };
+    });
   };
 
   const handleUpdatePageContent = (id: string, content: any) => {
@@ -579,6 +597,7 @@ const FormBuilderPage = () => {
                       onNext: handleNextPage,
                       onPrevious: handlePreviousPage,
                       onFieldFocus: handleFieldFocus,
+                      theme: formConfig.theme,
                     };
 
                     switch (block.type) {
@@ -609,320 +628,12 @@ const FormBuilderPage = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="flex-1 relative overflow-hidden bg-gray-900"
             >
-              <div className="relative z-10 h-full w-full flex items-center justify-center p-12">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.4 }}
-                  className="w-full max-w-3xl"
-                >
-                  {/* Header */}
-                  <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-white mb-2">Global Settings</h2>
-                    <p className="text-gray-400">Configure branding and styling for your entire form</p>
-                  </div>
-
-                  {/* Settings Grid */}
-                  <div className="space-y-5">
-                    {/* Logo Upload */}
-                    <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <label className="text-sm font-medium text-gray-300 block">Brand Logo</label>
-                          <p className="text-xs text-gray-500 mt-1">Click image to upload</p>
-                        </div>
-                        <div className="relative group w-20 h-20 rounded-xl bg-gray-950 border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0">
-                          <img
-                            src={formConfig.theme?.logoUrl ?? defaultTheme.logoUrl}
-                            alt="Logo"
-                            className="w-16 h-16 object-contain transition-opacity duration-300 group-hover:opacity-40"
-                            onError={(e) => {
-                              const target = e.currentTarget;
-                              target.style.display = 'none';
-                              const fallback = target.nextElementSibling as HTMLElement;
-                              if (fallback) fallback.style.display = 'flex';
-                            }}
-                          />
-                          <div className="absolute inset-0 hidden flex-col items-center justify-center text-gray-500 pointer-events-none">
-                            <svg className="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            <p className="text-xs font-medium">No Logo</p>
-                          </div>
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center cursor-pointer">
-                            <input
-                              ref={fileInputRef}
-                              type="file"
-                              accept="image/*"
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) {
-                                  console.warn('[FormBuilder] Logo upload aborted: no file selected');
-                                  return;
-                                }
-
-                                console.info('[FormBuilder] Logo upload initiated', {
-                                  formId,
-                                  projectId: formConfig?.projectId,
-                                  file: {
-                                    name: file.name,
-                                    size: file.size,
-                                    type: file.type,
-                                  },
-                                });
-
-                                if (!formConfig?.projectId) {
-                                  console.error('[FormBuilder] Missing projectId in formConfig during logo upload');
-                                  toast.error('Unable to upload logo: missing project context. Please reload the form.');
-                                  if (fileInputRef.current) {
-                                    fileInputRef.current.value = '';
-                                  }
-                                  return;
-                                }
-
-                                setIsUploadingLogo(true);
-                                try {
-                                  const uploadResult = await uploadImageToStorage({
-                                    file,
-                                    context: {
-                                      type: 'project',
-                                      projectId: formConfig.projectId,
-                                      namespace: 'form-assets/logos',
-                                    },
-                                  });
-
-                                  console.info('[FormBuilder] Logo upload completed', {
-                                    uploadResult,
-                                  });
-
-                                  updateTheme(
-                                    (theme) => ({
-                                      ...theme,
-                                      logoUrl: uploadResult.url,
-                                    }),
-                                    setFormConfig,
-                                  );
-
-                                  toast.success('Logo uploaded successfully');
-                                } catch (uploadError: any) {
-                                  console.error('[FormBuilder] Logo upload failed', {
-                                    errorMessage: uploadError?.message,
-                                    error: uploadError,
-                                  });
-                                  toast.error(uploadError.message || 'Failed to upload logo');
-                                } finally {
-                                  setIsUploadingLogo(false);
-                                }
-
-                                if (fileInputRef.current) {
-                                  fileInputRef.current.value = '';
-                                }
-                              }}
-                            />
-                            <div className="text-center pointer-events-none">
-                              {isUploadingLogo ? (
-                                <>
-                                  <div className="w-6 h-6 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                                  <p className="text-xs text-white font-semibold">Uploading…</p>
-                                </>
-                              ) : (
-                                <>
-                                  <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                  <p className="text-xs text-white font-semibold">Change</p>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Colors Grid */}
-                      <div className="grid grid-cols-2 gap-5">
-                        {/* Primary Color */}
-                        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <label className="text-sm font-medium text-gray-300 block">Primary Color</label>
-                              <p className="text-xs text-gray-500 mt-1">Brand accents & CTAs</p>
-                            </div>
-                            <button
-                              onClick={() => handleCopyColor(formConfig.theme?.primaryColor ?? defaultTheme.primaryColor)}
-                              className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
-                              aria-label="Copy primary color"
-                            >
-                              <CopyIcon />
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
-                            <label className="relative w-14 h-14 rounded-xl shadow-inner overflow-hidden">
-                              <input
-                                type="color"
-                                value={formConfig.theme?.primaryColor ?? defaultTheme.primaryColor}
-                                onChange={(e) => updateTheme(
-                                  (theme) => ({
-                                    ...theme,
-                                    primaryColor: e.target.value,
-                                  }),
-                                  setFormConfig,
-                                )}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                aria-label="Select primary color"
-                              />
-                              <span
-                                className="absolute inset-0 rounded-xl border border-gray-700/60"
-                                style={{ background: createGradient(formConfig.theme?.primaryColor ?? defaultTheme.primaryColor) }}
-                              ></span>
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={formConfig.theme?.primaryColor ?? defaultTheme.primaryColor}
-                                onChange={(e) => updateTheme(
-                                  (theme) => ({
-                                    ...theme,
-                                    primaryColor: e.target.value,
-                                  }),
-                                  setFormConfig,
-                                )}
-                                className="flex-1 bg-gray-950 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
-                              />
-                            </div>
-                          </div>
-                          <div className="mt-4">
-                            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Presets</p>
-                            <div className="flex flex-wrap gap-2">
-                              {PRIMARY_COLOR_PRESETS.map((color) => (
-                                <button
-                                  key={color}
-                                  onClick={() => updateTheme(
-                                    (theme) => ({
-                                      ...theme,
-                                      primaryColor: color,
-                                    }),
-                                    setFormConfig,
-                                  )}
-                                  className={`w-8 h-8 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${(formConfig.theme?.primaryColor ?? defaultTheme.primaryColor) === color
-                                    ? 'border-white ring-2 ring-purple-500/50'
-                                    : 'border-transparent hover:scale-105'
-                                    }`}
-                                  style={{ background: createGradient(color) }}
-                                  aria-label={`Select ${color} preset`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Secondary Color */}
-                        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <label className="text-sm font-medium text-gray-300 block">Secondary Color</label>
-                              <p className="text-xs text-gray-500 mt-1">Status chips & highlights</p>
-                            </div>
-                            <button
-                              onClick={() => handleCopyColor(formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor)}
-                              className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
-                              aria-label="Copy secondary color"
-                            >
-                              <CopyIcon />
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
-                            <label className="relative w-14 h-14 rounded-xl shadow-inner overflow-hidden">
-                              <input
-                                type="color"
-                                value={formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor}
-                                onChange={(e) => updateTheme(
-                                  (theme) => ({
-                                    ...theme,
-                                    secondaryColor: e.target.value,
-                                  }),
-                                  setFormConfig,
-                                )}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                aria-label="Select secondary color"
-                              />
-                              <span
-                                className="absolute inset-0 rounded-xl border border-gray-700/60"
-                                style={{ background: createGradient(formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor) }}
-                              ></span>
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor}
-                                onChange={(e) => updateTheme(
-                                  (theme) => ({
-                                    ...theme,
-                                    secondaryColor: e.target.value,
-                                  }),
-                                  setFormConfig,
-                                )}
-                                className="flex-1 bg-gray-950 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
-                              />
-                            </div>
-                          </div>
-                          <div className="mt-4">
-                            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Presets</p>
-                            <div className="flex flex-wrap gap-2">
-                              {SECONDARY_COLOR_PRESETS.map((color) => (
-                                <button
-                                  key={color}
-                                  onClick={() => updateTheme(
-                                    (theme) => ({
-                                      ...theme,
-                                      secondaryColor: color,
-                                    }),
-                                    setFormConfig,
-                                  )}
-                                  className={`w-8 h-8 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${(formConfig.theme?.secondaryColor ?? defaultTheme.secondaryColor) === color
-                                    ? 'border-white ring-2 ring-purple-500/50'
-                                    : 'border-transparent hover:scale-105'
-                                    }`}
-                                  style={{ background: createGradient(color) }}
-                                  aria-label={`Select ${color} preset`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Fonts Grid */}
-                      <div className="grid grid-cols-2 gap-5">
-                        {/* Heading Font */}
-                        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
-                          <label className="text-sm font-medium text-gray-300 mb-3 block">Heading Font</label>
-                          <FontPicker
-                            value={formConfig.theme?.headingFont ?? defaultTheme.headingFont}
-                            onChange={(value) => updateTheme(
-                              (theme) => ({
-                                ...theme,
-                                headingFont: theme.headingFont === value ? defaultTheme.headingFont : value,
-                              }),
-                              setFormConfig,
-                            )}
-                          />
-                        </div>
-
-                        {/* Body Font */}
-                        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
-                          <label className="text-sm font-medium text-gray-300 mb-3 block">Body Font</label>
-                          <FontPicker
-                            value={formConfig.theme?.bodyFont ?? defaultTheme.bodyFont}
-                            onChange={(value) => updateTheme(
-                              (theme) => ({
-                                ...theme,
-                                bodyFont: theme.bodyFont === value ? defaultTheme.bodyFont : value,
-                              }),
-                              setFormConfig,
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+              <div className="relative z-10 h-full w-full flex justify-center pt-8 pb-12 px-12 overflow-y-auto scrollbar-hide">
+                <GlobalSettingsPanel
+                  formConfig={formConfig}
+                  setFormConfig={setFormConfig}
+                  defaultTheme={defaultTheme}
+                />
               </div>
             </motion.main>
           )}
@@ -1014,83 +725,39 @@ const FormBuilderPage = () => {
                     }`}
                 >
                   <div className={`transition-all duration-200 ${activeTab === 'edit' ? 'scale-110' : ''}`}>
-                    <SettingsIcon className={activeTab === 'edit' ? 'text-purple-400' : 'text-gray-500'} />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={activeTab === 'edit' ? 'text-purple-400' : 'text-gray-500'}
+                    >
+                      <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
+                      <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
+                    </svg>
                   </div>
                   <span className={`text-sm font-semibold transition-colors ${activeTab === 'edit' ? 'text-white' : 'text-gray-400'}`}>
-                    Edit
+                    Customize
                   </span>
                 </button>
               </div>
 
               {activeTab === 'pages' && (
-                <>
-                  <Reorder.Group axis="y" values={formConfig.blocks} onReorder={handleReorder} className="flex-1 overflow-y-auto p-3 space-y-2">
-                    {formConfig.blocks.map((block) => {
-                      const enabledIndex = enabledBlocks.findIndex(b => b.id === block.id);
-                      const isCurrentPage = enabledIndex === currentPageIndex && block.enabled;
-
-                      return (
-                        <Reorder.Item
-                          key={block.id}
-                          value={block}
-                          className={`group relative rounded-lg border-2 transition-colors cursor-grab active:cursor-grabbing ${isCurrentPage
-                            ? 'border-purple-500 bg-purple-500/10'
-                            : 'border-gray-700 hover:border-gray-600'
-                            } ${!block.enabled ? 'opacity-40' : ''}`}
-                          onClick={() => block.enabled && handlePageClick(enabledIndex)}
-                        >
-                          {/* Thumbnail preview */}
-                          <div className="aspect-video bg-gray-900 rounded-t-md border-b border-gray-700 overflow-hidden relative pointer-events-none">
-                            <ThumbnailPreview pageType={block.type} />
-
-                            {/* Page number badge */}
-                            <div className="absolute top-1.5 left-1.5">
-                              <span className={`inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded ${block.enabled ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300'
-                                }`}>
-                                {block.enabled ? enabledIndex + 1 : '—'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Page info and toggle */}
-                          <div className="p-2 flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-gray-300 truncate pointer-events-none">
-                                {/* Need a title on the base block */}
-                                {block.type}
-                              </p>
-                            </div>
-                            <div className="relative flex-none ml-2" onClick={(e) => e.stopPropagation()}>
-                              <input
-                                type="checkbox"
-                                id={`page-toggle-thumb-${block.id}`}
-                                className="sr-only peer"
-                                checked={block.enabled}
-                                onChange={() => handleTogglePage(block.id)}
-                              />
-                              <label
-                                htmlFor={`page-toggle-thumb-${block.id}`}
-                                className="flex items-center cursor-pointer w-9 h-5 bg-gray-700 rounded-full p-0.5 transition-colors peer-checked:bg-purple-600"
-                              >
-                                <span className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 translate-x-0 peer-checked:translate-x-4"></span>
-                              </label>
-                            </div>
-                          </div>
-                        </Reorder.Item>
-                      );
-                    })}
-                  </Reorder.Group>
-
-                  {/* Add page button */}
-                  <div className="p-3 border-t border-gray-800">
-                    <button
-                      onClick={handleAddPage}
-                      className="w-full py-2 px-3 text-xs font-medium text-gray-400 border border-dashed border-gray-700 rounded-lg hover:border-gray-600 hover:text-gray-300 transition-colors"
-                    >
-                      + Add Question Page
-                    </button>
-                  </div>
-                </>
+                <PagesPanel
+                  blocks={formConfig.blocks}
+                  enabledBlocks={enabledBlocks}
+                  currentPageIndex={currentPageIndex}
+                  onReorder={handleReorder}
+                  onPageClick={handlePageClick}
+                  onTogglePage={handleTogglePage}
+                  onDeletePage={handleDeletePage}
+                  onAddPage={handleAddPage}
+                />
               )}
 
               {activeTab === 'edit' && (
@@ -1104,126 +771,9 @@ const FormBuilderPage = () => {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </div >
   );
 };
 
-const ThumbnailPreview = ({ pageType }: { pageType: FormBlockType }) => {
-  const baseClasses = "w-full h-full p-3 flex flex-col items-center justify-center gap-1.5 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:12px_12px]";
-
-  const content = () => {
-    switch (pageType) {
-      case FormBlockType.Welcome:
-        return (
-          <>
-            <div className="text-2xl">👋</div>
-            <div className="space-y-1 w-3/4">
-              <div className="h-1.5 bg-gray-700 rounded w-5/6 mx-auto"></div>
-              <div className="h-1.5 bg-gray-700 rounded w-2/3 mx-auto"></div>
-              <div className="h-2 bg-lime-400 rounded w-1/3 mx-auto mt-2"></div>
-            </div>
-          </>
-        );
-      case FormBlockType.Rating:
-        return (
-          <>
-            <div className="text-2xl">⭐️</div>
-            <div className="flex gap-1">
-              {Array(5).fill(0).map((_, i) => <div key={i} className="w-2 h-2 bg-yellow-400/90 rounded-full"></div>)}
-            </div>
-            <div className="h-2 bg-purple-600 rounded w-1/2 mt-2"></div>
-          </>
-        );
-      case FormBlockType.NegativeFeedback:
-        return (
-          <>
-            <div className="text-2xl">💬</div>
-            <div className="space-y-1 w-3/4">
-              <div className="h-1.5 bg-gray-700 rounded w-full"></div>
-              <div className="h-4 bg-gray-800 border border-gray-700 rounded w-full mt-1"></div>
-            </div>
-          </>
-        );
-      case FormBlockType.Question:
-        return (
-          <>
-            <div className="text-2xl">❓</div>
-            <div className="space-y-1 w-3/4">
-              <div className="h-1.5 bg-gray-700 rounded w-full"></div>
-              <div className="h-2 bg-purple-600 rounded w-1/2 mx-auto mt-2"></div>
-              <div className="h-2 bg-gray-700 rounded w-1/2 mx-auto"></div>
-            </div>
-          </>
-        );
-      case FormBlockType.PrivateFeedback:
-        return (
-          <>
-            <div className="text-2xl">🔒</div>
-            <div className="space-y-1 w-3/4">
-              <div className="h-1.5 bg-gray-700 rounded w-2/3 mx-auto"></div>
-              <div className="h-4 bg-gray-800 border border-gray-700 rounded w-full mt-1"></div>
-            </div>
-          </>
-        );
-      case FormBlockType.Consent:
-        return (
-          <>
-            <div className="text-2xl">✅</div>
-            <div className="space-y-1.5 w-3/4">
-              <div className="flex items-center gap-1.5 w-full">
-                <div className="w-2 h-2 border-2 border-gray-600 rounded-full"></div>
-                <div className="h-1.5 bg-gray-700 rounded w-4/5"></div>
-              </div>
-              <div className="flex items-center gap-1.5 w-full">
-                <div className="w-2 h-2 border-2 border-purple-500 bg-purple-500 rounded-full"></div>
-                <div className="h-1.5 bg-gray-700 rounded w-4/5"></div>
-              </div>
-            </div>
-          </>
-        );
-      case FormBlockType.AboutYou:
-        return (
-          <>
-            <div className="text-2xl">👤</div>
-            <div className="space-y-1.5 w-3/4">
-              <div className="w-5 h-5 bg-purple-500/50 rounded-full mx-auto"></div>
-              <div className="h-2 bg-gray-800 border border-gray-700 rounded w-full"></div>
-              <div className="h-2 bg-gray-800 border border-gray-700 rounded w-full"></div>
-            </div>
-          </>
-        );
-      case FormBlockType.ReadyToSend:
-        return (
-          <>
-            <div className="text-2xl">📤</div>
-            <div className="space-y-1 w-3/4">
-              <div className="h-3 bg-gray-800 border border-gray-700 rounded w-full"></div>
-              <div className="h-3 bg-gray-800 border border-gray-700 rounded w-full"></div>
-              <div className="h-2 bg-green-500 rounded w-1/2 mx-auto mt-2"></div>
-            </div>
-          </>
-        );
-      case FormBlockType.ThankYou:
-        return (
-          <>
-            <div className="text-2xl">🎉</div>
-            <div className="space-y-1 w-3/4">
-              <div className="h-1.5 bg-gray-700 rounded w-5/6 mx-auto"></div>
-              <div className="h-1.5 bg-gray-700 rounded w-2/3 mx-auto"></div>
-              <div className="flex gap-1.5 justify-center pt-1">
-                <div className="w-2.5 h-2.5 bg-sky-500 rounded-full"></div>
-                <div className="w-2.5 h-2.5 bg-gray-700 rounded-full"></div>
-                <div className="w-2.5 h-2.5 bg-gray-700 rounded-full"></div>
-              </div>
-            </div>
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return <div className={baseClasses}>{content()}</div>;
-};
-
 export default FormBuilderPage;
+

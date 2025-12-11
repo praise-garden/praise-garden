@@ -4,134 +4,10 @@ import React from 'react';
 import { QuestionBlockConfig } from '@/types/form-config';
 import { DEFAULT_TESTIMONIAL_TIPS } from '@/lib/default-form-config';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-
-const TypeIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <polyline points="4 7 4 4 20 4 20 7"></polyline>
-    <line x1="9" y1="20" x2="15" y2="20"></line>
-    <line x1="12" y1="4" x2="12" y2="20"></line>
-  </svg>
-);
-
-const MessageSquareIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-  </svg>
-);
-
-const VideoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="m22 8-6 4 6 4V8Z"></path>
-    <rect x="2" y="6" width="14" height="12" rx="2" ry="2"></rect>
-  </svg>
-);
-
-const PenIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-  </svg>
-);
-
-const LightbulbIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
-    <path d="M9 18h6"></path>
-    <path d="M10 22h4"></path>
-  </svg>
-);
-
-const PlusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
-  </svg>
-);
-
-const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <line x1="18" y1="6" x2="6" y2="18"></line>
-    <line x1="6" y1="6" x2="18" y2="18"></line>
-  </svg>
-);
+import { TypeIcon, MessageSquareIcon, VideoIcon, PenIcon, LightbulbIcon, PlusIcon, XIcon } from './icons';
+import { EditField, SectionDivider, InfoCard } from './shared';
+import { useAutoFocus } from './hooks';
 
 interface QuestionEditPanelProps {
   block: QuestionBlockConfig;
@@ -153,25 +29,15 @@ const QuestionEditPanel: React.FC<QuestionEditPanelProps> = ({ block, onUpdate, 
   const enableTextTestimonial = block.props.enableTextTestimonial ?? true;
   const tips = block.props.tips || DEFAULT_TESTIMONIAL_TIPS;
 
-  // Auto-focus logic when focusedField changes
-  React.useEffect(() => {
-    if (!focusedField || focusedField.blockId !== block.id) return;
-
-    const fieldPath = focusedField.fieldPath;
-    let inputRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null> | null = null;
-
-    if (fieldPath === 'props.question') inputRef = questionInputRef;
-    else if (fieldPath === 'props.description') inputRef = descriptionInputRef;
-    else if (fieldPath === 'props.videoOptionTitle') inputRef = videoTitleInputRef;
-    else if (fieldPath === 'props.videoOptionDescription') inputRef = videoDescInputRef;
-    else if (fieldPath === 'props.textOptionTitle') inputRef = textTitleInputRef;
-    else if (fieldPath === 'props.textOptionDescription') inputRef = textDescInputRef;
-
-    if (inputRef?.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [focusedField, block.id]);
+  // Use custom hooks
+  useAutoFocus(focusedField, block.id, {
+    'props.question': questionInputRef,
+    'props.description': descriptionInputRef,
+    'props.videoOptionTitle': videoTitleInputRef,
+    'props.videoOptionDescription': videoDescInputRef,
+    'props.textOptionTitle': textTitleInputRef,
+    'props.textOptionDescription': textDescInputRef,
+  });
 
   const handlePropChange = (prop: keyof QuestionBlockConfig['props'], value: string | boolean | string[]) => {
     onUpdate(block.id, { [prop]: value });
@@ -213,54 +79,31 @@ const QuestionEditPanel: React.FC<QuestionEditPanelProps> = ({ block, onUpdate, 
     <div className="flex flex-col gap-8">
       {/* Main Content Section */}
       <div className="space-y-6">
-        {/* Question */}
-        <div className="group">
-          <label htmlFor="question" className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
-            <div className="flex items-center justify-center w-6 h-6 rounded-md bg-purple-500/10 text-purple-400 transition-colors group-hover:bg-purple-500/20">
-              <TypeIcon />
-            </div>
-            Question
-          </label>
-          <Input
-            ref={questionInputRef}
-            id="question"
-            type="text"
-            value={block.props.question || ''}
-            onChange={(e) => handlePropChange('question', e.target.value)}
-            placeholder="What made you choose us?"
-            className="bg-gray-900/50 border-gray-800 text-white placeholder:text-gray-600 focus:bg-gray-900 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 h-11"
-          />
-        </div>
+        <EditField
+          id="question"
+          label="Question"
+          icon={<TypeIcon />}
+          iconColorClass="purple"
+          value={block.props.question || ''}
+          onChange={(v) => handlePropChange('question', v)}
+          placeholder="What made you choose us?"
+          inputRef={questionInputRef}
+        />
 
-        {/* Supporting Text */}
-        <div className="group">
-          <label htmlFor="description" className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
-            <div className="flex items-center justify-center w-6 h-6 rounded-md bg-blue-500/10 text-blue-400 transition-colors group-hover:bg-blue-500/20">
-              <MessageSquareIcon />
-            </div>
-            Supporting Text
-          </label>
-          <Textarea
-            ref={descriptionInputRef}
-            id="description"
-            value={block.props.description || ''}
-            onChange={(e) => handlePropChange('description', e.target.value)}
-            placeholder="Share your experience with us..."
-            className="bg-gray-900/50 border-gray-800 text-white placeholder:text-gray-600 focus:bg-gray-900 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 min-h-[90px] resize-none leading-relaxed"
-            rows={3}
-          />
-        </div>
+        <EditField
+          id="description"
+          label="Supporting Text"
+          icon={<MessageSquareIcon />}
+          iconColorClass="blue"
+          type="textarea"
+          value={block.props.description || ''}
+          onChange={(v) => handlePropChange('description', v)}
+          placeholder="Share your experience with us..."
+          inputRef={descriptionInputRef}
+        />
       </div>
 
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-800"></div>
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-gray-950 px-3 text-gray-500 font-medium tracking-wide">TESTIMONIAL TYPE</span>
-        </div>
-      </div>
+      <SectionDivider label="TESTIMONIAL TYPE" />
 
       {/* Testimonial Type Toggles */}
       <div className="space-y-4">
@@ -309,54 +152,30 @@ const QuestionEditPanel: React.FC<QuestionEditPanelProps> = ({ block, onUpdate, 
       {/* Video Option Labels - Only show if video is enabled */}
       {enableVideoTestimonial && (
         <>
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-800"></div>
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-gray-950 px-3 text-gray-500 font-medium tracking-wide">VIDEO OPTION LABELS</span>
-            </div>
-          </div>
+          <SectionDivider label="VIDEO OPTION LABELS" />
 
           <div className="space-y-6">
-            {/* Video Title */}
-            <div className="group">
-              <label htmlFor="videoOptionTitle" className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
-                <div className="flex items-center justify-center w-6 h-6 rounded-md bg-purple-500/10 text-purple-400 transition-colors group-hover:bg-purple-500/20">
-                  <VideoIcon />
-                </div>
-                Video Option Title
-              </label>
-              <Input
-                ref={videoTitleInputRef}
-                id="videoOptionTitle"
-                type="text"
-                value={block.props.videoOptionTitle || 'Record a video'}
-                onChange={(e) => handlePropChange('videoOptionTitle', e.target.value)}
-                placeholder="Record a video"
-                className="bg-gray-900/50 border-gray-800 text-white placeholder:text-gray-600 focus:bg-gray-900 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 h-11"
-              />
-            </div>
+            <EditField
+              id="videoOptionTitle"
+              label="Video Option Title"
+              icon={<VideoIcon />}
+              iconColorClass="purple"
+              value={block.props.videoOptionTitle || 'Record a video'}
+              onChange={(v) => handlePropChange('videoOptionTitle', v)}
+              placeholder="Record a video"
+              inputRef={videoTitleInputRef}
+            />
 
-            {/* Video Description */}
-            <div className="group">
-              <label htmlFor="videoOptionDescription" className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
-                <div className="flex items-center justify-center w-6 h-6 rounded-md bg-purple-500/10 text-purple-400 transition-colors group-hover:bg-purple-500/20">
-                  <MessageSquareIcon />
-                </div>
-                Video Option Description
-              </label>
-              <Input
-                ref={videoDescInputRef}
-                id="videoOptionDescription"
-                type="text"
-                value={block.props.videoOptionDescription || '2-minute video testimonial'}
-                onChange={(e) => handlePropChange('videoOptionDescription', e.target.value)}
-                placeholder="2-minute video testimonial"
-                className="bg-gray-900/50 border-gray-800 text-white placeholder:text-gray-600 focus:bg-gray-900 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 h-11"
-              />
-            </div>
+            <EditField
+              id="videoOptionDescription"
+              label="Video Option Description"
+              icon={<MessageSquareIcon />}
+              iconColorClass="purple"
+              value={block.props.videoOptionDescription || '2-minute video testimonial'}
+              onChange={(v) => handlePropChange('videoOptionDescription', v)}
+              placeholder="2-minute video testimonial"
+              inputRef={videoDescInputRef}
+            />
           </div>
         </>
       )}
@@ -364,67 +183,35 @@ const QuestionEditPanel: React.FC<QuestionEditPanelProps> = ({ block, onUpdate, 
       {/* Text Option Labels - Only show if text is enabled */}
       {enableTextTestimonial && (
         <>
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-800"></div>
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-gray-950 px-3 text-gray-500 font-medium tracking-wide">TEXT OPTION LABELS</span>
-            </div>
-          </div>
+          <SectionDivider label="TEXT OPTION LABELS" />
 
           <div className="space-y-6">
-            {/* Text Title */}
-            <div className="group">
-              <label htmlFor="textOptionTitle" className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
-                <div className="flex items-center justify-center w-6 h-6 rounded-md bg-lime-500/10 text-lime-400 transition-colors group-hover:bg-lime-500/20">
-                  <PenIcon />
-                </div>
-                Text Option Title
-              </label>
-              <Input
-                ref={textTitleInputRef}
-                id="textOptionTitle"
-                type="text"
-                value={block.props.textOptionTitle || 'Write your story'}
-                onChange={(e) => handlePropChange('textOptionTitle', e.target.value)}
-                placeholder="Write your story"
-                className="bg-gray-900/50 border-gray-800 text-white placeholder:text-gray-600 focus:bg-gray-900 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 h-11"
-              />
-            </div>
+            <EditField
+              id="textOptionTitle"
+              label="Text Option Title"
+              icon={<PenIcon />}
+              iconColorClass="green"
+              value={block.props.textOptionTitle || 'Write your story'}
+              onChange={(v) => handlePropChange('textOptionTitle', v)}
+              placeholder="Write your story"
+              inputRef={textTitleInputRef}
+            />
 
-            {/* Text Description */}
-            <div className="group">
-              <label htmlFor="textOptionDescription" className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
-                <div className="flex items-center justify-center w-6 h-6 rounded-md bg-lime-500/10 text-lime-400 transition-colors group-hover:bg-lime-500/20">
-                  <MessageSquareIcon />
-                </div>
-                Text Option Description
-              </label>
-              <Input
-                ref={textDescInputRef}
-                id="textOptionDescription"
-                type="text"
-                value={block.props.textOptionDescription || 'Text testimonial'}
-                onChange={(e) => handlePropChange('textOptionDescription', e.target.value)}
-                placeholder="Text testimonial"
-                className="bg-gray-900/50 border-gray-800 text-white placeholder:text-gray-600 focus:bg-gray-900 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 h-11"
-              />
-            </div>
+            <EditField
+              id="textOptionDescription"
+              label="Text Option Description"
+              icon={<MessageSquareIcon />}
+              iconColorClass="green"
+              value={block.props.textOptionDescription || 'Text testimonial'}
+              onChange={(v) => handlePropChange('textOptionDescription', v)}
+              placeholder="Text testimonial"
+              inputRef={textDescInputRef}
+            />
           </div>
         </>
       )}
 
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-800"></div>
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-gray-950 px-3 text-gray-500 font-medium tracking-wide">TIPS FOR GREAT TESTIMONIALS</span>
-        </div>
-      </div>
+      <SectionDivider label="TIPS FOR GREAT TESTIMONIALS" />
 
       {/* Tips Section */}
       <div className="space-y-3">
@@ -463,24 +250,12 @@ const QuestionEditPanel: React.FC<QuestionEditPanelProps> = ({ block, onUpdate, 
       </div>
 
       {/* Info Card */}
-      <div className="mt-2 relative overflow-hidden rounded-xl border border-gray-800/50 bg-gradient-to-br from-gray-900/40 to-gray-900/20 p-4">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.05),transparent_50%)]"></div>
-        <div className="relative flex items-start gap-3">
-          <div className="flex-shrink-0 mt-0.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <LightbulbIcon className="w-4 h-4 text-amber-400" />
-            </div>
-          </div>
-          <div className="flex-1 pt-0.5">
-            <p className="text-sm font-medium text-gray-200 mb-1">
-              Tip Guidance
-            </p>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Tips help users provide better, more specific testimonials. Each tip will be displayed with a checkmark icon.
-            </p>
-          </div>
-        </div>
-      </div>
+      <InfoCard
+        icon={<LightbulbIcon className="w-4 h-4 text-amber-400" />}
+        iconColorClass="amber"
+        title="Tip Guidance"
+        description="Tips help users provide better, more specific testimonials. Each tip will be displayed with a checkmark icon."
+      />
     </div>
   );
 };

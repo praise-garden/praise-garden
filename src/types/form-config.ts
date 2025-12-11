@@ -117,6 +117,12 @@ export interface ConsentBlockConfig extends BaseBlockConfig {
   props: {
     title: string;
     description: string;
+    // Usage permission options
+    publicOptionTitle: string;
+    publicOptionDescription: string;
+    privateOptionTitle: string;
+    privateOptionDescription: string;
+    // Legacy checkbox (can be removed later)
     checkboxLabel: string;
     buttonText: string;
     trustNote: string;
@@ -190,6 +196,16 @@ export interface FormTheme {
   secondaryColor: string;
   headingFont: string;
   bodyFont: string;
+  // Brand Identity
+  brandName?: string;
+  showBrandName?: boolean;
+  brandNameColor?: string;
+  brandNameFont?: string;
+  brandNameFontSize?: number; // in px
+  brandNameIsBold?: boolean;
+  brandNameIsItalic?: boolean;
+  brandNameIsUnderline?: boolean;
+  logoTextSpacing?: number; // gap in px between logo and text
 }
 
 export interface FormConfig {

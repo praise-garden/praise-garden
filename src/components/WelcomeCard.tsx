@@ -21,13 +21,13 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 interface WelcomeCardProps extends Omit<FormCardProps, 'config' | 'onFieldFocus'> {
     config: WelcomeBlockConfig;
     onFieldFocus?: (blockId: string, fieldPath: string) => void;
-  }
+}
 
 const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...props }) => {
     const handleFieldClick = (fieldPath: string) => {
         onFieldFocus?.(config.id, fieldPath);
     };
-    
+
     return (
         <FormCard {...props}>
             <div className="relative flex-grow flex flex-col items-center justify-center px-16 py-12 text-center overflow-hidden">
@@ -41,26 +41,38 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
                     className="relative z-10 w-full max-w-3xl space-y-8"
                 >
                     {/* Company Branding */}
-                    <div className="flex justify-center items-center">
-                        <img 
-                            className="w-7 h-7 mr-2 object-contain" 
-                            src={config.props.logoUrl}
-                            alt="Company Logo"
-                            onClick={() => handleFieldClick('props.logoUrl')}
-                            data-field="props.logoUrl"
-                        />
-                        <span 
-                            className="text-xl font-bold text-white"
-                            onClick={() => handleFieldClick('props.brandName')}
-                            data-field="props.brandName"
-                        >
-                            {config.props.brandName}
-                        </span>
+                    <div
+                        className="flex justify-center items-center mb-2"
+                        style={{ gap: `${props.theme?.logoTextSpacing ?? 12}px` }}
+                    >
+                        {config.props.logoUrl && (
+                            <img
+                                className="w-12 h-12 object-contain"
+                                src={config.props.logoUrl}
+                                alt="Company Logo"
+                                onClick={() => handleFieldClick('props.logoUrl')}
+                                data-field="props.logoUrl"
+                            />
+                        )}
+                        {(props.theme?.showBrandName !== false && props.theme?.brandName) && (
+                            <span
+                                style={{
+                                    color: props.theme?.brandNameColor || 'white',
+                                    fontFamily: props.theme?.brandNameFont || props.theme?.headingFont,
+                                    fontSize: `${props.theme?.brandNameFontSize || 24}px`,
+                                    fontWeight: props.theme?.brandNameIsBold ? 700 : 400,
+                                    fontStyle: props.theme?.brandNameIsItalic ? 'italic' : 'normal',
+                                    textDecoration: props.theme?.brandNameIsUnderline ? 'underline' : 'none',
+                                }}
+                            >
+                                {props.theme.brandName}
+                            </span>
+                        )}
                     </div>
 
                     {/* Main Content */}
                     <div className="space-y-4">
-                        <h1 
+                        <h1
                             className="text-3xl md:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400"
                             style={{ color: config.props.titleColor }}
                             onClick={() => handleFieldClick('props.title')}
@@ -68,7 +80,7 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
                         >
                             {config.props.title}
                         </h1>
-                        <p 
+                        <p
                             className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed"
                             style={{ color: config.props.descriptionColor }}
                             onClick={() => handleFieldClick('props.description')}
@@ -84,8 +96,8 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
                         whileHover={{ scale: 1.05, boxShadow: `0px 0px 30px ${config.props.buttonBgColor}66` }} // 66 for 40% opacity
                         whileTap={{ scale: 0.95 }}
                         className="font-semibold py-2.5 px-7 rounded-full text-base transition-all duration-300"
-                        style={{ 
-                            backgroundColor: config.props.buttonBgColor, 
+                        style={{
+                            backgroundColor: config.props.buttonBgColor,
                             color: config.props.buttonTextColor,
                             boxShadow: `0px 0px 20px ${config.props.buttonBgColor}33` // 33 for 20% opacity
                         }}
@@ -97,7 +109,7 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
 
                     {/* Feature Highlights */}
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-5 text-xs text-gray-500">
-                        <div 
+                        <div
                             className="flex items-center gap-2"
                             onClick={() => handleFieldClick('props.timingMessage')}
                             data-field="props.timingMessage"
@@ -105,7 +117,7 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
                             <ClockIcon className="w-4 h-4" />
                             <span>{config.props.timingMessage}</span>
                         </div>
-                        <div 
+                        <div
                             className="flex items-center gap-2"
                             onClick={() => handleFieldClick('props.consentMessage')}
                             data-field="props.consentMessage"
