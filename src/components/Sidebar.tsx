@@ -29,7 +29,7 @@ const navSections = [
     title: "Collection",
     items: [
       { label: "Form Builder", icon: "form", href: "/dashboard/forms" },
-      { label: "Widgets", icon: "widget", href: "/dashboard/widgets" },
+      { label: "Design", icon: "widget", href: "/dashboard/widgets" },
     ],
   },
 ];
@@ -38,18 +38,18 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
   if (name === "star") {
     return (
       <svg aria-hidden viewBox="0 0 24 24" className={className}>
-        <path d="M12 3l2.9 5.88 6.5.95-4.7 4.57 1.1 6.45L12 18.6 6.2 21.85l1.1-6.45L2.6 9.83l6.5-.95L12 3z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M12 3l2.9 5.88 6.5.95-4.7 4.57 1.1 6.45L12 18.6 6.2 21.85l1.1-6.45L2.6 9.83l6.5-.95L12 3z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
   if (name === "upload") {
     return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
     );
   }
   if (name === "form") {
     return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 13H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 9H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 13H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 17H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M10 9H8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
     );
   }
   if (name === "widget") {
@@ -72,19 +72,19 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
   }
   if (name === "gear") {
     return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm9.4 4a7.4 7.4 0 0 0-.2-1.6l2-1.5-2-3.5-2.3 1a7.7 7.7 0 0 0-2.7-1.6l-.3-2.5H10l-.3 2.5a7.7 7.7 0 0 0-2.7 1.6l-2.3-1-2 3.5 2 1.5A7.4 7.4 0 0 0 2.6 12c0 .54.07 1.07.2 1.6l-2 1.5 2 3.5 2.3-1a7.7 7.7 0 0 0 2.7 1.6l.3 2.5h4.8l.3-2.5a7.7 7.7 0 0 0 2.7-1.6l2.3 1 2-3.5-2-1.5c.13-.52.2-1.05.2-1.6z" fill="currentColor"/></svg>
+      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm9.4 4a7.4 7.4 0 0 0-.2-1.6l2-1.5-2-3.5-2.3 1a7.7 7.7 0 0 0-2.7-1.6l-.3-2.5H10l-.3 2.5a7.7 7.7 0 0 0-2.7 1.6l-2.3-1-2 3.5 2 1.5A7.4 7.4 0 0 0 2.6 12c0 .54.07 1.07.2 1.6l-2 1.5 2 3.5 2.3-1a7.7 7.7 0 0 0 2.7 1.6l.3 2.5h4.8l.3-2.5a7.7 7.7 0 0 0 2.7-1.6l2.3 1 2-3.5-2-1.5c.13-.52.2-1.05.2-1.6z" fill="currentColor" /></svg>
     );
   }
   if (name === "chevron-down") {
     return (
-      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <svg aria-hidden viewBox="0 0 24 24" className={className}><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
     );
   }
   if (name === "chevrons-vertical") {
     return (
       <svg aria-hidden viewBox="0 0 24 24" className={className}>
-        <path d="M7 9l5-5 5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M7 15l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M7 9l5-5 5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M7 15l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -272,17 +272,15 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
                         key={item.label}
                         href={href}
                         aria-current={isActive ? "page" : undefined}
-                        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
-                          isActive
+                        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${isActive
                             ? "bg-emerald-500/10 text-emerald-300"
                             : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
-                        }`}
+                          }`}
                       >
                         <Icon
                           name={item.icon}
-                          className={`size-4 transition-colors ${
-                            isActive ? "text-emerald-400" : "text-gray-500 group-hover:text-gray-300"
-                          }`}
+                          className={`size-4 transition-colors ${isActive ? "text-emerald-400" : "text-gray-500 group-hover:text-gray-300"
+                            }`}
                         />
                         <span className="truncate">{item.label}</span>
                       </Link>
@@ -313,11 +311,10 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
                     {emailAddress || "No email"}
                   </p>
                 </div>
-                <div className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-all ${
-                  planLabel === 'hacker'
+                <div className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-all ${planLabel === 'hacker'
                     ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                     : 'border border-blue-500/30 bg-blue-500/10 text-blue-400'
-                }`}>
+                  }`}>
                   {planLabel}
                 </div>
               </button>

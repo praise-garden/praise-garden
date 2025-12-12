@@ -1,0 +1,150 @@
+// ================================================================= //
+//                       WIDGET CONFIGURATION                        //
+// ================================================================= //
+// This file defines the structure for widget properties.
+// Pattern: BaseWidget (Common) -> Extended Widgets (Specific)
+// ================================================================= //
+
+// ----------------------------------------------------------------- //
+// 1. BASE WIDGET CONFIGURATION                                      //
+// ----------------------------------------------------------------- //
+// These properties are shared by ALL widgets. 
+// Every new widget MUST extend this interface.
+
+export interface BaseWidgetConfig {
+    // Identity
+    id: string;
+    name: string;
+    projectId: string;
+    createdAt: string;
+    updatedAt: string;
+
+    // Theme (Common to all)
+    primaryColor: string;
+    colorScheme: 'light' | 'dark' | 'auto';
+    fontFamily: string;
+    borderRadius: number;
+    maxWidth: number;
+
+    // Visibility (Common toggles)
+    showRating: boolean;
+    showDate: boolean;
+    showSourceIcon: boolean;
+    showVerifiedBadge: boolean;
+    showAuthorAvatar: boolean;
+}
+
+// ----------------------------------------------------------------- //
+// 2. EXTENDED WIDGET CONFIGURATIONS                                 //
+// ----------------------------------------------------------------- //
+// Specific widget types extend the base config and add their own props.
+
+// --- Card Widgets (Social Card, Minimal Card) ---
+export interface CardWidgetConfig extends BaseWidgetConfig {
+    type: 'social-card' | 'minimal-card' | 'quote-card';
+
+    // Card-specific props - RESTRICTED TO 3 THEMES
+    cardStyle: 'minimal' | 'modern' | 'brutal';
+    maxLines: number;
+    showNavigation: boolean;
+}
+
+// --- Collection Widgets (List Feed, Grid, Carousel) ---
+export interface CollectionWidgetConfig extends BaseWidgetConfig {
+    type: 'list-feed' | 'grid' | 'masonry' | 'carousel';
+
+    // Collection-specific props
+    columns: 1 | 2 | 3 | 4;
+    gap: number;
+    itemsPerPage: number;
+    navigationType: 'arrows' | 'dots' | 'none';
+}
+
+// --- Badge Widgets (Rating Badge) ---
+export interface BadgeWidgetConfig extends BaseWidgetConfig {
+    type: 'rating-badge' | 'trust-badge';
+
+    // Badge-specific props
+    size: 'small' | 'medium' | 'large';
+    layout: 'row' | 'column';
+}
+
+// ----------------------------------------------------------------- //
+// 3. MAIN WIDGET CONFIG TYPE                                        //
+// ----------------------------------------------------------------- //
+// The union of all possible widget configurations.
+
+export type WidgetConfig =
+    | CardWidgetConfig
+    | CollectionWidgetConfig
+    | BadgeWidgetConfig;
+
+export type WidgetType = WidgetConfig['type'];
+
+// ----------------------------------------------------------------- //
+// 4. HELPER FUNCTIONS & DEFAULTS                                    //
+// ----------------------------------------------------------------- //
+
+const BASE_DEFAULTS = {
+    primaryColor: '#6366f1',
+    colorScheme: 'dark' as const,
+    fontFamily: 'Inter',
+    borderRadius: 16,
+    maxWidth: 1200,
+    showRating: true,
+    showDate: true,
+    showSourceIcon: true,
+    showVerifiedBadge: true,
+    showAuthorAvatar: true,
+};
+
+// Type Guards to narrow down the config type in usage
+export const isCardWidget = (config: WidgetConfig): config is CardWidgetConfig => {
+    return ['social-card', 'minimal-card', 'quote-card'].includes(config.type);
+};
+
+export const isCollectionWidget = (config: WidgetConfig): config is CollectionWidgetConfig => {
+    return ['list-feed', 'grid', 'masonry', 'carousel'].includes(config.type);
+};
+
+export const isBadgeWidget = (config: WidgetConfig): config is BadgeWidgetConfig => {
+    return ['rating-badge', 'trust-badge'].includes(config.type);
+};
+
+// Factory function to create a config with strict typing
+export function createWidgetConfig(
+    type: WidgetType,
+    partial: { id: string; name: string; projectId: string }
+): WidgetConfig {
+    const now = new Date().toISOString();
+    const base = { ...partial, ...BASE_DEFAULTS, createdAt: now, updatedAt: now };
+
+    if (['social-card', 'minimal-card', 'quote-card'].includes(type)) {
+        return {
+            ...base,
+            type: type as CardWidgetConfig['type'],
+            cardStyle: 'minimal',
+            maxLines: 4,
+            showNavigation: true,
+        };
+    }
+
+    if (['list-feed', 'grid', 'masonry', 'carousel'].includes(type)) {
+        return {
+            ...base,
+            type: type as CollectionWidgetConfig['type'],
+            columns: 1,
+            gap: 16,
+            itemsPerPage: 10,
+            navigationType: 'arrows',
+        };
+    }
+
+    // Default to badge
+    return {
+        ...base,
+        type: type as BadgeWidgetConfig['type'],
+        size: 'medium',
+        layout: 'row',
+    };
+}
