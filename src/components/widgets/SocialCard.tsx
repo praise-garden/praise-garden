@@ -10,7 +10,7 @@ interface SocialCardProps {
         id: string
         authorName: string
         authorTitle: string
-        authorAvatarUrl: string
+        authorAvatarUrl?: string
         rating: number
         content: string
         source: string

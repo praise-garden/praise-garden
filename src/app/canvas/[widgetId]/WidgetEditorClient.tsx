@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-import { ArrowLeft, Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Save, Pencil, Heart } from "lucide-react"
+import { ArrowLeft, Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Save, Pencil, Heart, X, Search, ListFilter, Twitter } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -29,28 +29,48 @@ import { SocialCard } from "@/components/widgets/SocialCard"
 import { MinimalCard } from "@/components/widgets/MinimalCard"
 import { RatingBadge } from "@/components/widgets/RatingBadge"
 
-// Testimonials data - Generic models for preview
-const DEMO_TESTIMONIALS = [
+// ===================== TESTIMONIAL TYPES ===================== //
+export interface WidgetTestimonial {
+  id: string;
+  authorName: string;
+  authorTitle: string;
+  authorAvatarUrl?: string;
+  rating: number;
+  content: string;
+  source: string;
+  date: string;
+}
+
+// ===================== DEFAULT DEMO TESTIMONIALS ===================== //
+// Shown when user has no testimonials selected (fallback)
+const DEFAULT_DEMO_TESTIMONIALS: WidgetTestimonial[] = [
   {
-    id: "test-1",
+    id: "demo-1",
     authorName: "Sarah Chen",
     authorTitle: "Senior FE Engineer",
-    authorAvatarUrl: "/avatars/sarah.jpg",
     rating: 5,
-    content: "This widget builder is an absolute game-changer. I used to spend hours custom-coding testimonials for every landing page. Now I just tweak a few sliders and copy the embed code. The design quality is top-notch right out of the box.",
+    content: "This widget builder is an absolute game-changer. I used to spend hours custom-coding testimonials for every landing page. Now I just tweak a few sliders and copy the embed code.",
     source: "TWITTER",
     date: "Oct 15, 2023"
   },
-  ...Array.from({ length: 5 }).map((_, i) => ({
-    id: `test-${i + 2}`,
-    authorName: `User Name ${i + 2}`,
-    authorTitle: "Job Title",
-    authorAvatarUrl: "",
+  {
+    id: "demo-2",
+    authorName: "Mike Ross",
+    authorTitle: "Product Designer",
     rating: 5,
-    content: "This is a placeholder for the testimonial content. It demonstrates how the text will look in the widget layout. The actual content will be populated from your collected testimonials.",
-    source: "Source",
-    date: "Oct 12, 2025"
-  }))
+    content: "The widget builder is an absolute game-changer. I used to spend hours custom-coding testimonials for every landing page.",
+    source: "TWITTER",
+    date: "Oct 14, 2023"
+  },
+  {
+    id: "demo-3",
+    authorName: "Amanda Lee",
+    authorTitle: "Startup Founder",
+    rating: 4,
+    content: "This widget builder is an absolute game-changer. Great for quick prototyping.",
+    source: "LINKEDIN",
+    date: "Oct 13, 2023"
+  },
 ];
 
 const ACCENT_COLORS = [
@@ -132,10 +152,229 @@ function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
   )
 }
 
+// ===================== SELECT TESTIMONIALS MODAL ===================== //
+interface SelectTestimonialsModalProps {
+  isOpen: boolean
+  onClose: () => void
+  testimonials: WidgetTestimonial[]
+  selectedIds: string[]
+  onSelectionChange: (ids: string[]) => void
+}
+
+function SelectTestimonialsModal({
+  isOpen,
+  onClose,
+  testimonials,
+  selectedIds,
+  onSelectionChange
+}: SelectTestimonialsModalProps) {
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [activeFilter, setActiveFilter] = React.useState<"all" | "5-stars" | "twitter">("all")
+  const [localSelectedIds, setLocalSelectedIds] = React.useState<string[]>(selectedIds)
+
+  // Reset local state when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setLocalSelectedIds(selectedIds)
+      setSearchQuery("")
+      setActiveFilter("all")
+    }
+  }, [isOpen, selectedIds])
+
+  // Filter testimonials based on search and filter
+  const filteredTestimonials = React.useMemo(() => {
+    return testimonials.filter(t => {
+      // Search filter
+      const matchesSearch = searchQuery === "" ||
+        t.authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.content.toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Category filter
+      let matchesFilter = true
+      if (activeFilter === "5-stars") {
+        matchesFilter = t.rating === 5
+      } else if (activeFilter === "twitter") {
+        matchesFilter = t.source.toUpperCase() === "TWITTER"
+      }
+
+      return matchesSearch && matchesFilter
+    })
+  }, [testimonials, searchQuery, activeFilter])
+
+  const toggleSelection = (id: string) => {
+    setLocalSelectedIds(prev =>
+      prev.includes(id)
+        ? prev.filter(i => i !== id)
+        : [...prev, id]
+    )
+  }
+
+  const handleSave = () => {
+    onSelectionChange(localSelectedIds)
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-[#1a1a1f] rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[80vh] flex flex-col border border-zinc-800">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+          <h2 className="text-lg font-semibold text-white">Select Testimonials</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="p-4 border-b border-zinc-800 space-y-3">
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <Input
+              type="text"
+              placeholder="Search by name or content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-indigo-500"
+            />
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={cn(
+                "px-4 py-1.5 text-xs font-medium rounded-full border transition-all",
+                activeFilter === "all"
+                  ? "bg-white text-black border-white"
+                  : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
+              )}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setActiveFilter("5-stars")}
+              className={cn(
+                "px-4 py-1.5 text-xs font-medium rounded-full border transition-all",
+                activeFilter === "5-stars"
+                  ? "bg-white text-black border-white"
+                  : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
+              )}
+            >
+              5 Stars
+            </button>
+            <button
+              onClick={() => setActiveFilter("twitter")}
+              className={cn(
+                "px-4 py-1.5 text-xs font-medium rounded-full border transition-all",
+                activeFilter === "twitter"
+                  ? "bg-white text-black border-white"
+                  : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
+              )}
+            >
+              Twitter
+            </button>
+          </div>
+        </div>
+
+        {/* Testimonials List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {filteredTestimonials.length === 0 ? (
+            <div className="text-center py-8 text-zinc-500 text-sm">
+              No testimonials found matching your criteria.
+            </div>
+          ) : (
+            filteredTestimonials.map((t) => {
+              const isSelected = localSelectedIds.includes(t.id)
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => toggleSelection(t.id)}
+                  className={cn(
+                    "w-full text-left p-4 rounded-xl border transition-all flex gap-3",
+                    isSelected
+                      ? "bg-indigo-500/10 border-indigo-500/50"
+                      : "bg-zinc-900/30 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
+                  )}
+                >
+                  {/* Checkbox */}
+                  <div
+                    className={cn(
+                      "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
+                      isSelected
+                        ? "bg-indigo-500 border-indigo-500"
+                        : "border-zinc-600 bg-transparent"
+                    )}
+                  >
+                    {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {/* Avatar */}
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium bg-indigo-600 text-white shrink-0"
+                      >
+                        {t.authorName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-white text-sm truncate">{t.authorName}</p>
+                      </div>
+                      {/* Star Rating */}
+                      <div className="flex items-center gap-0.5 text-amber-400">
+                        {Array.from({ length: t.rating }).map((_, i) => (
+                          <Star key={i} className="h-3 w-3 fill-current" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                      {t.content}
+                    </p>
+                  </div>
+                </button>
+              )
+            })
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-zinc-800">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white"
+          >
+            Save Selection ({localSelectedIds.length})
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ===================== WALL OF LOVE PREVIEW COMPONENT ===================== //
 interface WallOfLovePreviewProps {
   config: WallOfLoveWidgetConfig
-  testimonials: typeof DEMO_TESTIMONIALS
+  testimonials: WidgetTestimonial[]
   isDarkMode: boolean
 }
 
@@ -296,7 +535,13 @@ function WallOfLovePreview({ config, testimonials }: WallOfLovePreviewProps) {
 }
 
 
-export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
+// ===================== PROPS INTERFACE ===================== //
+interface WidgetEditorClientProps {
+  widgetId: string;
+  userTestimonials: WidgetTestimonial[];
+}
+
+export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorClientProps) {
   const router = useRouter()
 
   // Initialize config using the helper from widget-config.ts
@@ -311,6 +556,11 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
   const [device, setDevice] = React.useState<"desktop" | "tablet" | "mobile">("desktop")
   const [expandedSections, setExpandedSections] = React.useState<string[]>(["appearance"])
   const [isEditingName, setIsEditingName] = React.useState(false)
+  const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
+  // Initialize with all user testimonials selected by default
+  const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
+    userTestimonials.map(t => t.id)
+  )
   const nameInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
@@ -413,17 +663,35 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
     )
   }
 
+  // @ts-ignore
+  const isDarkMode = config.colorScheme === 'dark' || config.colorScheme === 'auto'
+
+  // Filter testimonials based on selection, fallback to defaults if none selected
+  const filteredTestimonials = React.useMemo(() => {
+    const selected = userTestimonials.filter(t => selectedTestimonialIds.includes(t.id))
+    return selected
+  }, [userTestimonials, selectedTestimonialIds])
+
+  // Use selected testimonials or fall back to defaults if none selected
+  const displayTestimonials = React.useMemo(() => {
+    if (filteredTestimonials.length === 0) {
+      return DEFAULT_DEMO_TESTIMONIALS
+    }
+    return filteredTestimonials
+  }, [filteredTestimonials])
+
+  const activeTestimonial = displayTestimonials[activeCardIndex % displayTestimonials.length] || displayTestimonials[0]
+
   const handleNextCard = () => {
-    setActiveCardIndex((prev) => (prev + 1) % DEMO_TESTIMONIALS.length)
+    setActiveCardIndex((prev) => (prev + 1) % displayTestimonials.length)
   }
 
   const handlePrevCard = () => {
-    setActiveCardIndex((prev) => (prev - 1 + DEMO_TESTIMONIALS.length) % DEMO_TESTIMONIALS.length)
+    setActiveCardIndex((prev) => {
+      const len = displayTestimonials.length || 1
+      return (prev - 1 + len) % len
+    })
   }
-
-  const activeTestimonial = DEMO_TESTIMONIALS[activeCardIndex]
-  // @ts-ignore
-  const isDarkMode = config.colorScheme === 'dark' || config.colorScheme === 'auto'
 
   return (
     <div className="flex flex-col h-screen bg-[#09090b] text-white overflow-hidden font-sans">
@@ -454,6 +722,15 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
           )}
         </div>
         <div className="flex items-center gap-3">
+          {/* Select Testimonials Button */}
+          <Button
+            variant="outline"
+            onClick={() => setIsSelectTestimonialsOpen(true)}
+            className="border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-800 hover:text-white gap-2 font-medium"
+          >
+            <ListFilter className="h-4 w-4" />
+            Select Testimonials ({selectedTestimonialIds.length})
+          </Button>
           <Button className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 font-medium">
             <Save className="h-4 w-4" />
             Save
@@ -503,47 +780,6 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                     </h4>
                     <p className="text-[10px] text-zinc-500 line-clamp-1 leading-relaxed">
                       {widget.description}
-                    </p>
-                  </div>
-                </button>
-              )
-            })}
-
-            {/* Walls of Love Section */}
-            <div className="pt-4 pb-2 px-1">
-              <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium uppercase tracking-wide">
-                <Heart className="h-3 w-3" />
-                Walls of Love
-              </div>
-            </div>
-            {WALL_OF_LOVE_MODELS.map((wall) => {
-              const isActive = config.type === wall.id
-              return (
-                <button
-                  key={wall.id}
-                  onClick={() => handleWidgetChange(wall.id)}
-                  className={cn(
-                    "w-full text-left rounded-xl border transition-all duration-200 overflow-hidden group relative flex flex-col",
-                    isActive
-                      ? "border-transparent bg-zinc-900/50 ring-1 ring-purple-500"
-                      : "border-zinc-800 bg-zinc-900/20 hover:border-zinc-700 hover:bg-zinc-900/40"
-                  )}
-                >
-                  <div className={cn(
-                    "h-28 flex items-center justify-center transition-colors w-full",
-                    isActive ? `bg-gradient-to-br ${wall.color}` : "bg-zinc-900/40 group-hover:bg-zinc-800/60"
-                  )}>
-                    <wall.icon className={cn(
-                      "h-8 w-8 transition-colors",
-                      isActive ? wall.iconColor : "text-zinc-600 group-hover:text-zinc-500"
-                    )} />
-                  </div>
-                  <div className="p-3 bg-[#0c0c0e]/50 w-full border-t border-zinc-800/50">
-                    <h4 className={cn("text-sm font-medium mb-0.5", isActive ? "text-white" : "text-zinc-300")}>
-                      {wall.name}
-                    </h4>
-                    <p className="text-[10px] text-zinc-500 line-clamp-1 leading-relaxed">
-                      {wall.description}
                     </p>
                   </div>
                 </button>
@@ -611,7 +847,7 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                   {isCollectionWidget(config) && (
                     <div className={cn("transition-all duration-300", isDarkMode ? "text-zinc-100" : "text-zinc-900")}>
                       <PraiseWidget
-                        testimonials={DEMO_TESTIMONIALS}
+                        testimonials={displayTestimonials}
                         // @ts-ignore - Temporary mapping
                         layout={config.type === "grid" ? "grid" : config.type === "list-feed" ? "list" : "carousel"}
                         columns={config.columns}
@@ -626,15 +862,6 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                         }}
                       />
                     </div>
-                  )}
-
-                  {/* Wall of Love Preview */}
-                  {isWallOfLoveWidget(config) && (
-                    <WallOfLovePreview
-                      config={config}
-                      testimonials={DEMO_TESTIMONIALS}
-                      isDarkMode={isDarkMode}
-                    />
                   )}
                 </div>
               </div>
@@ -861,6 +1088,15 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
           </div>
         </div>
       </div>
+
+      {/* Select Testimonials Modal */}
+      <SelectTestimonialsModal
+        isOpen={isSelectTestimonialsOpen}
+        onClose={() => setIsSelectTestimonialsOpen(false)}
+        testimonials={userTestimonials}
+        selectedIds={selectedTestimonialIds}
+        onSelectionChange={setSelectedTestimonialIds}
+      />
     </div>
   )
 }
