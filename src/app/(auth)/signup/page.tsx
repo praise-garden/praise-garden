@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
+import Logo from "@/components/ui/Logo";
 import { initializeUserResources } from "@/lib/auth/initialize-user";
 
 const SignupPage = () => {
@@ -104,13 +104,7 @@ const SignupPage = () => {
         {/* Logo Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-lg mb-4">
-            <Image
-              src="/icon.png"
-              alt="Praise Garden Logo"
-              width={48}
-              height={48}
-              className="rounded-lg"
-            />
+            <Logo size={48} />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Create your account</h1>
           <p className="text-slate-600 text-sm">

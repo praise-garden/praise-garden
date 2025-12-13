@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import Image from "next/image";
+import Logo from "@/components/ui/Logo";
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import {
@@ -190,14 +190,14 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
       className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
     >
       <div className="flex h-full flex-col">
-        {/* 1. PraiseGarden Logo Section - Top */}
+        {/* 1. Trustimonials Logo Section - Top */}
         <div className="flex-shrink-0 p-6">
           <div className="flex items-center gap-3">
             <div className="size-9 flex items-center justify-center">
-              <Image src="/icon.png" alt="PraiseGarden Logo" width={36} height={36} />
+              <Logo size={36} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white tracking-tight">PraiseGarden</h1>
+              <h1 className="text-lg font-bold text-white tracking-tight">Trustimonials</h1>
             </div>
           </div>
         </div>
@@ -273,8 +273,8 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
                         href={href}
                         aria-current={isActive ? "page" : undefined}
                         className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${isActive
-                            ? "bg-emerald-500/10 text-emerald-300"
-                            : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
+                          ? "bg-emerald-500/10 text-emerald-300"
+                          : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
                           }`}
                       >
                         <Icon
@@ -312,8 +312,8 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
                   </p>
                 </div>
                 <div className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-all ${planLabel === 'hacker'
-                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                    : 'border border-blue-500/30 bg-blue-500/10 text-blue-400'
+                  ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                  : 'border border-blue-500/30 bg-blue-500/10 text-blue-400'
                   }`}>
                   {planLabel}
                 </div>

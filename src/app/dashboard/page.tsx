@@ -244,10 +244,10 @@ export default function DashboardPage() {
       showSource,
       compact,
     };
-    const snippet = `<div id="praisegarden-widget" data-layout="${widgetLayout}" data-columns="${widgetColumns}" data-show-rating="${showRating}" data-show-source="${showSource}" data-compact="${compact}"></div>
+    const snippet = `<div id="trustimonials-widget" data-layout="${widgetLayout}" data-columns="${widgetColumns}" data-show-rating="${showRating}" data-show-source="${showSource}" data-compact="${compact}"></div>
 <script>
 (function(){
-  var el = document.getElementById('praisegarden-widget');
+  var el = document.getElementById('trustimonials-widget');
   if(!el) return;
   var layout = el.getAttribute('data-layout') || 'grid';
   var columns = parseInt(el.getAttribute('data-columns') || '3', 10);
@@ -260,7 +260,7 @@ export default function DashboardPage() {
   placeholder.style.padding = '12px';
   placeholder.style.borderRadius = '10px';
   placeholder.style.fontFamily = 'ui-sans-serif, system-ui, sans-serif';
-  placeholder.innerText = 'PraiseGarden widget placeholder (no backend yet).\\n' +
+  placeholder.innerText = 'Trustimonials widget placeholder (no backend yet).\\n' +
     'layout=' + layout + ', columns=' + columns + ', showRating=' + showRating + ', showSource=' + showSource + ', compact=' + compact;
   el.appendChild(placeholder);
 })();
@@ -418,119 +418,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Widget Preview Section */}
-        <div className="mt-12 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-50">Widget Preview</h2>
-              <p className="text-zinc-400 mt-1">Preview how your testimonials will look as embeddable widgets.</p>
-            </div>
-            <Button
-              onClick={copyEmbedSnippet}
-              variant="outline"
-              className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-colors"
-            >
-              <Icon name="copy" className="size-4 mr-2" />
-              Copy Embed Code
-            </Button>
-          </div>
-
-          {/* Widget Controls */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
-              <Label htmlFor="widget-layout" className="text-sm font-medium">Layout</Label>
-              <Select value={widgetLayout} onValueChange={(v) => setWidgetLayout(v as any)}>
-                <SelectTrigger id="widget-layout" className="w-32 bg-zinc-900 border-zinc-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800">
-                  <SelectItem value="grid">Grid</SelectItem>
-                  <SelectItem value="list">List</SelectItem>
-                  <SelectItem value="carousel">Carousel</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {widgetLayout === "grid" && (
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
-                <Label htmlFor="widget-columns" className="text-sm font-medium">Columns</Label>
-                <Select value={String(widgetColumns)} onValueChange={(v) => setWidgetColumns(Number(v) as any)}>
-                  <SelectTrigger id="widget-columns" className="w-20 bg-zinc-900 border-zinc-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
-              <Label htmlFor="show-rating" className="text-sm font-medium">Show Rating</Label>
-              <Switch
-                id="show-rating"
-                checked={showRating}
-                onCheckedChange={setShowRating}
-                className="data-[state=checked]:bg-violet-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
-              <Label htmlFor="show-source" className="text-sm font-medium">Show Source</Label>
-              <Switch
-                id="show-source"
-                checked={showSource}
-                onCheckedChange={setShowSource}
-                className="data-[state=checked]:bg-violet-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 p-4">
-              <Label htmlFor="compact-mode" className="text-sm font-medium">Compact Mode</Label>
-              <Switch
-                id="compact-mode"
-                checked={compact}
-                onCheckedChange={setCompact}
-                className="data-[state=checked]:bg-violet-500"
-              />
-            </div>
-          </div>
-
-          {/* Widget Preview */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Live Preview</h3>
-              <span className="text-sm text-zinc-400">
-                {widgetTestimonials.length} public testimonial{widgetTestimonials.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-
-            {widgetTestimonials.length > 0 ? (
-              <div className="bg-white rounded-lg p-6">
-                <PraiseWidget
-                  testimonials={widgetTestimonials}
-                  layout={widgetLayout}
-                  columns={widgetColumns}
-                  showRating={showRating}
-                  showSource={showSource}
-                  compact={compact}
-                  ariaLabel="PraiseGarden widget preview"
-                />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center py-12 text-zinc-400">
-                <div className="text-center">
-                  <Icon name="eye-closed" className="size-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">No public testimonials to preview</p>
-                  <p className="text-sm">Make some testimonials public to see the widget preview</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {editingTestimonial && (

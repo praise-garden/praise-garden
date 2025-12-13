@@ -1,5 +1,6 @@
 import React from 'react';
 import ContentContainer from '@/components/ui/content-container';
+import Logo from '@/components/ui/Logo';
 
 type FormTopBarProps = {
   onBack: () => void;
@@ -23,7 +24,7 @@ const FormTopBar: React.FC<FormTopBarProps> = ({ onBack }) => {
         >
           <ArrowLeftIcon />
         </button>
-        <img src="/icon.png" alt="PraiseGarden" className="w-5 h-5 opacity-70" />
+        <Logo size={20} className="w-5 h-5 opacity-70" />
       </div>
     </ContentContainer>
   );

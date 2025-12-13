@@ -2,13 +2,14 @@
 
 import * as React from "react"
 import { WIDGET_MODELS } from "@/lib/widget-models"
+import { WALL_OF_LOVE_MODELS } from "@/lib/wall-of-love-models"
 import { PraiseWidget } from "@/components/praise/PraiseWidget"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-import { ArrowLeft, Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Save, Pencil } from "lucide-react"
+import { ArrowLeft, Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Save, Pencil, Heart } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -17,9 +18,11 @@ import {
   CardWidgetConfig,
   CollectionWidgetConfig,
   BadgeWidgetConfig,
+  WallOfLoveWidgetConfig,
   isCardWidget,
   isCollectionWidget,
   isBadgeWidget,
+  isWallOfLoveWidget,
   createWidgetConfig
 } from "@/types/widget-config"
 import { SocialCard } from "@/components/widgets/SocialCard"
@@ -59,6 +62,239 @@ const ACCENT_COLORS = [
   { name: "Red", value: "#ef4444", class: "bg-red-500" },
   { name: "White", value: "#ffffff", class: "bg-white" },
 ]
+
+const RATING_COLORS = [
+  { name: "Yellow", value: "#fbbf24", class: "bg-amber-400" },
+  { name: "Orange", value: "#f59e0b", class: "bg-amber-500" },
+  { name: "Red", value: "#ef4444", class: "bg-red-500" },
+  { name: "Green", value: "#10b981", class: "bg-emerald-500" },
+  { name: "Blue", value: "#3b82f6", class: "bg-blue-500" },
+  { name: "Purple", value: "#8b5cf6", class: "bg-violet-500" },
+]
+
+// ===================== REUSABLE COLOR PICKER FIELD ===================== //
+// A single color swatch + hex input field for any color property
+interface ColorPickerFieldProps {
+  label: string
+  value: string
+  onChange: (newValue: string) => void
+}
+
+function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleColorClick = () => {
+    inputRef.current?.click()
+  }
+
+  const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let hex = e.target.value
+    // Allow input even without #
+    if (!hex.startsWith('#') && hex.length > 0) {
+      hex = '#' + hex
+    }
+    // Basic validation: only update if it looks like a valid hex
+    if (/^#([0-9A-Fa-f]{0,6})$/.test(hex) || hex === '') {
+      onChange(hex || '#000000')
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-medium text-zinc-400">{label}</Label>
+      <div className="flex items-center gap-3">
+        {/* Hidden native color picker */}
+        <input
+          ref={inputRef}
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="sr-only"
+        />
+        {/* Visible color swatch (clickable) */}
+        <button
+          type="button"
+          onClick={handleColorClick}
+          className="h-8 w-8 rounded-lg border border-zinc-700 cursor-pointer transition-transform hover:scale-105 shrink-0"
+          style={{ backgroundColor: value }}
+          aria-label={`Pick ${label}`}
+        />
+        {/* Hex text input */}
+        <Input
+          type="text"
+          value={value.toUpperCase()}
+          onChange={handleHexChange}
+          placeholder="#FFFFFF"
+          className="h-8 w-28 bg-zinc-900 border-zinc-700 text-white text-xs font-mono uppercase"
+        />
+      </div>
+    </div>
+  )
+}
+
+// ===================== WALL OF LOVE PREVIEW COMPONENT ===================== //
+interface WallOfLovePreviewProps {
+  config: WallOfLoveWidgetConfig
+  testimonials: typeof DEMO_TESTIMONIALS
+  isDarkMode: boolean
+}
+
+function WallOfLovePreview({ config, testimonials }: WallOfLovePreviewProps) {
+  const { wallStyle } = config
+
+  // Style-specific configurations
+  const getStyleConfig = () => {
+    switch (wallStyle) {
+      case 'glassmorphism':
+        return {
+          containerBg: 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50',
+          cardBg: 'bg-white/70 backdrop-blur-md',
+          cardBorder: 'border border-white/50',
+          cardShadow: 'shadow-lg shadow-purple-500/5',
+          cardRadius: 'rounded-2xl',
+          textColor: 'text-zinc-800',
+          subtitleColor: 'text-zinc-500',
+        }
+      case 'brutalist':
+        return {
+          containerBg: 'bg-white',
+          cardBg: 'bg-yellow-300',
+          cardBorder: 'border-2 border-black',
+          cardShadow: 'shadow-[4px_4px_0px_0px_#000]',
+          cardRadius: 'rounded-none',
+          textColor: 'text-black',
+          subtitleColor: 'text-zinc-700',
+        }
+      case 'cinematic':
+        return {
+          containerBg: 'bg-[#0f0f13]',
+          cardBg: 'bg-[#1a1a23]',
+          cardBorder: 'border border-purple-500/20',
+          cardShadow: 'shadow-lg shadow-purple-500/10',
+          cardRadius: 'rounded-xl',
+          textColor: 'text-white',
+          subtitleColor: 'text-zinc-400',
+        }
+      case 'bento':
+      default:
+        return {
+          containerBg: 'bg-slate-50',
+          cardBg: 'bg-white',
+          cardBorder: 'border border-slate-200',
+          cardShadow: 'shadow-sm',
+          cardRadius: 'rounded-xl',
+          textColor: 'text-zinc-900',
+          subtitleColor: 'text-zinc-500',
+        }
+    }
+  }
+
+  const styleConfig = getStyleConfig()
+  const columnClass = config.columns === 2 ? 'grid-cols-2' :
+    config.columns === 3 ? 'grid-cols-3' :
+      config.columns === 4 ? 'grid-cols-4' : 'grid-cols-5'
+
+  return (
+    <div className={cn("w-full min-h-[500px] overflow-hidden transition-colors", styleConfig.containerBg)}>
+      {/* Header */}
+      {config.showHeader && (
+        <div className="p-8 text-center">
+          <h1 className={cn(
+            "text-3xl font-bold mb-2",
+            wallStyle === 'cinematic' ? 'text-white' : 'text-zinc-900'
+          )}>
+            {config.headerTitle}
+          </h1>
+          <p className={cn(
+            "text-sm max-w-xl mx-auto mb-1",
+            wallStyle === 'cinematic' ? 'text-zinc-400' :
+              wallStyle === 'brutalist' ? 'text-zinc-700 font-mono' : 'text-zinc-500'
+          )}>
+            {wallStyle === 'glassmorphism' && 'Modern Masonry Glassmorphism'}
+            {wallStyle === 'brutalist' && 'Neo-Brutalist'}
+            {wallStyle === 'cinematic' && 'Cinematic Dark Mode'}
+            {wallStyle === 'bento' && 'Strict, Modulay with Bento Grid'}
+          </p>
+        </div>
+      )}
+
+      {/* Testimonials Grid */}
+      <div className={cn("p-6 grid gap-4", columnClass)}>
+        {testimonials.slice(0, 10).map((t, index) => (
+          <div
+            key={t.id}
+            className={cn(
+              "p-4 transition-all",
+              styleConfig.cardBg,
+              styleConfig.cardBorder,
+              styleConfig.cardShadow,
+              styleConfig.cardRadius,
+              // Brutalist: some cards are dark for contrast
+              wallStyle === 'brutalist' && index === 4 && 'bg-zinc-900 text-white',
+              // Cinematic: featured card with video placeholder
+              wallStyle === 'cinematic' && index === 4 && 'row-span-2 bg-zinc-800/50',
+            )}
+          >
+            {/* Author */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "w-9 h-9 flex items-center justify-center text-xs font-medium",
+                    wallStyle === 'brutalist' ? 'rounded-none bg-black text-white' : 'rounded-full',
+                    wallStyle === 'cinematic' && 'ring-2 ring-purple-500/50'
+                  )}
+                  style={{ backgroundColor: wallStyle !== 'brutalist' ? config.primaryColor : undefined, color: '#fff' }}
+                >
+                  {t.authorName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                </div>
+                <div>
+                  <p className={cn("font-medium text-sm", styleConfig.textColor,
+                    wallStyle === 'brutalist' && index === 4 && 'text-white'
+                  )}>
+                    {t.authorName}
+                  </p>
+                  <p className={cn("text-xs", styleConfig.subtitleColor,
+                    wallStyle === 'brutalist' && index === 4 && 'text-zinc-400'
+                  )}>
+                    {t.authorTitle}
+                  </p>
+                </div>
+              </div>
+              {/* Company Icon Placeholder */}
+              <div className={cn(
+                "w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold",
+                wallStyle === 'cinematic' ? 'bg-purple-500/20 text-purple-400' :
+                  wallStyle === 'brutalist' ? 'bg-black text-white border border-black' :
+                    'bg-blue-500/10 text-blue-600'
+              )}>
+                {t.source.charAt(0)}
+              </div>
+            </div>
+
+            {/* Stars */}
+            <div className="flex gap-0.5 mb-2" style={{ color: config.ratingColor }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="fill-current w-3.5 h-3.5" />
+              ))}
+            </div>
+
+            {/* Content */}
+            <p className={cn(
+              "text-sm leading-relaxed",
+              wallStyle === 'cinematic' && index === 4 ? 'line-clamp-6' : 'line-clamp-4',
+              styleConfig.textColor,
+              wallStyle === 'brutalist' && index === 4 && 'text-white'
+            )}>
+              {t.content}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 
 export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
   const router = useRouter()
@@ -103,33 +339,70 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
   // These update the flat config object directly
 
   const updateConfig = (key: string, value: any) => {
-    setConfig(prev => ({ ...prev, [key]: value, updatedAt: new Date().toISOString() } as WidgetConfig))
+    setConfig(prev => {
+      const newConfig = { ...prev, [key]: value, updatedAt: new Date().toISOString() } as WidgetConfig
+      console.log('📦 Config Updated:', JSON.stringify(newConfig, null, 2))
+      return newConfig
+    })
   }
 
   const handleWidgetChange = (newWidgetId: string) => {
-    // When switching widget types, preserve theme settings
-    const newConfig = createWidgetConfig(newWidgetId as WidgetType, {
-      id: config.id,
-      name: config.name,
-      projectId: config.projectId
-    })
+    // PRESERVE all existing settings from the current config.
+    // Only update the 'type' and add type-specific defaults if not already present.
 
-    // Carry over global settings
-    setConfig({
-      ...newConfig,
-      primaryColor: config.primaryColor,
-      colorScheme: config.colorScheme,
-      fontFamily: config.fontFamily,
-      borderRadius: config.borderRadius,
-      maxWidth: config.maxWidth,
-      showRating: config.showRating,
-      showDate: config.showDate,
-      showSourceIcon: config.showSourceIcon,
-      showVerifiedBadge: config.showVerifiedBadge,
-      showAuthorAvatar: config.showAuthorAvatar,
-    })
+    const newType = newWidgetId as WidgetType
+    const now = new Date().toISOString()
 
-    router.push(`/canvas/${newWidgetId}`, { scroll: false })
+    // Start with the EXISTING config (preserving all user settings)
+    let updatedConfig: WidgetConfig = {
+      ...config,
+      type: newType,
+      updatedAt: now,
+    } as WidgetConfig
+
+    // Add type-specific defaults ONLY if they don't exist on the current config
+    if (['social-card', 'minimal-card', 'quote-card'].includes(newType)) {
+      updatedConfig = {
+        ...updatedConfig,
+        cardStyle: (config as any).cardStyle ?? 'minimal',
+        maxLines: (config as any).maxLines ?? 4,
+        showNavigation: (config as any).showNavigation ?? true,
+      } as WidgetConfig
+    } else if (['list-feed', 'grid', 'masonry', 'carousel'].includes(newType)) {
+      updatedConfig = {
+        ...updatedConfig,
+        columns: (config as any).columns ?? 1,
+        gap: (config as any).gap ?? 16,
+        itemsPerPage: (config as any).itemsPerPage ?? 10,
+        navigationType: (config as any).navigationType ?? 'arrows',
+      } as WidgetConfig
+    } else if (['rating-badge', 'trust-badge'].includes(newType)) {
+      updatedConfig = {
+        ...updatedConfig,
+        size: (config as any).size ?? 'medium',
+        layout: (config as any).layout ?? 'row',
+      } as WidgetConfig
+    } else if (['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-bento'].includes(newType)) {
+      const wallStyleMap: Record<string, string> = {
+        'wall-glassmorphism': 'glassmorphism',
+        'wall-brutalist': 'brutalist',
+        'wall-cinematic': 'cinematic',
+        'wall-bento': 'bento',
+      }
+      updatedConfig = {
+        ...updatedConfig,
+        wallStyle: (config as any).wallStyle ?? wallStyleMap[newType] ?? 'glassmorphism',
+        headerTitle: (config as any).headerTitle ?? 'Wall of Love',
+        headerSubtitle: (config as any).headerSubtitle ?? "We're loved by entrepreneurs, creators, freelancers and agencies from all over the world.",
+        showHeader: (config as any).showHeader ?? true,
+        columns: (config as any).columns ?? 5,
+      } as WidgetConfig
+    }
+
+    console.log('🔄 Widget Changed:', newType, JSON.stringify(updatedConfig, null, 2))
+    setConfig(updatedConfig)
+    // NOTE: We do NOT navigate. The config.type IS the source of truth.
+    // The URL widgetId is only used for initial load.
   }
 
   const toggleSection = (section: string) => {
@@ -203,7 +476,7 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
               </Link>
             </div>
             {WIDGET_MODELS.map((widget) => {
-              const isActive = widgetId === widget.id
+              const isActive = config.type === widget.id
               return (
                 <button
                   key={widget.id}
@@ -235,6 +508,47 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                 </button>
               )
             })}
+
+            {/* Walls of Love Section */}
+            <div className="pt-4 pb-2 px-1">
+              <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium uppercase tracking-wide">
+                <Heart className="h-3 w-3" />
+                Walls of Love
+              </div>
+            </div>
+            {WALL_OF_LOVE_MODELS.map((wall) => {
+              const isActive = config.type === wall.id
+              return (
+                <button
+                  key={wall.id}
+                  onClick={() => handleWidgetChange(wall.id)}
+                  className={cn(
+                    "w-full text-left rounded-xl border transition-all duration-200 overflow-hidden group relative flex flex-col",
+                    isActive
+                      ? "border-transparent bg-zinc-900/50 ring-1 ring-purple-500"
+                      : "border-zinc-800 bg-zinc-900/20 hover:border-zinc-700 hover:bg-zinc-900/40"
+                  )}
+                >
+                  <div className={cn(
+                    "h-28 flex items-center justify-center transition-colors w-full",
+                    isActive ? `bg-gradient-to-br ${wall.color}` : "bg-zinc-900/40 group-hover:bg-zinc-800/60"
+                  )}>
+                    <wall.icon className={cn(
+                      "h-8 w-8 transition-colors",
+                      isActive ? wall.iconColor : "text-zinc-600 group-hover:text-zinc-500"
+                    )} />
+                  </div>
+                  <div className="p-3 bg-[#0c0c0e]/50 w-full border-t border-zinc-800/50">
+                    <h4 className={cn("text-sm font-medium mb-0.5", isActive ? "text-white" : "text-zinc-300")}>
+                      {wall.name}
+                    </h4>
+                    <p className="text-[10px] text-zinc-500 line-clamp-1 leading-relaxed">
+                      {wall.description}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
           </div>
 
           <div className="p-4 border-t border-zinc-800">
@@ -249,13 +563,10 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
         {/* CENTER - CANVAS */}
         <div className="flex-1 flex flex-col min-w-0 bg-[#09090b] relative">
           {/* Canvas Area */}
-          <div className={cn(
-            "flex-1 overflow-auto relative flex items-center justify-center p-8",
-            config.colorScheme === "light" ? "bg-zinc-100" : "bg-[#09090b]"
-          )}>
+          <div className="flex-1 overflow-auto relative flex items-center justify-center p-8 bg-[#09090b]">
             <div className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage: `linear-gradient(${config.colorScheme === "light" ? "#e4e4e7" : "#27272a"} 1px, transparent 1px), linear-gradient(90deg, ${config.colorScheme === "light" ? "#e4e4e7" : "#27272a"} 1px, transparent 1px)`,
+                backgroundImage: `linear-gradient(#27272a 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px)`,
                 backgroundSize: '40px 40px',
                 opacity: 0.8
               }}
@@ -278,6 +589,7 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                       testimonial={activeTestimonial}
                       handleNextCard={handleNextCard}
                       handlePrevCard={handlePrevCard}
+                      isDarkMode={isDarkMode}
                     />
                   )}
 
@@ -306,8 +618,23 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                         showRating={config.showRating}
                         showSource={config.showSourceIcon}
                         compact={false}
+                        colorConfig={{
+                          primaryColor: config.primaryColor,
+                          ratingColor: config.ratingColor,
+                          accentColor: config.accentColor,
+                          textColor: config.textColor,
+                        }}
                       />
                     </div>
+                  )}
+
+                  {/* Wall of Love Preview */}
+                  {isWallOfLoveWidget(config) && (
+                    <WallOfLovePreview
+                      config={config}
+                      testimonials={DEMO_TESTIMONIALS}
+                      isDarkMode={isDarkMode}
+                    />
                   )}
                 </div>
               </div>
@@ -360,24 +687,27 @@ export function WidgetEditorClient({ widgetId }: { widgetId: string }) {
                     </div>
                   )}
 
-                  {/* Accent Color */}
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-zinc-400">Accent Color</Label>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {ACCENT_COLORS.map((color) => (
-                        <button
-                          key={color.name}
-                          onClick={() => updateConfig('primaryColor', color.value)}
-                          className={cn(
-                            "h-6 w-6 rounded-full transition-all ring-offset-2 ring-offset-[#09090b]",
-                            color.class,
-                            config.primaryColor === color.value ? "ring-2 ring-white scale-110" : "hover:scale-110 opacity-80 hover:opacity-100"
-                          )}
-                          aria-label={color.name}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  {/* ========== COLOR SETTINGS ========== */}
+                  <ColorPickerField
+                    label="Primary Color"
+                    value={config.primaryColor}
+                    onChange={(v) => updateConfig('primaryColor', v)}
+                  />
+                  <ColorPickerField
+                    label="Rating Color"
+                    value={config.ratingColor}
+                    onChange={(v) => updateConfig('ratingColor', v)}
+                  />
+                  <ColorPickerField
+                    label="Accent Color"
+                    value={config.accentColor}
+                    onChange={(v) => updateConfig('accentColor', v)}
+                  />
+                  <ColorPickerField
+                    label="Text Color"
+                    value={config.textColor}
+                    onChange={(v) => updateConfig('textColor', v)}
+                  />
 
                   {/* Border Radius */}
                   <div className="space-y-3">

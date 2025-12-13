@@ -18,13 +18,15 @@ interface SocialCardProps {
     }
     handleNextCard?: () => void
     handlePrevCard?: () => void
+    isDarkMode?: boolean
 }
 
 export function SocialCard({
     config,
     testimonial,
     handleNextCard,
-    handlePrevCard
+    handlePrevCard,
+    isDarkMode = true
 }: SocialCardProps) {
     const getContainerStyles = () => {
         const baseStyles: React.CSSProperties = {
@@ -34,12 +36,12 @@ export function SocialCard({
         switch (config.cardStyle) {
             case 'minimal':
                 return {
-                    className: "bg-black border border-zinc-800 shadow-sm",
+                    className: cn("shadow-sm border transition-colors duration-300", isDarkMode ? "bg-black border-zinc-800" : "bg-white border-zinc-200"),
                     style: { ...baseStyles, borderRadius: `${config.borderRadius}px` }
                 }
             case 'modern':
                 return {
-                    className: "bg-[#18181b] border-y border-r border-border/50 shadow-md",
+                    className: cn("border-y border-r border-border/50 shadow-md transition-colors duration-300", isDarkMode ? "bg-[#18181b]" : "bg-white border-l-4"),
                     style: {
                         ...baseStyles,
                         borderRadius: `${config.borderRadius}px`,
@@ -48,7 +50,7 @@ export function SocialCard({
                 }
             case 'brutal':
                 return {
-                    className: "bg-[#111] shadow-[6px_6px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] hover:scale-[1.005] transition-all duration-200 ease-in-out",
+                    className: cn("shadow-[6px_6px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] hover:scale-[1.005] transition-all duration-200 ease-in-out border-2 border-black", isDarkMode ? "bg-[#111]" : "bg-white"),
                     style: { ...baseStyles, borderRadius: '0px' }
                 }
             default:
@@ -63,16 +65,21 @@ export function SocialCard({
 
     return (
         <div
-            className={cn(
-                "w-full mx-auto overflow-hidden transition-all duration-300 flex flex-col font-sans text-card-foreground",
-                styleClass
-            )}
+            className={
+                cn(
+                    "w-full mx-auto overflow-hidden transition-all duration-300 flex flex-col font-sans text-card-foreground",
+                    styleClass
+                )
+            }
             style={styleObject}
         >
-            <div className={cn(
-                "h-28 bg-[#5454d4] relative px-6 flex items-center justify-between",
-                config.cardStyle === 'brutal' && "border-b-2 border-black"
-            )}>
+            <div
+                className={cn(
+                    "h-28 relative px-6 flex items-center justify-between",
+                    config.cardStyle === 'brutal' && "border-b-2 border-black"
+                )}
+                style={{ backgroundColor: config.primaryColor }}
+            >
                 <div className="absolute right-0 top-0 h-40 w-40 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
                 <div className="flex items-center gap-4 z-10">
                     <div className={cn(
@@ -108,17 +115,20 @@ export function SocialCard({
                 )}
             </div>
 
-            <div className="p-6 pb-8 space-y-4 bg-[#111113] flex-1">
+            <div className={cn("p-6 pb-8 space-y-4 flex-1 transition-colors duration-300", isDarkMode ? "bg-[#111113]" : "bg-white")}>
                 <div className="flex items-center justify-between">
                     {config.showRating && (
-                        <div className="flex gap-1" style={{ color: config.primaryColor }}>
+                        <div className="flex gap-1" style={{ color: config.ratingColor }}>
                             {Array.from({ length: 5 }).map((_, i) => (
-                                <Star key={i} className={cn("fill-current w-4 h-4", i < testimonial.rating ? "" : "text-zinc-800 fill-zinc-800", config.cardStyle === 'brutal' ? "stroke-0" : "")} style={i < testimonial.rating ? { color: config.primaryColor } : {}} />
+                                <Star key={i} className={cn("fill-current w-4 h-4", i < testimonial.rating ? "" : "text-zinc-800 fill-zinc-800", config.cardStyle === 'brutal' ? "stroke-0" : "")} style={i < testimonial.rating ? { color: config.ratingColor } : {}} />
                             ))}
                         </div>
                     )}
                     {config.showSourceIcon && (
-                        <span className="px-2.5 py-0.5 rounded-[4px] bg-[#1c1c2e] text-[#5b5bd6] text-[10px] font-bold tracking-widest uppercase">
+                        <span
+                            className="px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold tracking-widest uppercase"
+                            style={{ backgroundColor: `${config.primaryColor}20`, color: config.primaryColor }}
+                        >
                             {testimonial.source}
                         </span>
                     )}
@@ -126,8 +136,9 @@ export function SocialCard({
 
                 <div className="relative">
                     <p
-                        className="text-zinc-300 text-[15px] leading-[1.5] font-normal"
+                        className="text-[15px] leading-[1.5] font-normal transition-colors duration-300"
                         style={{
+                            color: config.textColor,
                             display: 'block',
                             maxHeight: `calc(1.5em * ${config.maxLines})`,
                             overflow: 'hidden',
@@ -136,7 +147,7 @@ export function SocialCard({
                     >
                         {testimonial.content}
                     </p>
-                    <button className="text-sm font-medium hover:underline mt-1 block" style={{ color: config.primaryColor }}>
+                    <button className="text-sm font-medium hover:underline mt-1 block" style={{ color: config.accentColor }}>
                         Read more
                     </button>
                 </div>
@@ -147,7 +158,7 @@ export function SocialCard({
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }
 

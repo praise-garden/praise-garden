@@ -349,7 +349,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
                                     </div>
                                     <button className="w-full rounded-full border border-gray-600 bg-gray-800/50 px-4 py-2 text-gray-400 hover:border-gray-500 hover:bg-gray-700/50 transition-colors">
                                         <div className="flex items-center gap-2 justify-center">
-                                            <span className="truncate text-xs font-mono">praisegarden.io/t/abc123</span>
+                                            <span className="truncate text-xs font-mono">trustimonials.io/t/abc123</span>
                                             <CopyIcon className="w-4 h-4 flex-shrink-0" />
                                         </div>
                                     </button>

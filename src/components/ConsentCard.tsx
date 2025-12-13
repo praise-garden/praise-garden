@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentBlockConfig } from '@/types/form-config';
-import Image from 'next/image';
+import Logo from '@/components/ui/Logo';
 
 interface ConsentCardProps extends Omit<FormCardProps, 'config'> {
     config: ConsentBlockConfig;
@@ -155,8 +155,8 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
                         transition={{ duration: 0.6 }}
                         className="flex justify-center items-center gap-2.5"
                     >
-                        <Image src="/icon.png" alt="PraiseGarden Logo" width={28} height={28} className="object-contain" />
-                        <span className="text-white text-lg font-bold">PraiseGarden</span>
+                        <Logo size={28} className="object-contain" />
+                        <span className="text-white text-lg font-bold">Trustimonials</span>
                     </motion.div>
 
                     {/* Main Heading */}

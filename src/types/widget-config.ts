@@ -21,6 +21,9 @@ export interface BaseWidgetConfig {
 
     // Theme (Common to all)
     primaryColor: string;
+    ratingColor: string;
+    accentColor: string;
+    textColor: string;
     colorScheme: 'light' | 'dark' | 'auto';
     fontFamily: string;
     borderRadius: number;
@@ -69,6 +72,18 @@ export interface BadgeWidgetConfig extends BaseWidgetConfig {
     layout: 'row' | 'column';
 }
 
+// --- Wall of Love Widgets ---
+export interface WallOfLoveWidgetConfig extends BaseWidgetConfig {
+    type: 'wall-glassmorphism' | 'wall-brutalist' | 'wall-cinematic' | 'wall-bento';
+
+    // Wall-specific props
+    wallStyle: 'glassmorphism' | 'brutalist' | 'cinematic' | 'bento';
+    headerTitle: string;
+    headerSubtitle: string;
+    showHeader: boolean;
+    columns: 2 | 3 | 4 | 5;
+}
+
 // ----------------------------------------------------------------- //
 // 3. MAIN WIDGET CONFIG TYPE                                        //
 // ----------------------------------------------------------------- //
@@ -77,7 +92,8 @@ export interface BadgeWidgetConfig extends BaseWidgetConfig {
 export type WidgetConfig =
     | CardWidgetConfig
     | CollectionWidgetConfig
-    | BadgeWidgetConfig;
+    | BadgeWidgetConfig
+    | WallOfLoveWidgetConfig;
 
 export type WidgetType = WidgetConfig['type'];
 
@@ -86,7 +102,10 @@ export type WidgetType = WidgetConfig['type'];
 // ----------------------------------------------------------------- //
 
 const BASE_DEFAULTS = {
-    primaryColor: '#6366f1',
+    primaryColor: '#5454d4',
+    ratingColor: '#fbbf24',
+    accentColor: '#6366f1',
+    textColor: '#ffffff',
     colorScheme: 'dark' as const,
     fontFamily: 'Inter',
     borderRadius: 16,
@@ -109,6 +128,10 @@ export const isCollectionWidget = (config: WidgetConfig): config is CollectionWi
 
 export const isBadgeWidget = (config: WidgetConfig): config is BadgeWidgetConfig => {
     return ['rating-badge', 'trust-badge'].includes(config.type);
+};
+
+export const isWallOfLoveWidget = (config: WidgetConfig): config is WallOfLoveWidgetConfig => {
+    return ['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-bento'].includes(config.type);
 };
 
 // Factory function to create a config with strict typing
@@ -137,6 +160,24 @@ export function createWidgetConfig(
             gap: 16,
             itemsPerPage: 10,
             navigationType: 'arrows',
+        };
+    }
+
+    if (['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-bento'].includes(type)) {
+        const wallStyleMap: Record<string, WallOfLoveWidgetConfig['wallStyle']> = {
+            'wall-glassmorphism': 'glassmorphism',
+            'wall-brutalist': 'brutalist',
+            'wall-cinematic': 'cinematic',
+            'wall-bento': 'bento',
+        };
+        return {
+            ...base,
+            type: type as WallOfLoveWidgetConfig['type'],
+            wallStyle: wallStyleMap[type] || 'glassmorphism',
+            headerTitle: 'Wall of Love',
+            headerSubtitle: "We're loved by entrepreneurs, creators, freelancers and agencies from all over the world.",
+            showHeader: true,
+            columns: 5,
         };
     }
 

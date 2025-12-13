@@ -46,12 +46,12 @@ export function MinimalCard({ config, testimonial, isDarkMode }: MinimalCardProp
         switch (config.cardStyle) {
             case 'minimal':
                 return {
-                    className: "bg-black border border-zinc-800 shadow-sm",
+                    className: cn("shadow-sm border transition-colors duration-300", isDarkMode ? "bg-black border-zinc-800" : "bg-white border-zinc-200"),
                     style: { ...baseStyles, borderRadius: `${config.borderRadius}px` }
                 }
             case 'modern':
                 return {
-                    className: "bg-[#09090b] border-y border-r border-border/50 shadow-md",
+                    className: cn("border-y border-r border-border/50 shadow-md transition-colors duration-300", isDarkMode ? "bg-[#09090b]" : "bg-white"),
                     style: {
                         ...baseStyles,
                         borderRadius: `${config.borderRadius}px`,
@@ -60,7 +60,7 @@ export function MinimalCard({ config, testimonial, isDarkMode }: MinimalCardProp
                 }
             case 'brutal':
                 return {
-                    className: "bg-[#111] shadow-[6px_6px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] hover:scale-[1.005] transition-all duration-200 ease-in-out",
+                    className: cn("shadow-[6px_6px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] hover:scale-[1.005] transition-all duration-200 ease-in-out border-2 border-black", isDarkMode ? "bg-[#111]" : "bg-white"),
                     style: { ...baseStyles, borderRadius: '0px' }
                 }
             default:
@@ -105,14 +105,14 @@ export function MinimalCard({ config, testimonial, isDarkMode }: MinimalCardProp
                 </div>
 
                 {config.showSourceIcon && (
-                    <div className="text-[#1DA1F2]">
+                    <div style={{ color: config.primaryColor }}>
                         <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" /></svg>
                     </div>
                 )}
             </div>
 
             {config.showRating && (
-                <div className="flex gap-1 mb-4" style={{ color: config.primaryColor }}>
+                <div className="flex gap-1 mb-4" style={{ color: config.ratingColor }}>
                     {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} className={cn("fill-current w-5 h-5", config.cardStyle === 'brutal' ? "stroke-0" : "")} />
                     ))}
@@ -122,8 +122,9 @@ export function MinimalCard({ config, testimonial, isDarkMode }: MinimalCardProp
             <div className="relative">
                 <p
                     ref={textRef}
-                    className={cn("text-[15px] leading-relaxed font-normal mb-2", isDarkMode ? "text-zinc-300" : "text-zinc-600")}
+                    className="text-[15px] leading-relaxed font-normal mb-2"
                     style={{
+                        color: config.textColor,
                         display: 'block',
                         maxHeight: `calc(1.625em * ${config.maxLines})`,
                         overflow: 'hidden',
@@ -134,7 +135,7 @@ export function MinimalCard({ config, testimonial, isDarkMode }: MinimalCardProp
                     {testimonial.content}
                 </p>
                 {isTruncated && (
-                    <button className="text-sm font-medium hover:underline mt-1 block" style={{ color: config.primaryColor }}>
+                    <button className="text-sm font-medium hover:underline mt-1 block" style={{ color: config.accentColor }}>
                         Read more
                     </button>
                 )}

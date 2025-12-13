@@ -1,8 +1,6 @@
 import Link from "next/link"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Sparkles, LayoutGrid, Save, Clapperboard, Video, MessageSquare, Image as ImageIcon, Heart } from "lucide-react"
+import { Sparkles, LayoutGrid, Save, Heart } from "lucide-react"
 import { WIDGET_MODELS } from "@/lib/widget-models"
 import { cn } from "@/lib/utils"
 
@@ -10,7 +8,7 @@ export default function WidgetsPage() {
   const tabs = [
     { label: "Saved", icon: Save, href: "#", active: false },
     { label: "Widgets", icon: LayoutGrid, href: "/dashboard/widgets", active: true },
-    { label: "Walls of Love", icon: Heart, href: "#", active: false },
+    { label: "Walls of Love", icon: Heart, href: "/dashboard/walls-of-love", active: false },
   ]
 
   return (
@@ -31,13 +29,16 @@ export default function WidgetsPage() {
               <Button
                 key={tab.label}
                 variant="ghost"
+                asChild
                 className={cn(
                   "h-10 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-400 gap-2 rounded-lg px-4",
                   tab.active && "border-zinc-700 bg-zinc-800 text-white shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)]"
                 )}
               >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
+                <Link href={tab.href}>
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                </Link>
               </Button>
             ))}
           </div>
@@ -53,7 +54,7 @@ export default function WidgetsPage() {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {WIDGET_MODELS.map((widget) => (
               <Link key={widget.id} href={`/canvas/${widget.id}`} className="group block h-full">
                 <div className="h-full bg-[#111] border border-zinc-800 rounded-xl overflow-hidden transition-all duration-300 hover:border-zinc-700 hover:shadow-lg hover:-translate-y-1">
@@ -74,7 +75,7 @@ export default function WidgetsPage() {
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-medium text-zinc-200">{widget.name}</h3>
                     </div>
-                    {/* <p className="text-xs text-zinc-500 line-clamp-1">{widget.description}</p> */}
+                    <p className="text-xs text-zinc-500 line-clamp-1">{widget.description}</p>
                   </div>
                 </div>
               </Link>

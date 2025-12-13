@@ -16,11 +16,20 @@ export type PraiseTestimonial = {
   date?: string
 }
 
+// Color config for theming
+export type ColorConfig = {
+  primaryColor?: string
+  ratingColor?: string
+  accentColor?: string
+  textColor?: string
+}
+
 type Props = React.ComponentProps<typeof Card> & {
   testimonial: PraiseTestimonial
   showRating?: boolean
   showSource?: boolean
   compact?: boolean
+  colorConfig?: ColorConfig
 }
 
 export function PraiseTestimonialCard({
@@ -29,6 +38,7 @@ export function PraiseTestimonialCard({
   showRating = true,
   showSource = true,
   compact = false,
+  colorConfig,
   ...props
 }: Props) {
   const initials = getInitials(testimonial.authorName)
@@ -45,7 +55,7 @@ export function PraiseTestimonialCard({
       )}
       {...props}
     >
-      <CardContent className={cn("grid gap-4 p-0", compact ? "gap-3" : "gap-4")}> 
+      <CardContent className={cn("grid gap-4 p-0", compact ? "gap-3" : "gap-4")}>
         {showRating && stars !== undefined ? (
           <div
             className="flex items-center gap-1"
@@ -53,17 +63,19 @@ export function PraiseTestimonialCard({
             aria-label={`${stars} out of 5 stars`}
           >
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} filled={i < stars} />
+              <Star key={i} filled={i < stars} color={colorConfig?.ratingColor} />
             ))}
           </div>
         ) : null}
 
-        <blockquote className={cn("text-balance text-sm leading-6 md:text-base md:leading-7", compact && "line-clamp-6 md:line-clamp-5")}
+        <blockquote
+          className={cn("text-balance text-sm leading-6 md:text-base md:leading-7", compact && "line-clamp-6 md:line-clamp-5")}
           aria-label="Testimonial content"
+          style={colorConfig?.textColor ? { color: colorConfig.textColor } : undefined}
         >
-          <span className="text-muted-foreground">“</span>
+          <span className="text-muted-foreground">"</span>
           {testimonial.content}
-          <span className="text-muted-foreground">”</span>
+          <span className="text-muted-foreground">"</span>
         </blockquote>
 
         <div className="flex items-center gap-3">
@@ -76,7 +88,10 @@ export function PraiseTestimonialCard({
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{testimonial.authorName}</p>
             {(testimonial.authorTitle || (showSource && testimonial.source)) ? (
-              <p className="truncate text-xs text-muted-foreground">
+              <p
+                className="truncate text-xs"
+                style={colorConfig?.accentColor ? { color: colorConfig.accentColor } : undefined}
+              >
                 {testimonial.authorTitle}
                 {testimonial.authorTitle && showSource && testimonial.source ? " · " : ""}
                 {showSource && testimonial.source}
@@ -89,14 +104,18 @@ export function PraiseTestimonialCard({
   )
 }
 
-function Star({ filled }: { filled: boolean }) {
+function Star({ filled, color }: { filled: boolean; color?: string }) {
   return (
     <svg
       width="16"
       height="16"
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={cn("transition-colors", filled ? "fill-yellow-400 text-yellow-400" : "fill-muted text-muted-foreground/40")}
+      className="transition-colors"
+      style={{
+        fill: filled ? (color || '#facc15') : '#3f3f46',
+        color: filled ? (color || '#facc15') : '#3f3f46',
+      }}
     >
       <path d="M12 .587l3.668 7.568L24 9.75l-6 5.848 1.416 8.26L12 19.771 4.584 23.858 6 15.598 0 9.75l8.332-1.595z" />
     </svg>
@@ -116,6 +135,3 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export default PraiseTestimonialCard
-
-
-
