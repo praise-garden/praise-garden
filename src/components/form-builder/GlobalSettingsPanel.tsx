@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FontPicker } from '@/components/ui/font-picker';
+import { ModernFontPicker } from '@/components/ui/modern-font-picker';
 import { uploadImageToStorage } from '@/lib/storage';
 import { toast } from 'sonner';
 import { FormConfig, FormTheme } from '@/types/form-config';
@@ -372,9 +372,10 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                                 <div className="flex items-center gap-3 relative z-50">
                                     <span className="text-xs text-gray-400 w-10">Font</span>
                                     <div className="flex-1 max-w-sm">
-                                        <FontPicker
+                                        <ModernFontPicker
                                             value={currentTheme.brandNameFont || currentTheme.headingFont}
                                             onChange={(value) => updateTheme(t => ({ ...t, brandNameFont: value }))}
+                                            compact
                                         />
                                     </div>
                                 </div>
@@ -495,18 +496,20 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                 {/* Heading Font */}
                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200 overflow-visible relative z-40">
                     <label className="text-sm font-medium text-gray-300 mb-3 block">Heading Font</label>
-                    <FontPicker
+                    <ModernFontPicker
                         value={currentTheme.headingFont}
                         onChange={(value) => updateTheme((t) => ({ ...t, headingFont: value }))}
+                        compact
                     />
                 </div>
 
                 {/* Body Font */}
                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200 overflow-visible relative z-30">
                     <label className="text-sm font-medium text-gray-300 mb-3 block">Body Font</label>
-                    <FontPicker
+                    <ModernFontPicker
                         value={currentTheme.bodyFont}
                         onChange={(value) => updateTheme((t) => ({ ...t, bodyFont: value }))}
+                        compact
                     />
                 </div>
             </div>
