@@ -19,6 +19,7 @@ export function RatingBadge({ config, isDarkMode }: RatingBadgeProps) {
             style={{
                 borderRadius: `${config.borderRadius}px`,
                 backgroundColor: isDarkMode ? '#18181b' : '#ffffff',
+                fontFamily: config.fontFamily,
             }}
         >
             <div

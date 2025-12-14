@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { ModernFontPicker } from "@/components/ui/modern-font-picker"
 
 // ===================== TESTIMONIALS DATA ===================== //
 const WALL_TESTIMONIALS = [
@@ -240,6 +241,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const [backgroundColor, setBackgroundColor] = React.useState('#f0f4ff')
     const [shadowIntensity, setShadowIntensity] = React.useState(50)
     const [accentColor, setAccentColor] = React.useState('#8b5cf6')
+    const [fontFamily, setFontFamily] = React.useState('Inter')
 
     // Handle name editing
     const handleNameClick = () => {
@@ -421,7 +423,10 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                         <div className="min-h-full">
                             {/* Wall Header */}
                             <div className="py-10 px-8 text-center">
-                                <h2 className="text-4xl font-bold text-zinc-900">
+                                <h2
+                                    className="text-4xl font-bold text-zinc-900"
+                                    style={{ fontFamily: fontFamily }}
+                                >
                                     Wall of Love
                                 </h2>
                             </div>
@@ -477,10 +482,16 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                         {t.authorName.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <p className={cn("font-semibold text-sm", cardTheme.textColor)}>
+                                                        <p
+                                                            className={cn("font-semibold text-sm", cardTheme.textColor)}
+                                                            style={{ fontFamily: fontFamily }}
+                                                        >
                                                             {t.authorName}
                                                         </p>
-                                                        <p className={cn("text-xs", cardTheme.subtitleColor)}>
+                                                        <p
+                                                            className={cn("text-xs", cardTheme.subtitleColor)}
+                                                            style={{ fontFamily: fontFamily }}
+                                                        >
                                                             {t.company}
                                                         </p>
                                                     </div>
@@ -501,7 +512,10 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                 </div>
 
                                                 {/* Content */}
-                                                <p className={cn("text-sm leading-relaxed", cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700')}>
+                                                <p
+                                                    className={cn("text-sm leading-relaxed", cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700')}
+                                                    style={{ fontFamily: fontFamily }}
+                                                >
                                                     {t.content}
                                                 </p>
                                             </div>
@@ -645,11 +659,12 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
 
                                     {/* Typography */}
                                     <div className="space-y-2">
-                                        <Label className="text-xs text-zinc-400">Typography</Label>
-                                        <div className="flex items-center gap-2 p-2 bg-zinc-800 rounded-lg border border-zinc-700">
-                                            <span className="text-sm text-white flex-1">Appen</span>
-                                            <span className="text-zinc-400 text-xs">▼</span>
-                                        </div>
+                                        <ModernFontPicker
+                                            label="Typography"
+                                            value={fontFamily}
+                                            onChange={setFontFamily}
+                                            compact
+                                        />
                                     </div>
 
                                     {/* Shadow Intensity */}

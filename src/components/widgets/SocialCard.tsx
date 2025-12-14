@@ -67,11 +67,11 @@ export function SocialCard({
         <div
             className={
                 cn(
-                    "w-full mx-auto overflow-hidden transition-all duration-300 flex flex-col font-sans text-card-foreground",
+                    "w-full mx-auto overflow-hidden transition-all duration-300 flex flex-col text-card-foreground",
                     styleClass
                 )
             }
-            style={styleObject}
+            style={{ ...styleObject, fontFamily: config.fontFamily }}
         >
             <div
                 className={cn(

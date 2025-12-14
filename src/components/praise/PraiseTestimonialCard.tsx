@@ -22,6 +22,7 @@ export type ColorConfig = {
   ratingColor?: string
   accentColor?: string
   textColor?: string
+  fontFamily?: string
 }
 
 type Props = React.ComponentProps<typeof Card> & {
@@ -53,6 +54,7 @@ export function PraiseTestimonialCard({
         compact ? "p-4" : "p-6",
         className
       )}
+      style={colorConfig?.fontFamily ? { fontFamily: colorConfig.fontFamily } : undefined}
       {...props}
     >
       <CardContent className={cn("grid gap-4 p-0", compact ? "gap-3" : "gap-4")}>

@@ -77,7 +77,7 @@ export function MinimalCard({ config, testimonial, isDarkMode }: MinimalCardProp
         <div className={cn(
             "flex flex-col p-8 mx-auto w-full transition-colors duration-300 relative text-card-foreground",
             styleClass
-        )} style={styleObject}>
+        )} style={{ ...styleObject, fontFamily: config.fontFamily }}>
 
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">

@@ -28,6 +28,7 @@ import {
 import { SocialCard } from "@/components/widgets/SocialCard"
 import { MinimalCard } from "@/components/widgets/MinimalCard"
 import { RatingBadge } from "@/components/widgets/RatingBadge"
+import { ModernFontPicker } from "@/components/ui/modern-font-picker"
 
 // ===================== TESTIMONIAL TYPES ===================== //
 export interface WidgetTestimonial {
@@ -813,10 +814,13 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
                 "transition-all duration-300 mx-auto z-10",
                 device === "mobile" ? "w-[375px]" : device === "tablet" ? "w-[768px]" : "w-full"
               )}
-              style={device === "desktop" ? { maxWidth: `${config.maxWidth}px` } : {}}
+              style={{
+                maxWidth: device === "desktop" ? `${config.maxWidth}px` : undefined,
+                fontFamily: config.fontFamily
+              }}
             >
               <div className="min-h-[400px] flex flex-col justify-center items-center relative">
-                <div className={cn("w-full", isDarkMode ? "dark" : "")}>
+                <div className={cn("w-full", isDarkMode ? "dark" : "")} style={{ fontFamily: config.fontFamily }}>
 
                   {/* RENDER BASED ON CONFIG TYPE */}
                   {config.type === "social-card" && isCardWidget(config) && (
@@ -859,6 +863,7 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
                           ratingColor: config.ratingColor,
                           accentColor: config.accentColor,
                           textColor: config.textColor,
+                          fontFamily: config.fontFamily,
                         }}
                       />
                     </div>
@@ -1024,6 +1029,16 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
 
               {expandedSections.includes('content') && (
                 <div className="px-4 pb-6 space-y-4">
+                  {/* Font Family */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-zinc-400">Font Family</Label>
+                    <ModernFontPicker
+                      value={config.fontFamily}
+                      onChange={(font) => updateConfig('fontFamily', font)}
+                      compact
+                    />
+                  </div>
+
                   {isCardWidget(config) && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
