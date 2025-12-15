@@ -17,6 +17,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ModernFontPicker } from "@/components/ui/modern-font-picker"
+import { ShareWallOfLoveSidebar } from "@/components/ShareWallOfLoveSidebar"
+import { WallDesignStudioSidebar, WallStyle, TabType } from "@/components/WallDesignStudioSidebar"
+import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
+import Logo from "@/components/ui/Logo"
 
 // ===================== TESTIMONIALS DATA ===================== //
 const WALL_TESTIMONIALS = [
@@ -218,8 +222,7 @@ const CARD_THEMES = [
     },
 ]
 
-type WallStyle = 'glassmorphism' | 'brutalist' | 'cinematic' | 'bento'
-type TabType = 'templates' | 'style'
+
 
 interface WallOfLovePageProps {
     params: { style: string }
@@ -241,7 +244,30 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const [backgroundColor, setBackgroundColor] = React.useState('#f0f4ff')
     const [shadowIntensity, setShadowIntensity] = React.useState(50)
     const [accentColor, setAccentColor] = React.useState('#8b5cf6')
+    const [wallTextColor, setWallTextColor] = React.useState('#18181b')
+    const [logoSize, setLogoSize] = React.useState(60)
+    const [logoUrl, setLogoUrl] = React.useState<string | null>(null)
     const [fontFamily, setFontFamily] = React.useState('Inter')
+
+    // Embed sidebar state
+    const [embedSidebarOpen, setEmbedSidebarOpen] = React.useState(false)
+
+    // Select Testimonials Modal state
+    const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
+    const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
+        WALL_TESTIMONIALS.map(t => t.id)
+    )
+
+    // Transform testimonials to the format expected by SelectTestimonialsModal
+    const modalTestimonials: Testimonial[] = WALL_TESTIMONIALS.map(t => ({
+        id: t.id,
+        authorName: t.authorName,
+        authorTitle: t.company,
+        rating: t.rating,
+        content: t.content,
+        source: t.source,
+        date: t.date,
+    }))
 
     // Handle name editing
     const handleNameClick = () => {
@@ -337,8 +363,15 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const styleConfig = getStyleConfig()
     const cardTheme = getCardThemeConfig()
 
-    // Display all testimonials since Select feature is removed
-    const displayTestimonials = WALL_TESTIMONIALS
+    // Display testimonials based on selection
+    // If no testimonials are selected, show all (initial state)
+    // Otherwise, filter to show only selected testimonials
+    const displayTestimonials = React.useMemo(() => {
+        if (selectedTestimonialIds.length === 0) {
+            return WALL_TESTIMONIALS
+        }
+        return WALL_TESTIMONIALS.filter(t => selectedTestimonialIds.includes(t.id))
+    }, [selectedTestimonialIds])
 
     return (
         <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden">
@@ -387,6 +420,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     <Button
                         variant="outline"
                         className="gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+                        onClick={() => setEmbedSidebarOpen(true)}
                     >
                         <Code className="h-4 w-4" />
                         Embed Code
@@ -422,10 +456,28 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     >
                         <div className="min-h-full">
                             {/* Wall Header */}
-                            <div className="py-10 px-8 text-center">
+                            <div className="py-10 px-8 relative flex items-center justify-center">
+                                <div className="absolute left-8 flex items-center justify-center">
+                                    {logoUrl ? (
+                                        <img
+                                            src={logoUrl}
+                                            alt="Project Logo"
+                                            className="object-contain"
+                                            style={{
+                                                width: logoSize,
+                                                height: logoSize,
+                                                maxWidth: 'none'
+                                            }}
+                                        />
+                                    ) : (
+                                        <Logo
+                                            size={logoSize}
+                                        />
+                                    )}
+                                </div>
                                 <h2
-                                    className="text-4xl font-bold text-zinc-900"
-                                    style={{ fontFamily: fontFamily }}
+                                    className="text-4xl font-bold transition-colors duration-200"
+                                    style={{ fontFamily: fontFamily, color: wallTextColor }}
                                 >
                                     Wall of Love
                                 </h2>
@@ -538,178 +590,50 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                 </div>
 
                 {/* ===================== RIGHT SIDEBAR ===================== */}
-                {sidebarOpen && (
-                    <div
-                        className="bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300"
-                        style={{ width: 'clamp(280px, 22vw, 360px)' }}
-                    >
-                        {/* Sidebar Header */}
-                        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-                            <h3 className="text-white font-semibold">Studio Controls</h3>
-                            <button
-                                onClick={() => setSidebarOpen(false)}
-                                className="text-zinc-400 hover:text-white transition-colors p-1 rounded hover:bg-zinc-800"
-                                aria-label="Close sidebar"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* Tabs */}
-                        <div className="flex border-b border-zinc-800">
-                            {(['templates', 'style'] as const).map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={cn(
-                                        "flex-1 py-3 text-sm font-medium transition-all capitalize",
-                                        activeTab === tab
-                                            ? "text-violet-400 border-b-2 border-violet-400"
-                                            : "text-zinc-400 hover:text-zinc-200"
-                                    )}
-                                >
-                                    {tab === 'templates' ? 'Templates' : 'Style'}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Tab Content */}
-                        <div className="flex-1 overflow-y-auto p-4">
-                            {/* Templates Tab */}
-                            {activeTab === 'templates' && (
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {TEMPLATES.map((template) => (
-                                            <button
-                                                key={template.id}
-                                                onClick={() => setActiveStyle(template.id as WallStyle)}
-                                                className={cn(
-                                                    "rounded-xl overflow-hidden transition-all border-2",
-                                                    activeStyle === template.id
-                                                        ? "border-violet-500 ring-2 ring-violet-500/30"
-                                                        : "border-zinc-700 hover:border-zinc-600"
-                                                )}
-                                            >
-                                                <div className={cn("h-20 flex items-center justify-center", template.preview)}>
-                                                    {/* Mini preview cards */}
-                                                    <div className="flex flex-col gap-1 p-2 scale-[0.6]">
-                                                        {[1, 2, 3].map(i => (
-                                                            <div key={i} className={cn(
-                                                                "h-4 rounded",
-                                                                template.id === 'cinematic' ? 'bg-zinc-700' :
-                                                                    template.id === 'brutalist' ? 'bg-white border border-black' :
-                                                                        'bg-white/80'
-                                                            )} style={{ width: `${50 + i * 10}px` }} />
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="p-2 bg-zinc-800 text-left">
-                                                    <p className="text-xs font-medium text-white">{template.name}</p>
-                                                    <p className="text-[10px] text-zinc-400">{template.subtitle}</p>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-
-                            {/* Style Tab */}
-                            {activeTab === 'style' && (
-                                <div className="space-y-6">
-                                    {/* Background Color */}
-                                    <div className="space-y-2">
-                                        <Label className="text-xs text-zinc-400">Background Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="color"
-                                                value={backgroundColor}
-                                                onChange={(e) => setBackgroundColor(e.target.value)}
-                                                className="w-8 h-8 rounded border border-zinc-700 bg-transparent cursor-pointer"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={backgroundColor}
-                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBackgroundColor(e.target.value)}
-                                                className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white text-xs font-mono uppercase"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Card Theme */}
-                                    <div className="space-y-3">
-                                        <Label className="text-xs text-zinc-400">Card Theme</Label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {CARD_THEMES.map((theme) => (
-                                                <button
-                                                    key={theme.id}
-                                                    onClick={() => setActiveCardTheme(theme.id)}
-                                                    className={cn(
-                                                        "py-2.5 rounded-md text-sm font-medium transition-all duration-200",
-                                                        activeCardTheme === theme.id
-                                                            ? "bg-violet-600 text-white shadow-md shadow-violet-500/25"
-                                                            : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-                                                    )}
-                                                >
-                                                    {theme.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Typography */}
-                                    <div className="space-y-2">
-                                        <ModernFontPicker
-                                            label="Typography"
-                                            value={fontFamily}
-                                            onChange={setFontFamily}
-                                            compact
-                                        />
-                                    </div>
-
-                                    {/* Shadow Intensity */}
-                                    <div className="space-y-2">
-                                        <Label className="text-xs text-zinc-400">Shadow Intensity</Label>
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            value={shadowIntensity}
-                                            onChange={(e) => setShadowIntensity(Number(e.target.value))}
-                                            className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-violet-500"
-                                        />
-                                    </div>
-
-                                    {/* Accent Color */}
-                                    <div className="space-y-2">
-                                        <Label className="text-xs text-zinc-400">Accent Color</Label>
-                                        <div className="flex gap-2">
-                                            {['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'].map((color) => (
-                                                <button
-                                                    key={color}
-                                                    onClick={() => setAccentColor(color)}
-                                                    className={cn(
-                                                        "w-8 h-8 rounded-lg transition-all",
-                                                        accentColor === color && "ring-2 ring-white ring-offset-2 ring-offset-zinc-900"
-                                                    )}
-                                                    style={{ backgroundColor: color }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="p-4 border-t border-zinc-800">
-                            <Button className="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium">
-                                Save & Publish
-                            </Button>
-                        </div>
-                    </div>
-                )}
+                <WallDesignStudioSidebar
+                    isOpen={sidebarOpen}
+                    onClose={() => setSidebarOpen(false)}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    activeStyle={activeStyle}
+                    setActiveStyle={setActiveStyle}
+                    templates={TEMPLATES}
+                    cardThemes={CARD_THEMES}
+                    activeCardTheme={activeCardTheme}
+                    setActiveCardTheme={setActiveCardTheme}
+                    backgroundColor={backgroundColor}
+                    setBackgroundColor={setBackgroundColor}
+                    fontFamily={fontFamily}
+                    setFontFamily={setFontFamily}
+                    shadowIntensity={shadowIntensity}
+                    setShadowIntensity={setShadowIntensity}
+                    accentColor={accentColor}
+                    setAccentColor={setAccentColor}
+                    wallTextColor={wallTextColor}
+                    setWallTextColor={setWallTextColor}
+                    logoSize={logoSize}
+                    setLogoSize={setLogoSize}
+                    logoUrl={logoUrl}
+                    setLogoUrl={setLogoUrl}
+                    onSelectTestimonials={() => setIsSelectTestimonialsOpen(true)}
+                    selectedTestimonialsCount={selectedTestimonialIds.length}
+                />
             </div>
+
+            {/* ===================== EMBED CODE SIDEBAR ===================== */}
+            <ShareWallOfLoveSidebar
+                isOpen={embedSidebarOpen}
+                onClose={() => setEmbedSidebarOpen(false)}
+            />
+
+            {/* ===================== SELECT TESTIMONIALS MODAL ===================== */}
+            <SelectTestimonialsModal
+                isOpen={isSelectTestimonialsOpen}
+                onClose={() => setIsSelectTestimonialsOpen(false)}
+                testimonials={modalTestimonials}
+                selectedIds={selectedTestimonialIds}
+                onSelectionChange={setSelectedTestimonialIds}
+            />
         </div>
     )
 }

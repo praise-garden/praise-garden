@@ -2,45 +2,30 @@
 
 import * as React from "react"
 import { WIDGET_MODELS } from "@/lib/widget-models"
-import { WALL_OF_LOVE_MODELS } from "@/lib/wall-of-love-models"
 import { PraiseWidget } from "@/components/praise/PraiseWidget"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-import { ArrowLeft, Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Save, Pencil, Heart, X, Search, ListFilter, Twitter } from "lucide-react"
+import { Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Save, Pencil, ListFilter } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import {
   WidgetConfig,
   WidgetType,
-  CardWidgetConfig,
-  CollectionWidgetConfig,
-  BadgeWidgetConfig,
-  WallOfLoveWidgetConfig,
   isCardWidget,
   isCollectionWidget,
   isBadgeWidget,
-  isWallOfLoveWidget,
   createWidgetConfig
 } from "@/types/widget-config"
 import { SocialCard } from "@/components/widgets/SocialCard"
 import { MinimalCard } from "@/components/widgets/MinimalCard"
 import { RatingBadge } from "@/components/widgets/RatingBadge"
 import { ModernFontPicker } from "@/components/ui/modern-font-picker"
-
-// ===================== TESTIMONIAL TYPES ===================== //
-export interface WidgetTestimonial {
-  id: string;
-  authorName: string;
-  authorTitle: string;
-  authorAvatarUrl?: string;
-  rating: number;
-  content: string;
-  source: string;
-  date: string;
-}
+import { ShareWidgetPanel } from "@/components/widgets/ShareWidgetPanel"
+import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
+// Re-export the Testimonial type for use in page.tsx
+export type WidgetTestimonial = Testimonial;
 
 // ===================== DEFAULT DEMO TESTIMONIALS ===================== //
 // Shown when user has no testimonials selected (fallback)
@@ -74,24 +59,7 @@ const DEFAULT_DEMO_TESTIMONIALS: WidgetTestimonial[] = [
   },
 ];
 
-const ACCENT_COLORS = [
-  { name: "Purple", value: "#8b5cf6", class: "bg-violet-500" },
-  { name: "Pink", value: "#ec4899", class: "bg-pink-500" },
-  { name: "Green", value: "#10b981", class: "bg-emerald-500" },
-  { name: "Blue", value: "#3b82f6", class: "bg-blue-500" },
-  { name: "Orange", value: "#f97316", class: "bg-orange-500" },
-  { name: "Red", value: "#ef4444", class: "bg-red-500" },
-  { name: "White", value: "#ffffff", class: "bg-white" },
-]
 
-const RATING_COLORS = [
-  { name: "Yellow", value: "#fbbf24", class: "bg-amber-400" },
-  { name: "Orange", value: "#f59e0b", class: "bg-amber-500" },
-  { name: "Red", value: "#ef4444", class: "bg-red-500" },
-  { name: "Green", value: "#10b981", class: "bg-emerald-500" },
-  { name: "Blue", value: "#3b82f6", class: "bg-blue-500" },
-  { name: "Purple", value: "#8b5cf6", class: "bg-violet-500" },
-]
 
 // ===================== REUSABLE COLOR PICKER FIELD ===================== //
 // A single color swatch + hex input field for any color property
@@ -153,388 +121,6 @@ function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
   )
 }
 
-// ===================== SELECT TESTIMONIALS MODAL ===================== //
-interface SelectTestimonialsModalProps {
-  isOpen: boolean
-  onClose: () => void
-  testimonials: WidgetTestimonial[]
-  selectedIds: string[]
-  onSelectionChange: (ids: string[]) => void
-}
-
-function SelectTestimonialsModal({
-  isOpen,
-  onClose,
-  testimonials,
-  selectedIds,
-  onSelectionChange
-}: SelectTestimonialsModalProps) {
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [activeFilter, setActiveFilter] = React.useState<"all" | "5-stars" | "twitter">("all")
-  const [localSelectedIds, setLocalSelectedIds] = React.useState<string[]>(selectedIds)
-
-  // Reset local state when modal opens
-  React.useEffect(() => {
-    if (isOpen) {
-      setLocalSelectedIds(selectedIds)
-      setSearchQuery("")
-      setActiveFilter("all")
-    }
-  }, [isOpen, selectedIds])
-
-  // Filter testimonials based on search and filter
-  const filteredTestimonials = React.useMemo(() => {
-    return testimonials.filter(t => {
-      // Search filter
-      const matchesSearch = searchQuery === "" ||
-        t.authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.content.toLowerCase().includes(searchQuery.toLowerCase())
-
-      // Category filter
-      let matchesFilter = true
-      if (activeFilter === "5-stars") {
-        matchesFilter = t.rating === 5
-      } else if (activeFilter === "twitter") {
-        matchesFilter = t.source.toUpperCase() === "TWITTER"
-      }
-
-      return matchesSearch && matchesFilter
-    })
-  }, [testimonials, searchQuery, activeFilter])
-
-  const toggleSelection = (id: string) => {
-    setLocalSelectedIds(prev =>
-      prev.includes(id)
-        ? prev.filter(i => i !== id)
-        : [...prev, id]
-    )
-  }
-
-  const handleSave = () => {
-    onSelectionChange(localSelectedIds)
-    onClose()
-  }
-
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative bg-[#1a1a1f] rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[80vh] flex flex-col border border-zinc-800">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
-          <h2 className="text-lg font-semibold text-white">Select Testimonials</h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Search & Filters */}
-        <div className="p-4 border-b border-zinc-800 space-y-3">
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-            <Input
-              type="text"
-              placeholder="Search by name or content..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-indigo-500"
-            />
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveFilter("all")}
-              className={cn(
-                "px-4 py-1.5 text-xs font-medium rounded-full border transition-all",
-                activeFilter === "all"
-                  ? "bg-white text-black border-white"
-                  : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveFilter("5-stars")}
-              className={cn(
-                "px-4 py-1.5 text-xs font-medium rounded-full border transition-all",
-                activeFilter === "5-stars"
-                  ? "bg-white text-black border-white"
-                  : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              5 Stars
-            </button>
-            <button
-              onClick={() => setActiveFilter("twitter")}
-              className={cn(
-                "px-4 py-1.5 text-xs font-medium rounded-full border transition-all",
-                activeFilter === "twitter"
-                  ? "bg-white text-black border-white"
-                  : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              Twitter
-            </button>
-          </div>
-        </div>
-
-        {/* Testimonials List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {filteredTestimonials.length === 0 ? (
-            <div className="text-center py-8 text-zinc-500 text-sm">
-              No testimonials found matching your criteria.
-            </div>
-          ) : (
-            filteredTestimonials.map((t) => {
-              const isSelected = localSelectedIds.includes(t.id)
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => toggleSelection(t.id)}
-                  className={cn(
-                    "w-full text-left p-4 rounded-xl border transition-all flex gap-3",
-                    isSelected
-                      ? "bg-indigo-500/10 border-indigo-500/50"
-                      : "bg-zinc-900/30 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
-                  )}
-                >
-                  {/* Checkbox */}
-                  <div
-                    className={cn(
-                      "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
-                      isSelected
-                        ? "bg-indigo-500 border-indigo-500"
-                        : "border-zinc-600 bg-transparent"
-                    )}
-                  >
-                    {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {/* Avatar */}
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium bg-indigo-600 text-white shrink-0"
-                      >
-                        {t.authorName.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-white text-sm truncate">{t.authorName}</p>
-                      </div>
-                      {/* Star Rating */}
-                      <div className="flex items-center gap-0.5 text-amber-400">
-                        {Array.from({ length: t.rating }).map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-current" />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
-                      {t.content}
-                    </p>
-                  </div>
-                </button>
-              )
-            })
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-zinc-800">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white"
-          >
-            Save Selection ({localSelectedIds.length})
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ===================== WALL OF LOVE PREVIEW COMPONENT ===================== //
-interface WallOfLovePreviewProps {
-  config: WallOfLoveWidgetConfig
-  testimonials: WidgetTestimonial[]
-  isDarkMode: boolean
-}
-
-function WallOfLovePreview({ config, testimonials }: WallOfLovePreviewProps) {
-  const { wallStyle } = config
-
-  // Style-specific configurations
-  const getStyleConfig = () => {
-    switch (wallStyle) {
-      case 'glassmorphism':
-        return {
-          containerBg: 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50',
-          cardBg: 'bg-white/70 backdrop-blur-md',
-          cardBorder: 'border border-white/50',
-          cardShadow: 'shadow-lg shadow-purple-500/5',
-          cardRadius: 'rounded-2xl',
-          textColor: 'text-zinc-800',
-          subtitleColor: 'text-zinc-500',
-        }
-      case 'brutalist':
-        return {
-          containerBg: 'bg-white',
-          cardBg: 'bg-yellow-300',
-          cardBorder: 'border-2 border-black',
-          cardShadow: 'shadow-[4px_4px_0px_0px_#000]',
-          cardRadius: 'rounded-none',
-          textColor: 'text-black',
-          subtitleColor: 'text-zinc-700',
-        }
-      case 'cinematic':
-        return {
-          containerBg: 'bg-[#0f0f13]',
-          cardBg: 'bg-[#1a1a23]',
-          cardBorder: 'border border-purple-500/20',
-          cardShadow: 'shadow-lg shadow-purple-500/10',
-          cardRadius: 'rounded-xl',
-          textColor: 'text-white',
-          subtitleColor: 'text-zinc-400',
-        }
-      case 'bento':
-      default:
-        return {
-          containerBg: 'bg-slate-50',
-          cardBg: 'bg-white',
-          cardBorder: 'border border-slate-200',
-          cardShadow: 'shadow-sm',
-          cardRadius: 'rounded-xl',
-          textColor: 'text-zinc-900',
-          subtitleColor: 'text-zinc-500',
-        }
-    }
-  }
-
-  const styleConfig = getStyleConfig()
-  const columnClass = config.columns === 2 ? 'grid-cols-2' :
-    config.columns === 3 ? 'grid-cols-3' :
-      config.columns === 4 ? 'grid-cols-4' : 'grid-cols-5'
-
-  return (
-    <div className={cn("w-full min-h-[500px] overflow-hidden transition-colors", styleConfig.containerBg)}>
-      {/* Header */}
-      {config.showHeader && (
-        <div className="p-8 text-center">
-          <h1 className={cn(
-            "text-3xl font-bold mb-2",
-            wallStyle === 'cinematic' ? 'text-white' : 'text-zinc-900'
-          )}>
-            {config.headerTitle}
-          </h1>
-          <p className={cn(
-            "text-sm max-w-xl mx-auto mb-1",
-            wallStyle === 'cinematic' ? 'text-zinc-400' :
-              wallStyle === 'brutalist' ? 'text-zinc-700 font-mono' : 'text-zinc-500'
-          )}>
-            {wallStyle === 'glassmorphism' && 'Modern Masonry Glassmorphism'}
-            {wallStyle === 'brutalist' && 'Neo-Brutalist'}
-            {wallStyle === 'cinematic' && 'Cinematic Dark Mode'}
-            {wallStyle === 'bento' && 'Strict, Modulay with Bento Grid'}
-          </p>
-        </div>
-      )}
-
-      {/* Testimonials Grid */}
-      <div className={cn("p-6 grid gap-4", columnClass)}>
-        {testimonials.slice(0, 10).map((t, index) => (
-          <div
-            key={t.id}
-            className={cn(
-              "p-4 transition-all",
-              styleConfig.cardBg,
-              styleConfig.cardBorder,
-              styleConfig.cardShadow,
-              styleConfig.cardRadius,
-              // Brutalist: some cards are dark for contrast
-              wallStyle === 'brutalist' && index === 4 && 'bg-zinc-900 text-white',
-              // Cinematic: featured card with video placeholder
-              wallStyle === 'cinematic' && index === 4 && 'row-span-2 bg-zinc-800/50',
-            )}
-          >
-            {/* Author */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "w-9 h-9 flex items-center justify-center text-xs font-medium",
-                    wallStyle === 'brutalist' ? 'rounded-none bg-black text-white' : 'rounded-full',
-                    wallStyle === 'cinematic' && 'ring-2 ring-purple-500/50'
-                  )}
-                  style={{ backgroundColor: wallStyle !== 'brutalist' ? config.primaryColor : undefined, color: '#fff' }}
-                >
-                  {t.authorName.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                </div>
-                <div>
-                  <p className={cn("font-medium text-sm", styleConfig.textColor,
-                    wallStyle === 'brutalist' && index === 4 && 'text-white'
-                  )}>
-                    {t.authorName}
-                  </p>
-                  <p className={cn("text-xs", styleConfig.subtitleColor,
-                    wallStyle === 'brutalist' && index === 4 && 'text-zinc-400'
-                  )}>
-                    {t.authorTitle}
-                  </p>
-                </div>
-              </div>
-              {/* Company Icon Placeholder */}
-              <div className={cn(
-                "w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold",
-                wallStyle === 'cinematic' ? 'bg-purple-500/20 text-purple-400' :
-                  wallStyle === 'brutalist' ? 'bg-black text-white border border-black' :
-                    'bg-blue-500/10 text-blue-600'
-              )}>
-                {t.source.charAt(0)}
-              </div>
-            </div>
-
-            {/* Stars */}
-            <div className="flex gap-0.5 mb-2" style={{ color: config.ratingColor }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="fill-current w-3.5 h-3.5" />
-              ))}
-            </div>
-
-            {/* Content */}
-            <p className={cn(
-              "text-sm leading-relaxed",
-              wallStyle === 'cinematic' && index === 4 ? 'line-clamp-6' : 'line-clamp-4',
-              styleConfig.textColor,
-              wallStyle === 'brutalist' && index === 4 && 'text-white'
-            )}>
-              {t.content}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 
 // ===================== PROPS INTERFACE ===================== //
 interface WidgetEditorClientProps {
@@ -543,7 +129,6 @@ interface WidgetEditorClientProps {
 }
 
 export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorClientProps) {
-  const router = useRouter()
 
   // Initialize config using the helper from widget-config.ts
   const [config, setConfig] = React.useState<WidgetConfig>(() =>
@@ -558,6 +143,7 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
   const [expandedSections, setExpandedSections] = React.useState<string[]>(["appearance"])
   const [isEditingName, setIsEditingName] = React.useState(false)
   const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
+  const [isSharePanelOpen, setIsSharePanelOpen] = React.useState(false)
   // Initialize with all user testimonials selected by default
   const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
     userTestimonials.map(t => t.id)
@@ -725,9 +311,8 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
         <div className="flex items-center gap-3">
           {/* Select Testimonials Button */}
           <Button
-            variant="outline"
             onClick={() => setIsSelectTestimonialsOpen(true)}
-            className="border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-800 hover:text-white gap-2 font-medium"
+            className="bg-violet-600 hover:bg-violet-500 text-white gap-2 font-medium"
           >
             <ListFilter className="h-4 w-4" />
             Select Testimonials ({selectedTestimonialIds.length})
@@ -736,7 +321,10 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
             <Save className="h-4 w-4" />
             Save
           </Button>
-          <Button className="bg-[#6366f1] hover:bg-[#5558dd] text-white gap-2 font-medium">
+          <Button
+            onClick={() => setIsSharePanelOpen(true)}
+            className="bg-[#6366f1] hover:bg-[#5558dd] text-white gap-2 font-medium"
+          >
             <Share2 className="h-4 w-4" />
             Get Embed Code
           </Button>
@@ -1111,6 +699,14 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
         testimonials={userTestimonials}
         selectedIds={selectedTestimonialIds}
         onSelectionChange={setSelectedTestimonialIds}
+      />
+
+      {/* Share Widget Panel */}
+      <ShareWidgetPanel
+        isOpen={isSharePanelOpen}
+        onClose={() => setIsSharePanelOpen(false)}
+        widgetId={widgetId}
+        widgetName={config.name}
       />
     </div>
   )
