@@ -9,18 +9,16 @@ import {
     Pencil,
     Menu,
     Code,
-    X,
     Twitter,
     Linkedin,
     Facebook,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { ModernFontPicker } from "@/components/ui/modern-font-picker"
 import { ShareWallOfLoveSidebar } from "@/components/ShareWallOfLoveSidebar"
-import { WallDesignStudioSidebar, WallStyle, TabType } from "@/components/WallDesignStudioSidebar"
+import { WallDesignStudioSidebar, TabType } from "@/components/WallDesignStudioSidebar"
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
 import Logo from "@/components/ui/Logo"
+import { WallConfig, DEFAULT_WALL_CONFIG, UpdateConfigFn } from "@/types/wall-config"
 
 // ===================== TESTIMONIALS DATA ===================== //
 const WALL_TESTIMONIALS = [
@@ -223,40 +221,37 @@ const CARD_THEMES = [
 ]
 
 
-
 interface WallOfLovePageProps {
     params: { style: string }
 }
 
 export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const router = useRouter()
-    const [activeStyle, setActiveStyle] = React.useState<WallStyle>('bento')
+
+    // ===================== CONFIG STATE (Single Source of Truth) ===================== //
+    const [config, setConfig] = React.useState<WallConfig>(DEFAULT_WALL_CONFIG)
+
+    // Config updater function
+    const updateConfig: UpdateConfigFn = React.useCallback((key, value) => {
+        setConfig(prev => ({ ...prev, [key]: value }))
+    }, [])
+
+    // ===================== UI STATE ===================== //
     const [sidebarOpen, setSidebarOpen] = React.useState(true)
     const [activeTab, setActiveTab] = React.useState<TabType>('templates')
-    const [activeCardTheme, setActiveCardTheme] = React.useState('glassmorphism')
+    const [embedSidebarOpen, setEmbedSidebarOpen] = React.useState(false)
+    const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
 
-    // Wall name state
+    // Wall name state (metadata, not config)
     const [wallName, setWallName] = React.useState('My Wall of Love')
     const [isEditingName, setIsEditingName] = React.useState(false)
     const nameInputRef = React.useRef<HTMLInputElement>(null)
 
-    // Style settings
-    const [backgroundColor, setBackgroundColor] = React.useState('#f0f4ff')
-    const [shadowIntensity, setShadowIntensity] = React.useState(50)
-    const [accentColor, setAccentColor] = React.useState('#8b5cf6')
-    const [wallTextColor, setWallTextColor] = React.useState('#18181b')
-    const [logoSize, setLogoSize] = React.useState(60)
-    const [logoUrl, setLogoUrl] = React.useState<string | null>(null)
-    const [fontFamily, setFontFamily] = React.useState('Inter')
-
-    // Embed sidebar state
-    const [embedSidebarOpen, setEmbedSidebarOpen] = React.useState(false)
-
-    // Select Testimonials Modal state
-    const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
+    // Testimonial selection state
     const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
         WALL_TESTIMONIALS.map(t => t.id)
     )
+
 
     // Transform testimonials to the format expected by SelectTestimonialsModal
     const modalTestimonials: Testimonial[] = WALL_TESTIMONIALS.map(t => ({
@@ -289,7 +284,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     }
 
     const getStyleConfig = () => {
-        switch (activeStyle) {
+        switch (config.style) {
             case 'glassmorphism':
                 return {
                     containerBg: 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50',
@@ -323,7 +318,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     subtitleColor: 'text-zinc-400',
                     styleName: 'Cinematic Dark Mode',
                 }
-            case 'bento':
+            case 'classic':
             default:
                 return {
                     containerBg: 'bg-slate-50',
@@ -333,21 +328,21 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     cardRadius: 'rounded-xl',
                     textColor: 'text-zinc-900',
                     subtitleColor: 'text-zinc-500',
-                    styleName: 'Bento Grid Layout',
+                    styleName: 'Classic Layout',
                 }
         }
     }
 
     // Get current card theme styling
     const getCardThemeConfig = () => {
-        const theme = CARD_THEMES.find(t => t.id === activeCardTheme)
+        const theme = CARD_THEMES.find(t => t.id === config.cardTheme)
         if (theme) {
             return {
                 cardBg: theme.cardBg,
                 cardBorder: theme.cardBorder,
                 cardShadow: theme.cardShadow,
-                textColor: activeCardTheme === 'cinematic' ? 'text-white' : 'text-zinc-900',
-                subtitleColor: activeCardTheme === 'cinematic' ? 'text-zinc-400' : 'text-zinc-500',
+                textColor: config.cardTheme === 'cinematic' ? 'text-white' : 'text-zinc-900',
+                subtitleColor: config.cardTheme === 'cinematic' ? 'text-zinc-400' : 'text-zinc-500',
             }
         }
         // Default
@@ -452,32 +447,32 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     {/* Preview Canvas */}
                     <div
                         className="flex-1 overflow-auto"
-                        style={{ backgroundColor: backgroundColor }}
+                        style={{ backgroundColor: config.backgroundColor }}
                     >
                         <div className="min-h-full">
                             {/* Wall Header */}
                             <div className="py-10 px-8 relative flex items-center justify-center">
                                 <div className="absolute left-8 flex items-center justify-center">
-                                    {logoUrl ? (
+                                    {config.logoUrl ? (
                                         <img
-                                            src={logoUrl}
+                                            src={config.logoUrl}
                                             alt="Project Logo"
                                             className="object-contain"
                                             style={{
-                                                width: logoSize,
-                                                height: logoSize,
+                                                width: config.logoSize,
+                                                height: config.logoSize,
                                                 maxWidth: 'none'
                                             }}
                                         />
                                     ) : (
                                         <Logo
-                                            size={logoSize}
+                                            size={config.logoSize}
                                         />
                                     )}
                                 </div>
                                 <h2
                                     className="text-4xl font-bold transition-colors duration-200"
-                                    style={{ fontFamily: fontFamily, color: wallTextColor }}
+                                    style={{ fontFamily: config.fontFamily, color: config.textColor }}
                                 >
                                     Wall of Love
                                 </h2>
@@ -536,28 +531,27 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                     <div>
                                                         <p
                                                             className={cn("font-semibold text-sm", cardTheme.textColor)}
-                                                            style={{ fontFamily: fontFamily }}
+                                                            style={{ fontFamily: config.fontFamily }}
                                                         >
                                                             {t.authorName}
                                                         </p>
                                                         <p
                                                             className={cn("text-xs", cardTheme.subtitleColor)}
-                                                            style={{ fontFamily: fontFamily }}
+                                                            style={{ fontFamily: config.fontFamily }}
                                                         >
                                                             {t.company}
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                {/* Rating */}
                                                 <div className="flex gap-0.5 mb-3">
                                                     {Array.from({ length: 5 }).map((_, i) => (
                                                         <Star
                                                             key={i}
                                                             className="w-4 h-4"
                                                             style={{
-                                                                fill: i < t.rating ? accentColor : (activeCardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
-                                                                color: i < t.rating ? accentColor : (activeCardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                                fill: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                                color: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
                                                             }}
                                                         />
                                                     ))}
@@ -566,7 +560,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                 {/* Content */}
                                                 <p
                                                     className={cn("text-sm leading-relaxed", cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700')}
-                                                    style={{ fontFamily: fontFamily }}
+                                                    style={{ fontFamily: config.fontFamily }}
                                                 >
                                                     {t.content}
                                                 </p>
@@ -595,26 +589,10 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     onClose={() => setSidebarOpen(false)}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
-                    activeStyle={activeStyle}
-                    setActiveStyle={setActiveStyle}
+                    config={config}
+                    updateConfig={updateConfig}
                     templates={TEMPLATES}
                     cardThemes={CARD_THEMES}
-                    activeCardTheme={activeCardTheme}
-                    setActiveCardTheme={setActiveCardTheme}
-                    backgroundColor={backgroundColor}
-                    setBackgroundColor={setBackgroundColor}
-                    fontFamily={fontFamily}
-                    setFontFamily={setFontFamily}
-                    shadowIntensity={shadowIntensity}
-                    setShadowIntensity={setShadowIntensity}
-                    accentColor={accentColor}
-                    setAccentColor={setAccentColor}
-                    wallTextColor={wallTextColor}
-                    setWallTextColor={setWallTextColor}
-                    logoSize={logoSize}
-                    setLogoSize={setLogoSize}
-                    logoUrl={logoUrl}
-                    setLogoUrl={setLogoUrl}
                     onSelectTestimonials={() => setIsSelectTestimonialsOpen(true)}
                     selectedTestimonialsCount={selectedTestimonialIds.length}
                 />

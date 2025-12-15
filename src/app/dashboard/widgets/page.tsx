@@ -17,12 +17,12 @@ const DEMO_TESTIMONIALS = [
   { name: "John Smith", title: "CEO @ StartupCo", content: "Have the ops for revenues, bumping your latest project on us." },
 ]
 
-// Wall of Love template - Only Bento Grid
+// Wall of Love template - Only Classic
 const WALL_TEMPLATES = [
   {
-    id: "bento",
-    styleId: "bento",
-    name: "Bento Grid",
+    id: "classic",
+    styleId: "classic",
+    name: "Classic",
     description: "Create a beautiful, shareable Wall of Love with your best testimonials",
     bgColor: "bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50",
     cardBg: "bg-white",

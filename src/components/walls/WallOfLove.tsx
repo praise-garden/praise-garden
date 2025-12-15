@@ -66,7 +66,7 @@ const getStyleConfig = (wallStyle: WallOfLoveWidgetConfig['wallStyle']) => {
                 headerGradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
                 accentGlow: 'shadow-[0_0_30px_-5px_rgba(139,92,246,0.3)]',
             }
-        case 'bento':
+        case 'classic':
         default:
             return {
                 containerBg: 'bg-slate-50 dark:bg-zinc-950',
@@ -109,7 +109,7 @@ function TestimonialCard({ testimonial, config, styleConfig, index, isFeatured }
                 styleConfig.cardRadius,
                 styleConfig.cardHover,
                 isFeatured && config.wallStyle === 'cinematic' && "row-span-2 bg-gradient-to-br from-purple-500/10 to-pink-500/10",
-                isFeatured && config.wallStyle === 'bento' && "col-span-2 row-span-2",
+                isFeatured && config.wallStyle === 'classic' && "col-span-2 row-span-2",
             )}
         >
             {/* Video Indicator */}
@@ -154,7 +154,7 @@ function TestimonialCard({ testimonial, config, styleConfig, index, isFeatured }
                                 : "rounded-full",
                             config.wallStyle === 'cinematic' && "ring-2 ring-purple-500/50 bg-gradient-to-br from-purple-500 to-pink-500 text-white",
                             config.wallStyle === 'glassmorphism' && "bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg",
-                            config.wallStyle === 'bento' && "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                            config.wallStyle === 'classic' && "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                         )}
                     >
                         {testimonial.authorAvatarUrl ? (
@@ -191,7 +191,7 @@ function TestimonialCard({ testimonial, config, styleConfig, index, isFeatured }
                         config.wallStyle === 'cinematic' && "bg-purple-500/20 text-purple-400",
                         config.wallStyle === 'brutalist' && cn("border-2 border-black", isDarkCard ? "bg-yellow-300 text-black" : "bg-black text-white"),
                         config.wallStyle === 'glassmorphism' && "bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 dark:text-purple-400",
-                        config.wallStyle === 'bento' && "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
+                        config.wallStyle === 'classic' && "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
                     )}>
                         {testimonial.source.charAt(0)}
                     </div>
@@ -249,8 +249,8 @@ export function WallOfLove({ config, testimonials, className }: WallOfLoveProps)
                 config.columns === 4 ? 'md:columns-2 lg:columns-3 xl:columns-4' :
                     'md:columns-2 lg:columns-3 xl:columns-4 2xl:columns-5'
 
-    // For bento layout, use grid instead of masonry columns
-    const isBentoGrid = config.wallStyle === 'bento'
+    // For classic layout, use grid instead of masonry columns
+    const isClassicGrid = config.wallStyle === 'classic'
 
     return (
         <div className={cn("w-full min-h-screen transition-colors duration-300", styleConfig.containerBg, className)}>
@@ -312,7 +312,7 @@ export function WallOfLove({ config, testimonials, className }: WallOfLoveProps)
             {/* Testimonials Grid/Masonry */}
             <div className={cn(
                 "px-6 pb-16",
-                isBentoGrid
+                isClassicGrid
                     ? cn(
                         "grid gap-4",
                         config.columns === 2 && "md:grid-cols-2",
@@ -325,14 +325,14 @@ export function WallOfLove({ config, testimonials, className }: WallOfLoveProps)
                 {testimonials.map((testimonial, index) => (
                     <div
                         key={testimonial.id}
-                        className={cn(!isBentoGrid && "break-inside-avoid")}
+                        className={cn(!isClassicGrid && "break-inside-avoid")}
                     >
                         <TestimonialCard
                             testimonial={testimonial}
                             config={config}
                             styleConfig={styleConfig}
                             index={index}
-                            isFeatured={index === 0 && isBentoGrid}
+                            isFeatured={index === 0 && isClassicGrid}
                         />
                     </div>
                 ))}

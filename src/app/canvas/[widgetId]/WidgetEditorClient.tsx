@@ -24,7 +24,10 @@ import { RatingBadge } from "@/components/widgets/RatingBadge"
 import { ModernFontPicker } from "@/components/ui/modern-font-picker"
 import { ShareWidgetPanel } from "@/components/widgets/ShareWidgetPanel"
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
-// Re-export the Testimonial type for use in page.tsx
+import { useUserData } from "@/contexts/UserDataContext"
+import { Testimonial as DBTestimonial } from "@/types/database"
+
+// Re-export the Testimonial type for use elsewhere
 export type WidgetTestimonial = Testimonial;
 
 // ===================== DEFAULT DEMO TESTIMONIALS ===================== //
@@ -125,10 +128,28 @@ function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
 // ===================== PROPS INTERFACE ===================== //
 interface WidgetEditorClientProps {
   widgetId: string;
-  userTestimonials: WidgetTestimonial[];
 }
 
-export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorClientProps) {
+export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
+  // Get user testimonials from context
+  const { testimonials: dbTestimonials, loading: testimonialsLoading } = useUserData()
+
+  // Transform DB testimonials to the format expected by this component
+  const userTestimonials: WidgetTestimonial[] = React.useMemo(() => {
+    if (dbTestimonials.length === 0) {
+      return DEFAULT_DEMO_TESTIMONIALS
+    }
+    return dbTestimonials.map(t => ({
+      id: t.id,
+      authorName: t.author_name,
+      authorTitle: t.author_title || '',
+      authorAvatarUrl: t.author_avatar_url,
+      rating: t.rating,
+      content: t.content,
+      source: t.source,
+      date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    }))
+  }, [dbTestimonials])
 
   // Initialize config using the helper from widget-config.ts
   const [config, setConfig] = React.useState<WidgetConfig>(() =>
@@ -219,12 +240,12 @@ export function WidgetEditorClient({ widgetId, userTestimonials }: WidgetEditorC
         size: (config as any).size ?? 'medium',
         layout: (config as any).layout ?? 'row',
       } as WidgetConfig
-    } else if (['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-bento'].includes(newType)) {
+    } else if (['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-classic'].includes(newType)) {
       const wallStyleMap: Record<string, string> = {
         'wall-glassmorphism': 'glassmorphism',
         'wall-brutalist': 'brutalist',
         'wall-cinematic': 'cinematic',
-        'wall-bento': 'bento',
+        'wall-classic': 'classic',
       }
       updatedConfig = {
         ...updatedConfig,

@@ -4,7 +4,7 @@ export interface WallOfLoveModel {
     id: string
     name: string
     description: string
-    style: 'glassmorphism' | 'brutalist' | 'cinematic' | 'bento'
+    style: 'glassmorphism' | 'brutalist' | 'cinematic' | 'classic'
     icon: typeof Sparkles
     iconColor: string
     color: string
@@ -21,10 +21,10 @@ export const WALL_OF_LOVE_MODELS: WallOfLoveModel[] = [
         color: "from-purple-500/20 to-pink-500/20",
     },
     {
-        id: "wall-bento",
-        name: "Bento Grid",
+        id: "wall-classic",
+        name: "Classic",
         description: "Clean modular grid layout",
-        style: "bento",
+        style: "classic",
         icon: LayoutGrid,
         iconColor: "text-blue-400",
         color: "from-blue-500/20 to-cyan-500/20",

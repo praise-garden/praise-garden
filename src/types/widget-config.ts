@@ -74,10 +74,10 @@ export interface BadgeWidgetConfig extends BaseWidgetConfig {
 
 // --- Wall of Love Widgets ---
 export interface WallOfLoveWidgetConfig extends BaseWidgetConfig {
-    type: 'wall-glassmorphism' | 'wall-brutalist' | 'wall-cinematic' | 'wall-bento';
+    type: 'wall-glassmorphism' | 'wall-brutalist' | 'wall-cinematic' | 'wall-classic';
 
     // Wall-specific props
-    wallStyle: 'glassmorphism' | 'brutalist' | 'cinematic' | 'bento';
+    wallStyle: 'glassmorphism' | 'brutalist' | 'cinematic' | 'classic';
     headerTitle: string;
     headerSubtitle: string;
     showHeader: boolean;
@@ -131,7 +131,7 @@ export const isBadgeWidget = (config: WidgetConfig): config is BadgeWidgetConfig
 };
 
 export const isWallOfLoveWidget = (config: WidgetConfig): config is WallOfLoveWidgetConfig => {
-    return ['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-bento'].includes(config.type);
+    return ['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-classic'].includes(config.type);
 };
 
 // Factory function to create a config with strict typing
@@ -163,12 +163,12 @@ export function createWidgetConfig(
         };
     }
 
-    if (['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-bento'].includes(type)) {
+    if (['wall-glassmorphism', 'wall-brutalist', 'wall-cinematic', 'wall-classic'].includes(type)) {
         const wallStyleMap: Record<string, WallOfLoveWidgetConfig['wallStyle']> = {
             'wall-glassmorphism': 'glassmorphism',
             'wall-brutalist': 'brutalist',
             'wall-cinematic': 'cinematic',
-            'wall-bento': 'bento',
+            'wall-classic': 'classic',
         };
         return {
             ...base,
