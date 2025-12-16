@@ -185,11 +185,11 @@ const getSourceIcon = (source: string) => {
 }
 
 // ===================== TEMPLATE CONFIGURATIONS ===================== //
-// Only Bento Grid as the template
+// Only Classic as the template
 const TEMPLATES = [
     {
-        id: "bento",
-        name: "Bento Grid",
+        id: "classic",
+        name: "Classic",
         subtitle: "Modular Layout",
         preview: "bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50"
     },

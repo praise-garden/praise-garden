@@ -173,18 +173,24 @@ export function WallDesignStudioSidebar({
                             {/* Background Color */}
                             <div className="space-y-2">
                                 <Label className="text-xs text-zinc-400">Background Color</Label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={config.backgroundColor}
-                                        onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-                                        className="w-8 h-8 rounded border border-zinc-700 bg-transparent cursor-pointer"
-                                    />
+                                <div className="flex gap-3">
+                                    <div className="relative w-10 h-10 shrink-0">
+                                        <input
+                                            type="color"
+                                            value={config.backgroundColor}
+                                            onChange={(e) => updateConfig('backgroundColor', e.target.value)}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        />
+                                        <div
+                                            className="w-full h-full rounded border border-zinc-700 shadow-sm"
+                                            style={{ backgroundColor: config.backgroundColor }}
+                                        />
+                                    </div>
                                     <input
                                         type="text"
                                         value={config.backgroundColor}
                                         onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-                                        className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white text-xs font-mono uppercase"
+                                        className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-md text-zinc-300 text-xs font-mono focus:outline-none focus:border-violet-500 transition-colors"
                                     />
                                 </div>
                             </div>
@@ -198,59 +204,21 @@ export function WallDesignStudioSidebar({
                                             key={theme.id}
                                             onClick={() => updateConfig('cardTheme', theme.id as WallConfig['cardTheme'])}
                                             className={cn(
-                                                "p-2 rounded-lg border-2 transition-all text-center",
+                                                "py-2.5 px-2 rounded-lg border transition-all text-center text-xs font-medium",
                                                 config.cardTheme === theme.id
-                                                    ? "border-violet-500 bg-violet-500/10"
-                                                    : "border-zinc-700 hover:border-zinc-600 bg-zinc-800/50"
+                                                    ? "bg-zinc-800 border-zinc-600 text-white shadow-sm"
+                                                    : "bg-zinc-800/30 border-transparent text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                                             )}
                                         >
-                                            <span className="text-xs font-medium text-white">{theme.name}</span>
+                                            {theme.name}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Accent Color */}
+                            {/* Typography */}
                             <div className="space-y-2">
-                                <Label className="text-xs text-zinc-400">Accent Color (Stars)</Label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={config.accentColor}
-                                        onChange={(e) => updateConfig('accentColor', e.target.value)}
-                                        className="w-8 h-8 rounded border border-zinc-700 bg-transparent cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={config.accentColor}
-                                        onChange={(e) => updateConfig('accentColor', e.target.value)}
-                                        className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white text-xs font-mono uppercase"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Text Color */}
-                            <div className="space-y-2">
-                                <Label className="text-xs text-zinc-400">Header Text Color</Label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={config.textColor}
-                                        onChange={(e) => updateConfig('textColor', e.target.value)}
-                                        className="w-8 h-8 rounded border border-zinc-700 bg-transparent cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={config.textColor}
-                                        onChange={(e) => updateConfig('textColor', e.target.value)}
-                                        className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white text-xs font-mono uppercase"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Font Family */}
-                            <div className="space-y-2">
-                                <Label className="text-xs text-zinc-400">Font</Label>
+                                <Label className="text-xs text-zinc-400">Typography</Label>
                                 <ModernFontPicker
                                     value={config.fontFamily}
                                     onChange={(font) => updateConfig('fontFamily', font)}
@@ -258,81 +226,139 @@ export function WallDesignStudioSidebar({
                             </div>
 
                             {/* Shadow Intensity */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs text-zinc-400">Shadow Intensity</Label>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={config.shadowIntensity}
+                                    onChange={(e) => updateConfig('shadowIntensity', Number(e.target.value))}
+                                    className="w-full h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-violet-500"
+                                />
+                            </div>
+
+                            {/* Accent Color (Swatches) */}
+                            <div className="space-y-3">
+                                <Label className="text-xs text-zinc-400">Accent Color</Label>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        '#8b5cf6', // Purple
+                                        '#ec4899', // Pink
+                                        '#10b981', // Green
+                                        '#f59e0b', // Orange
+                                        '#ef4444', // Red
+                                        '#3b82f6', // Blue
+                                    ].map((color) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => updateConfig('accentColor', color)}
+                                            className={cn(
+                                                "w-9 h-9 rounded-lg transition-all border-2",
+                                                config.accentColor === color
+                                                    ? "border-white scale-110 shadow-md"
+                                                    : "border-transparent hover:scale-105"
+                                            )}
+                                            style={{ backgroundColor: color }}
+                                            aria-label={`Select accent color ${color}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Title Color */}
                             <div className="space-y-2">
-                                <Label className="text-xs text-zinc-400">Shadow Intensity</Label>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs text-zinc-500 w-8">{config.shadowIntensity}%</span>
+                                <Label className="text-xs text-zinc-400">Title Color</Label>
+                                <div className="flex gap-3">
+                                    <div className="relative w-10 h-10 shrink-0">
+                                        <input
+                                            type="color"
+                                            value={config.textColor}
+                                            onChange={(e) => updateConfig('textColor', e.target.value)}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        />
+                                        <div
+                                            className="w-full h-full rounded border border-zinc-700 shadow-sm"
+                                            style={{ backgroundColor: config.textColor }}
+                                        />
+                                    </div>
                                     <input
-                                        type="range"
-                                        min="0"
-                                        max="100"
-                                        value={config.shadowIntensity}
-                                        onChange={(e) => updateConfig('shadowIntensity', Number(e.target.value))}
-                                        className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-violet-500"
+                                        type="text"
+                                        value={config.textColor}
+                                        onChange={(e) => updateConfig('textColor', e.target.value)}
+                                        className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-md text-zinc-300 text-xs font-mono focus:outline-none focus:border-violet-500 transition-colors"
                                     />
                                 </div>
                             </div>
 
-                            {/* ============= BRANDING SECTION ============= */}
-                            <div className="pt-4 border-t border-zinc-800 space-y-4">
-                                <Label className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Branding</Label>
 
-                                {/* Logo Preview */}
-                                <div className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                                    <div
-                                        className="flex items-center justify-center bg-zinc-900 rounded-lg border border-zinc-700"
-                                        style={{ width: `${Math.max(40, config.logoSize)}px`, height: `${Math.max(40, config.logoSize)}px` }}
-                                    >
+                            {/* ============= BRANDING SECTION ============= */}
+                            <div className="pt-6 border-t border-zinc-800 space-y-4">
+                                <Label className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Branding</Label>
+                                <Label className="text-xs text-zinc-400 block -mt-2">Logo</Label>
+
+                                {/* Logo Upload Card */}
+                                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
+                                    {/* Logo Preview Area */}
+                                    <div className="h-32 flex items-center justify-center bg-zinc-900/80 relative">
                                         {config.logoUrl ? (
-                                            <img
-                                                src={config.logoUrl}
-                                                alt="Logo"
-                                                className="w-full h-full object-contain rounded-lg"
-                                            />
+                                            <div className="relative group">
+                                                <img
+                                                    src={config.logoUrl}
+                                                    alt="Logo"
+                                                    className="max-h-20 max-w-[80%] object-contain"
+                                                />
+                                                <button
+                                                    onClick={handleRemoveLogo}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
                                         ) : (
-                                            <Logo size={Math.min(config.logoSize * 0.6, 40)} color="#8b5cf6" />
+                                            <Logo size={48} color="#8b5cf6" />
                                         )}
                                     </div>
-                                    <div className="flex-1 flex flex-col gap-2">
-                                        <label className="cursor-pointer">
+
+                                    {/* Upload Button Area */}
+                                    <div className="p-3 bg-zinc-800/20 border-t border-zinc-800">
+                                        <label className="cursor-pointer block">
                                             <input
                                                 type="file"
                                                 accept="image/*"
                                                 className="hidden"
                                                 onChange={handleLogoUpload}
                                             />
-                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 rounded-md transition-colors text-xs text-white">
-                                                <Upload className="w-3 h-3" />
+                                            <div className="flex items-center justify-center gap-2 w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all text-xs font-medium text-zinc-300">
+                                                <Upload className="w-3.5 h-3.5" />
                                                 Upload
                                             </div>
                                         </label>
-                                        {config.logoUrl && (
-                                            <button
-                                                onClick={handleRemoveLogo}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-md transition-colors text-xs text-red-400"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                                Remove
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
 
-                                {/* Logo Size */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-zinc-400">Logo Size</span>
-                                        <span className="text-xs text-zinc-500">{config.logoSize}px</span>
+                                {/* Logo Size Slider - Only show if logo exists */}
+                                {/* Keeping this as it's useful functionality, even if not explicitly in the static screenshot, 
+                                    or removing if strict adherence is required. The screenshot cuts off at the bottom. 
+                                    I'll keep it for utility but styling it typically. */}
+                                {config.logoUrl && (
+                                    <div className="space-y-2 pt-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-zinc-400">Logo Size</span>
+                                            <span className="text-xs text-zinc-500">{config.logoSize}px</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="20"
+                                            max="100"
+                                            value={config.logoSize}
+                                            onChange={(e) => updateConfig('logoSize', Number(e.target.value))}
+                                            className="w-full h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-violet-500"
+                                        />
                                     </div>
-                                    <input
-                                        type="range"
-                                        min="20"
-                                        max="100"
-                                        value={config.logoSize}
-                                        onChange={(e) => updateConfig('logoSize', Number(e.target.value))}
-                                        className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-violet-500"
-                                    />
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -351,3 +377,6 @@ export function WallDesignStudioSidebar({
         </div>
     )
 }
+
+
+
