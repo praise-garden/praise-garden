@@ -22,7 +22,7 @@ const navSections = [
     items: [
       { label: "All Testimonials", icon: "star", href: "/dashboard" },
       { label: "Video Testimonials", icon: "video", href: "/dashboard/video-testimonial" },
-      { label: "Import", icon: "upload" },
+      { label: "Import", icon: "upload", href: "/dashboard/import" },
     ],
   },
   {

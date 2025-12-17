@@ -1,6 +1,7 @@
 "use client";
 
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -280,9 +281,11 @@ export default function DashboardPage() {
             <p className="text-zinc-400 mt-1">Organize the testimonials you have received or imported.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-colors">
-              <Icon name="import" className="size-4 mr-2" />
-              Import
+            <Button variant="outline" className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-colors" asChild>
+              <Link href="/dashboard/import-web">
+                <Icon name="import" className="size-4 mr-2" />
+                Import
+              </Link>
             </Button>
           </div>
         </div>
