@@ -1,225 +1,216 @@
-"use server"
+"use server";
 
-import { createClient } from "@/lib/supabase/server"
-import {
-    Testimonial,
-    CreateTestimonialInput,
-    UpdateTestimonialInput
-} from "@/types/database"
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-/**
- * Server Actions for Testimonials
- * 
- * These functions run on the server and handle all CRUD operations
- * for testimonials. RLS (Row Level Security) in Supabase ensures
- * users can only access their own data.
- */
+export async function getTestimonials() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-// ===================== GET ALL TESTIMONIALS ===================== //
-
-export async function getTestimonials(): Promise<{
-    data: Testimonial[] | null;
-    error: string | null;
-}> {
-    try {
-        const supabase = await createClient()
-
-        // Get current user
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-            return { data: null, error: "Not authenticated" }
-        }
-
-        // Fetch testimonials - RLS handles filtering by user_id
-        const { data, error } = await supabase
-            .from('testimonials')
-            .select('*')
-            .order('created_at', { ascending: false })
-
-        if (error) {
-            console.error("Error fetching testimonials:", error)
-            return { data: null, error: error.message }
-        }
-
-        return { data: data as Testimonial[], error: null }
-    } catch (err) {
-        console.error("Unexpected error in getTestimonials:", err)
-        return { data: null, error: "An unexpected error occurred" }
+    if (!user) {
+        return { data: null, error: "Unauthorized" };
     }
+
+    const { data, error } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Error fetching testimonials:", error);
+        return { data: null, error: error.message };
+    }
+
+    return { data, error: null };
 }
 
-// ===================== GET SINGLE TESTIMONIAL ===================== //
+export async function createTestimonial(formData: any) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-export async function getTestimonialById(id: string): Promise<{
-    data: Testimonial | null;
-    error: string | null;
-}> {
-    try {
-        const supabase = await createClient()
-
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-            return { data: null, error: "Not authenticated" }
-        }
-
-        const { data, error } = await supabase
-            .from('testimonials')
-            .select('*')
-            .eq('id', id)
-            .single()
-
-        if (error) {
-            return { data: null, error: error.message }
-        }
-
-        return { data: data as Testimonial, error: null }
-    } catch (err) {
-        return { data: null, error: "An unexpected error occurred" }
+    if (!user) {
+        throw new Error("Unauthorized");
     }
-}
 
-// ===================== CREATE TESTIMONIAL ===================== //
+    // 1. Get Project ID (MVP: Use first existing project or create 'Default Project')
+    let { data: project } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
 
-export async function createTestimonial(input: CreateTestimonialInput): Promise<{
-    data: Testimonial | null;
-    error: string | null;
-}> {
-    try {
-        const supabase = await createClient()
-
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-            return { data: null, error: "Not authenticated" }
-        }
-
-        const { data, error } = await supabase
-            .from('testimonials')
+    if (!project) {
+        // Create default project if none exists
+        const { data: newProject, error: createError } = await supabase
+            .from('projects')
             .insert({
                 user_id: user.id,
-                author_name: input.author_name,
-                author_title: input.author_title || '',
-                author_avatar_url: input.author_avatar_url || null,
-                rating: input.rating ?? 5,
-                content: input.content,
-                source: input.source || 'MANUAL',
+                name: 'My First Project'
             })
-            .select()
-            .single()
+            .select('id')
+            .single();
 
-        if (error) {
-            console.error("Error creating testimonial:", error)
-            return { data: null, error: error.message }
+        if (createError) {
+            console.error("Failed to create default project:", createError);
+            throw new Error("Could not find or create a project.");
         }
-
-        return { data: data as Testimonial, error: null }
-    } catch (err) {
-        console.error("Unexpected error in createTestimonial:", err)
-        return { data: null, error: "An unexpected error occurred" }
+        project = newProject;
     }
+
+    const projectId = project.id;
+
+    // 2. Prepare Data
+    // We assume formData handles the structure. 
+    // In a real app, validating with Zod here is recommended.
+    const {
+        type,
+        rating,
+        tags,
+        customer_name,
+        customer_email,
+        customer_headline,
+        customer_avatar_url,
+        company_name,
+        company_title,
+        company_website,
+        company_logo_url,
+        testimonial_title,
+        testimonial_message,
+        testimonial_date,
+        original_post_url,
+        source
+    } = formData;
+
+    const data = {
+        type,
+        rating,
+        title: testimonial_title,
+        message: testimonial_message,
+        source: source || 'manual',
+        customer_name,
+        customer_email,
+        profession: customer_headline,
+        testimonial_date,
+        original_post_url,
+        tags: tags || [],
+        company: {
+            name: company_name,
+            job_title: company_title,
+            website: company_website,
+            logo_url: company_logo_url
+        },
+        media: {
+            avatar_url: customer_avatar_url,
+            // video_url handling would go here
+        }
+    };
+
+    // 3. Insert Testimonial
+    const { error } = await supabase
+        .from('testimonials')
+        .insert({
+            user_id: user.id,
+            project_id: projectId,
+            data: data,
+            status: 'pending' // Default to pending
+        });
+
+    if (error) {
+        console.error("Insert error:", error);
+        throw new Error("Failed to save testimonial: " + error.message);
+    }
+
+    // 4. Revalidate
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/import/manual");
+
+    // Optional: Return success
+    return { success: true };
 }
 
-// ===================== UPDATE TESTIMONIAL ===================== //
+export async function updateTestimonialStatus(id: string | number, status: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-export async function updateTestimonial(input: UpdateTestimonialInput): Promise<{
-    data: Testimonial | null;
-    error: string | null;
-}> {
-    try {
-        const supabase = await createClient()
+    if (!user) throw new Error("Unauthorized");
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { error } = await supabase
+        .from('testimonials')
+        .update({ status })
+        .eq('id', id)
+        .eq('user_id', user.id);
 
-        if (authError || !user) {
-            return { data: null, error: "Not authenticated" }
-        }
-
-        const { id, ...updateData } = input
-
-        const { data, error } = await supabase
-            .from('testimonials')
-            .update({
-                ...updateData,
-                updated_at: new Date().toISOString(),
-            })
-            .eq('id', id)
-            .select()
-            .single()
-
-        if (error) {
-            console.error("Error updating testimonial:", error)
-            return { data: null, error: error.message }
-        }
-
-        return { data: data as Testimonial, error: null }
-    } catch (err) {
-        console.error("Unexpected error in updateTestimonial:", err)
-        return { data: null, error: "An unexpected error occurred" }
+    if (error) {
+        console.error("Update status error:", error);
+        throw new Error("Failed to update status");
     }
+
+    revalidatePath("/dashboard");
+    return { success: true };
 }
 
-// ===================== DELETE TESTIMONIAL ===================== //
+export async function deleteTestimonial(id: string | number) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-export async function deleteTestimonial(id: string): Promise<{
-    success: boolean;
-    error: string | null;
-}> {
-    try {
-        const supabase = await createClient()
+    if (!user) throw new Error("Unauthorized");
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { error } = await supabase
+        .from('testimonials')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
 
-        if (authError || !user) {
-            return { success: false, error: "Not authenticated" }
-        }
-
-        const { error } = await supabase
-            .from('testimonials')
-            .delete()
-            .eq('id', id)
-
-        if (error) {
-            console.error("Error deleting testimonial:", error)
-            return { success: false, error: error.message }
-        }
-
-        return { success: true, error: null }
-    } catch (err) {
-        console.error("Unexpected error in deleteTestimonial:", err)
-        return { success: false, error: "An unexpected error occurred" }
+    if (error) {
+        console.error("Delete error:", error);
+        throw new Error("Failed to delete testimonial");
     }
+
+    revalidatePath("/dashboard");
+    return { success: true };
 }
 
-// ===================== BULK DELETE TESTIMONIALS ===================== //
+export async function updateTestimonialContent(id: string | number, data: any) {
+    // This is a bit more complex because 'data' is a JSONB column.
+    // We first need to fetch the existing data, merge it, and save it back.
+    // OR if we are sure we are sending the FULL data structure, we can just overwrite 'data'.
 
-export async function deleteTestimonials(ids: string[]): Promise<{
-    success: boolean;
-    error: string | null;
-}> {
-    try {
-        const supabase = await createClient()
+    // For this MVP, let's assume we are updating specific top-level fields in the JSON
+    // or we can implement a shallow merge at SQL level if needed, but fetching+merging in JS is safer for deep objects.
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
 
-        if (authError || !user) {
-            return { success: false, error: "Not authenticated" }
-        }
+    // Fetch existing
+    const { data: existing, error: fetchError } = await supabase
+        .from('testimonials')
+        .select('data')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
 
-        const { error } = await supabase
-            .from('testimonials')
-            .delete()
-            .in('id', ids)
+    if (fetchError || !existing) throw new Error("Testimonial not found");
 
-        if (error) {
-            console.error("Error deleting testimonials:", error)
-            return { success: false, error: error.message }
-        }
+    const newData = {
+        ...existing.data,
+        ...data // Merge incoming updates (e.g., customer_name, message, etc.)
+    };
 
-        return { success: true, error: null }
-    } catch (err) {
-        console.error("Unexpected error in deleteTestimonials:", err)
-        return { success: false, error: "An unexpected error occurred" }
+    const { error } = await supabase
+        .from('testimonials')
+        .update({ data: newData })
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error("Update content error:", error);
+        throw new Error("Failed to update content");
     }
+
+    revalidatePath("/dashboard");
+    return { success: true };
 }

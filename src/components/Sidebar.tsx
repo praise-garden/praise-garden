@@ -14,6 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
+import { useState, useTransition } from "react";
+import { createProject } from "@/lib/actions/projects";
 import { SignOutButton } from "./SignOutButton";
 
 const navSections = [
@@ -184,157 +197,185 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
   const userInitials = getInitials(displayName);
   const planLabel = formatPlanLabel(profile?.plan);
 
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleCreateProject = async (formData: FormData) => {
+    startTransition(async () => {
+      try {
+        await createProject(formData);
+        setIsCreateProjectOpen(false);
+      } catch (error: any) {
+        console.error(error);
+        alert(error.message || "Failed to create project");
+      }
+    });
+  };
+
   return (
-    <aside
-      aria-label="Primary navigation"
-      className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
-    >
-      <div className="flex h-full flex-col">
-        {/* 1. Trustimonials Logo Section - Top */}
-        <div className="flex-shrink-0 p-6">
-          <div className="flex items-center gap-3">
-            <div className="size-9 flex items-center justify-center">
-              <Logo size={36} />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white tracking-tight">Trustimonials</h1>
+    <>
+      <aside
+        aria-label="Primary navigation"
+        className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
+      >
+        <div className="flex h-full flex-col">
+          {/* 1. Trustimonials Logo Section - Top */}
+          <div className="flex-shrink-0 p-6">
+            <div className="flex items-center gap-3">
+              <div className="size-9 flex items-center justify-center">
+                <Logo size={36} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white tracking-tight">Trustimonials</h1>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* 2. Navigation & Project Section - Middle (scrollable) */}
-        <div className="flex-1 overflow-y-auto px-6 py-2">
-          {/* Project Selector */}
-          <div className="mb-8">
+          {/* 2. Navigation & Project Section - Middle (scrollable) */}
+          <div className="flex-1 overflow-y-auto px-6 py-2">
+            {/* Project Selector */}
+            {/* Project Selector - Read Only */}
+            <div className="mb-8">
+              <button
+                onClick={() => setIsCreateProjectOpen(true)}
+                className="group w-full flex items-center justify-between p-3 rounded-2xl bg-gray-800/60 hover:bg-gray-800/80 transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 cursor-pointer"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shadow-md group-hover:shadow-lg transition-shadow">
+                    {projectInitials || "PG"}
+                  </div>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p
+                      className="truncate text-sm font-semibold text-gray-50 group-hover:text-white transition-colors"
+                      title={formatProjectName(activeProject)}
+                    >
+                      {formatProjectName(activeProject)}
+                    </p>
+                  </div>
+                </div>
+                <Plus className="size-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
+              </button>
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="space-y-8" role="navigation">
+              {navSections.map((section, sectionIndex) => (
+                <div key={sectionIndex}>
+                  {section.title && (
+                    <h3 className="mb-3 px-3 text-xs font-bold uppercase tracking-wider text-gray-500">
+                      {section.title}
+                    </h3>
+                  )}
+                  <div className="space-y-1">
+                    {section.items.map((item) => {
+                      const href = item.href || "#";
+                      const isActive = item.href ? pathname === item.href : false;
+                      return (
+                        <Link
+                          key={item.label}
+                          href={href}
+                          aria-current={isActive ? "page" : undefined}
+                          className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${isActive
+                            ? "bg-emerald-500/10 text-emerald-300"
+                            : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
+                            }`}
+                        >
+                          <Icon
+                            name={item.icon}
+                            className={`size-4 transition-colors ${isActive ? "text-emerald-400" : "text-gray-500 group-hover:text-gray-300"
+                              }`}
+                          />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div >
+
+          {/* 3. User Profile Section - Bottom */}
+          < div className="flex-shrink-0 p-6 pt-4 border-t border-gray-800/50" >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  className="group w-full flex items-center justify-between p-3 rounded-2xl bg-gray-800/60 hover:bg-gray-800/80 transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
-                  aria-label="Select project"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shadow-md group-hover:shadow-lg transition-shadow">
-                      {projectInitials || "PG"}
-                    </div>
-                    <div className="min-w-0 flex-1 text-left">
-                      <p
-                        className="truncate text-sm font-semibold text-gray-50 group-hover:text-white transition-colors"
-                        title={formatProjectName(activeProject)}
-                      >
-                        {formatProjectName(activeProject)}
-                      </p>
-                    </div>
+                <button className="group w-full flex items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-gray-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50">
+                  <Avatar className="size-9 ring-2 ring-gray-700/50 group-hover:ring-emerald-500/50 transition-all">
+                    <AvatarImage alt={displayName} src={user.user_metadata?.avatar_url ?? ""} />
+                    <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-sm font-semibold text-gray-200">
+                      {userInitials || "PG"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="truncate text-sm font-semibold text-gray-50" title={displayName}>
+                      {displayName}
+                    </p>
+                    <p className="truncate text-xs text-gray-400" title={emailAddress}>
+                      {emailAddress || "No email"}
+                    </p>
                   </div>
-                  <Icon name="chevrons-vertical" className="size-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
+                  <div className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-all ${planLabel === 'hacker'
+                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                    : 'border border-blue-500/30 bg-blue-500/10 text-blue-400'
+                    }`}>
+                    {planLabel}
+                  </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72" align="start">
-                <DropdownMenuLabel className="text-xs uppercase text-gray-400 font-semibold tracking-wider">Projects</DropdownMenuLabel>
+              <DropdownMenuContent className="w-72" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-semibold leading-none text-gray-50">{displayName}</p>
+                    <p className="text-xs leading-none text-gray-400">{emailAddress || "No email"}</p>
+                  </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {activeProject ? (
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 text-sm p-3" disabled>
-                    <span className="font-semibold text-gray-50">{formatProjectName(activeProject)}</span>
-                    <span className="text-xs text-gray-500">Currently active</span>
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem className="text-sm text-gray-500 p-3" disabled>
-                    No projects yet
-                  </DropdownMenuItem>
-                )}
-                {otherProjects.length > 0 && <DropdownMenuSeparator />}
-                {otherProjects.length > 0 ? (
-                  otherProjects.map((project) => (
-                    <DropdownMenuItem key={project.id} className="flex flex-col items-start gap-1 text-sm p-3" disabled>
-                      <span className="font-medium text-gray-100">{formatProjectName(project)}</span>
-                      <span className="text-xs text-gray-500">Project switching coming soon</span>
-                    </DropdownMenuItem>
-                  ))
-                ) : null}
+                <DropdownMenuItem>
+                  <SignOutButton />
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </div >
+        </div >
+      </aside >
 
-          {/* Navigation Links */}
-          <nav className="space-y-8" role="navigation">
-            {navSections.map((section, sectionIndex) => (
-              <div key={sectionIndex}>
-                {section.title && (
-                  <h3 className="mb-3 px-3 text-xs font-bold uppercase tracking-wider text-gray-500">
-                    {section.title}
-                  </h3>
-                )}
-                <div className="space-y-1">
-                  {section.items.map((item) => {
-                    const href = item.href || "#";
-                    const isActive = item.href ? pathname === item.href : false;
-                    return (
-                      <Link
-                        key={item.label}
-                        href={href}
-                        aria-current={isActive ? "page" : undefined}
-                        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${isActive
-                          ? "bg-emerald-500/10 text-emerald-300"
-                          : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
-                          }`}
-                      >
-                        <Icon
-                          name={item.icon}
-                          className={`size-4 transition-colors ${isActive ? "text-emerald-400" : "text-gray-500 group-hover:text-gray-300"
-                            }`}
-                        />
-                        <span className="truncate">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </nav>
-        </div>
-
-        {/* 3. User Profile Section - Bottom */}
-        <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-800/50">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="group w-full flex items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-gray-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50">
-                <Avatar className="size-9 ring-2 ring-gray-700/50 group-hover:ring-emerald-500/50 transition-all">
-                  <AvatarImage alt={displayName} src={user.user_metadata?.avatar_url ?? ""} />
-                  <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-sm font-semibold text-gray-200">
-                    {userInitials || "PG"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1 text-left">
-                  <p className="truncate text-sm font-semibold text-gray-50" title={displayName}>
-                    {displayName}
-                  </p>
-                  <p className="truncate text-xs text-gray-400" title={emailAddress}>
-                    {emailAddress || "No email"}
-                  </p>
-                </div>
-                <div className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-all ${planLabel === 'hacker'
-                  ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                  : 'border border-blue-500/30 bg-blue-500/10 text-blue-400'
-                  }`}>
-                  {planLabel}
-                </div>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-semibold leading-none text-gray-50">{displayName}</p>
-                  <p className="text-xs leading-none text-gray-400">{emailAddress || "No email"}</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <SignOutButton />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-    </aside>
+      <Dialog open={isCreateProjectOpen} onOpenChange={setIsCreateProjectOpen}>
+        <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-50 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          <form action={handleCreateProject} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-zinc-400">Project Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="e.g. My Awesome Project"
+                className="bg-zinc-900 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsCreateProjectOpen(false)}
+                className="text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white"
+              >
+                {isPending ? "Creating..." : "Create Project"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
