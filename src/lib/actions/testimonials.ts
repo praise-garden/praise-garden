@@ -112,6 +112,7 @@ export async function createTestimonial(formData: any) {
     const { error } = await supabase
         .from('testimonials')
         .insert({
+            type: type, // Insert top-level type column
             user_id: user.id,
             project_id: projectId,
             data: data,

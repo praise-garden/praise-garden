@@ -29,6 +29,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog";
@@ -81,6 +82,8 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     // Edit States
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [testimonialToDelete, setTestimonialToDelete] = useState<string | number | null>(null);
 
     const [isPending, startTransition] = useTransition();
 
@@ -151,18 +154,26 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     };
 
     const handleDelete = (id: string | number) => {
-        if (confirm("Delete this testimonial?")) {
-            // Optimistic
-            setTestimonials(prev => prev.filter(t => t.id !== id));
+        setTestimonialToDelete(id);
+        setDeleteDialogOpen(true);
+    };
 
-            startTransition(async () => {
-                try {
-                    await deleteTestimonial(id);
-                } catch (e) {
-                    alert("Failed to delete");
-                }
-            });
-        }
+    const confirmDelete = () => {
+        if (!testimonialToDelete) return;
+
+        // Optimistic
+        setTestimonials(prev => prev.filter(t => t.id !== testimonialToDelete));
+
+        startTransition(async () => {
+            try {
+                await deleteTestimonial(testimonialToDelete);
+            } catch (e) {
+                alert("Failed to delete");
+            }
+        });
+
+        setDeleteDialogOpen(false);
+        setTestimonialToDelete(null);
     };
 
     const handleEdit = (id: string | number) => {
@@ -314,6 +325,26 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                     </DialogContent>
                 </Dialog>
             )}
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-50">
+                    <DialogHeader>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription className="text-zinc-400">
+                            Would you like to proceed with delete? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} className="hover:bg-zinc-900 border border-transparent hover:border-zinc-800">
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={confirmDelete} className="bg-red-900/50 hover:bg-red-900 text-red-200 border border-red-900">
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
         </div>
     );

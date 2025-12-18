@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Video, Upload, ChevronDown, ImageIcon, Star, Tag, Calendar } from "lucide-react";
+import { Video, Upload, ChevronDown, ImageIcon, Star, Tag, Calendar, Check } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,12 +24,14 @@ interface VideoTestimonialFormProps {
 
 export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialFormProps) {
     const [isPending, startTransition] = useTransition();
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+    const [hoverRating, setHoverRating] = useState(0);
     const [name, setName] = useState("");
     const [tagline, setTagline] = useState("");
     const [email, setEmail] = useState("");
     const [company, setCompany] = useState("");
     const [team, setTeam] = useState("");
-    const [excerpt, setExcerpt] = useState("");
+    const [message, setMessage] = useState("");
     const [date, setDate] = useState(new Date().toLocaleDateString());
 
     const handleSubmit = () => {
@@ -37,7 +48,7 @@ export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialForm
             customer_email: email,
             company_name: company,
             company_title: "", // Not explicitly in video form UI, could map Tagline to title but they are separate concept usually.
-            testimonial_message: excerpt, // Using excerpt as message
+            testimonial_message: message,
             testimonial_date: date,
             source: 'manual',
             tags: [], // No tag input in this form except 'Add a tag' button which was dummy
@@ -47,13 +58,13 @@ export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialForm
         startTransition(async () => {
             try {
                 await createTestimonial(formData);
-                alert("Video testimonial imported successfully!");
+                setShowSuccessDialog(true);
                 // Reset form
                 setName("");
                 setTagline("");
                 setEmail("");
                 setCompany("");
-                setExcerpt("");
+                setMessage("");
             } catch (error: any) {
                 console.error(error);
                 alert("Failed to import: " + (error.message || "Unknown error"));
@@ -63,6 +74,30 @@ export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialForm
 
     return (
         <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar space-y-6">
+            {/* Success Dialog */}
+            <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-50 sm:max-w-sm">
+                    <DialogHeader className="flex flex-col items-center justify-center text-center gap-4 py-4">
+                        <div className="size-12 rounded-full bg-green-900/20 border border-green-900/50 flex items-center justify-center">
+                            <Check className="size-6 text-green-400" />
+                        </div>
+                        <div className="space-y-2">
+                            <DialogTitle className="text-xl">Import Successful</DialogTitle>
+                            <DialogDescription className="text-zinc-400">
+                                The video testimonial has been added to your collection.
+                            </DialogDescription>
+                        </div>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-center">
+                        <Button
+                            onClick={() => setShowSuccessDialog(false)}
+                            className="bg-[#F5426C] hover:bg-[#F5426C]/90 text-white min-w-[120px]"
+                        >
+                            Done
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             {/* Video Upload Zone */}
             <div className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden">
                 <div className="w-16 h-16 mb-4 relative">
@@ -155,23 +190,25 @@ export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialForm
 
                 <div className="space-y-2">
                     <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Rating</Label>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5" onMouseLeave={() => setHoverRating(0)}>
                         {[1, 2, 3, 4, 5].map((s) => (
                             <button
                                 key={s}
                                 onClick={() => setRating(s)}
+                                onMouseEnter={() => setHoverRating(s)}
                                 className="focus:outline-none hover:scale-110 active:scale-95 transition-transform"
                             >
-                                <Star className={`w-6 h-6 ${s <= rating ? "fill-[#F5426C] text-[#F5426C]" : "text-zinc-800 fill-zinc-800"}`} />
+                                <Star className={`w-6 h-6 ${s <= (hoverRating || rating) ? "fill-[#F5426C] text-[#F5426C]" : "text-zinc-800 fill-zinc-800"}`} />
                             </button>
                         ))}
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Excerpt</Label>
+                    <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Message</Label>
                     <Textarea
-                        value={excerpt} onChange={(e) => setExcerpt(e.target.value)}
+                        value={message} onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Love this service! If you have customers that need a level of confidence before they buy, this will help a ton!"
                         className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 resize-none min-h-[120px]"
                     />
                 </div>

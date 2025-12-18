@@ -93,28 +93,27 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEdit, onCopy }: TestimonialRowCardProps) {
     return (
-        <div className="group relative w-full py-6 px-6 transition-all duration-200">
-            <div className="flex items-center gap-4 lg:gap-8">
-
-                {/* User Info Section */}
-                <div className="flex items-start gap-5 w-[14vw] min-w-[180px]">
+        <tr className="group flex items-center bg-zinc-950/30 hover:bg-zinc-900/40 border-b border-zinc-800/50 last:border-0 transition-all duration-200">
+            {/* Reviewer Info */}
+            <td className="p-0">
+                <div className="flex items-start gap-5 w-[14vw] min-w-[220px] max-w-[20vw] px-6 py-4">
                     <Avatar className="size-14 rounded-full ring-2 ring-zinc-800/50 group-hover:ring-zinc-700/70 transition-all">
                         <AvatarImage src="" />
                         <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white font-bold text-lg">
                             {testimonial.avatar}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col gap-0.5">
-                        <h3 className="font-bold text-zinc-100 text-sm leading-tight">{testimonial.reviewer}</h3>
-                        <p className="text-xs text-zinc-500 leading-tight">{testimonial.email}</p>
-                        <p className="text-xs text-zinc-400 font-medium leading-tight">{testimonial.profession}</p>
+                    <div className="flex flex-col gap-0.5 overflow-hidden">
+                        <h3 className="font-bold text-zinc-100 text-sm leading-tight truncate">{testimonial.reviewer}</h3>
+                        <p className="text-xs text-zinc-500 leading-tight truncate">{testimonial.email}</p>
+                        <p className="text-xs text-zinc-400 font-medium leading-tight truncate">{testimonial.profession}</p>
 
                         <div className="flex gap-0.5 mt-1">
                             {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                     key={i}
                                     className={cn(
-                                        "size-3.5",
+                                        "size-3.5 flex-shrink-0",
                                         i < testimonial.rating ? "fill-amber-400 text-amber-400" : "fill-zinc-800 text-zinc-800"
                                     )}
                                 />
@@ -122,24 +121,32 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                         </div>
                     </div>
                 </div>
+            </td>
 
-                {/* Vertical Divider */}
+            {/* Vertical Divider */}
+            <td className="p-0">
                 <div className="w-px h-14 bg-zinc-800/50 block" />
+            </td>
 
-                {/* Content Section */}
-                <div className="flex-1 min-w-[200px] block">
-                    <p className="text-zinc-300 text-sm leading-relaxed line-clamp-2">
+            {/* Content Section */}
+            <td className="block p-0">
+                <div className="px-6 py-4 w-[40vw] min-w-[300px]">
+                    <p className="text-zinc-300 text-sm leading-relaxed line-clamp-2 w-full break-words">
                         {testimonial.text}
                     </p>
                 </div>
+            </td>
 
-                {/* Vertical Divider */}
+            {/* Vertical Divider */}
+            <td className="p-0">
                 <div className="w-px h-14 bg-zinc-800/50 block" />
+            </td>
 
-                {/* Meta Section */}
-                <div className="flex items-center gap-4 flex-shrink-0">
+            {/* Meta Section */}
+            <td className="p-0">
+                <div className="flex items-center gap-4 flex-shrink-0 px-6 py-4">
                     {/* Source */}
-                    <div className="flex items-center justify-center w-[7vw] block">
+                    <div className="flex items-center justify-center w-[7vw] max-w-[100px] block">
                         <div className="relative group/tooltip">
                             <div className={cn(
                                 "size-8 rounded-lg border flex items-center justify-center transition-all duration-200 cursor-default",
@@ -154,17 +161,17 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                     </div>
 
                     {/* Status */}
-                    <div className="w-[7vw] min-w-[80px] flex justify-center cursor-pointer" onClick={() => onStatusChange(testimonial.id)}>
+                    <div className="w-[7vw] min-w-[80px] max-w-[100px] flex justify-center cursor-pointer" onClick={() => onStatusChange(testimonial.id)}>
                         <StatusBadge status={testimonial.status} />
                     </div>
 
                     {/* Date */}
-                    <span className="text-xs text-zinc-500 font-mono w-[9vw] min-w-[90px] flex justify-center block">
+                    <span className="text-xs text-zinc-500 font-mono w-[9vw] min-w-[90px] max-w-[120px] flex justify-center block">
                         {testimonial.date}
                     </span>
 
                     {/* Actions */}
-                    <div className="w-[9vw] min-w-[100px] flex items-center justify-center gap-1">
+                    <div className="w-[9vw] min-w-[100px] max-w-[120px] flex items-center justify-center gap-1">
                         <Button
                             size="icon"
                             variant="ghost"
@@ -191,8 +198,7 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                         </Button>
                     </div>
                 </div>
-
-            </div>
-        </div>
+            </td>
+        </tr>
     );
 }

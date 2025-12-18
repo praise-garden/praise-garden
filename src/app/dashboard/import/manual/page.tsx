@@ -6,7 +6,7 @@ import { VideoTestimonialForm } from "./VideoTestimonialForm";
 
 export default function ManualImportPage() {
     const [importType, setImportType] = useState<"text" | "video">("text");
-    const [rating, setRating] = useState(5);
+    const [rating, setRating] = useState(0);
 
     return (
         <div className="h-full flex flex-col justify-center items-center py-6 px-4">

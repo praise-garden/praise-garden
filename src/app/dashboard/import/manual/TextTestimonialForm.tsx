@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Camera, Calendar, Star, X, Image as ImageIcon, ChevronDown, Upload } from "lucide-react";
+import { Camera, Calendar, Star, X, Image as ImageIcon, ChevronDown, Upload, Check } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,9 +24,10 @@ interface TextTestimonialFormProps {
 }
 
 export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormProps) {
-    const [tags, setTags] = useState(["product", "service", "customer-love"]);
-    const [newTag, setNewTag] = useState("");
+
     const [showCompanyDetails, setShowCompanyDetails] = useState(false);
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+    const [hoverRating, setHoverRating] = useState(0);
 
     // Form States
     const [isPending, startTransition] = useTransition();
@@ -33,16 +43,9 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
     const [originalPostUrl, setOriginalPostUrl] = useState("");
     const [source, setSource] = useState("manual");
 
-    const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && newTag.trim()) {
-            setTags([...tags, newTag.trim()]);
-            setNewTag("");
-        }
-    };
 
-    const removeTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove));
-    };
+
+
 
     const handleSubmit = () => {
         if (!name) {
@@ -51,9 +54,9 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
         }
 
         const formData = {
-            type: 'text',
+            type: 'Text',
             rating,
-            tags,
+            tags: [],
             customer_name: name,
             customer_headline: headline,
             customer_email: email,
@@ -70,7 +73,7 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
         startTransition(async () => {
             try {
                 await createTestimonial(formData);
-                alert("Testimonial imported successfully!");
+                setShowSuccessDialog(true);
                 // Clear form or redirect could happen here
                 setName("");
                 setMessage("");
@@ -86,6 +89,30 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
 
     return (
         <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar space-y-10">
+            {/* Success Dialog */}
+            <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-50 sm:max-w-sm">
+                    <DialogHeader className="flex flex-col items-center justify-center text-center gap-4 py-4">
+                        <div className="size-12 rounded-full bg-green-900/20 border border-green-900/50 flex items-center justify-center">
+                            <Check className="size-6 text-green-400" />
+                        </div>
+                        <div className="space-y-2">
+                            <DialogTitle className="text-xl">Import Successful</DialogTitle>
+                            <DialogDescription className="text-zinc-400">
+                                The text testimonial has been added to your collection.
+                            </DialogDescription>
+                        </div>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-center">
+                        <Button
+                            onClick={() => setShowSuccessDialog(false)}
+                            className="bg-[#F5426C] hover:bg-[#F5426C]/90 text-white min-w-[120px]"
+                        >
+                            Done
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             {/* Customer Information */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-zinc-800/50 pb-2">
@@ -94,30 +121,34 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
 
                 <div className="grid grid-cols-[1fr,auto] gap-6">
                     <div className="space-y-5">
-                        <div className="space-y-2">
-                            <Label className="text-zinc-400 font-medium">Full Name <span className="text-[#F5426C]">*</span></Label>
-                            <Input
-                                value={name} onChange={(e) => setName(e.target.value)}
-                                placeholder="e.g. Sarah Connor"
-                                className="bg-zinc-900/50 border-zinc-800 focus:border-[#F5426C] focus:ring-1 focus:ring-[#F5426C]/50 text-zinc-200 placeholder:text-zinc-600 h-10 transition-all"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-zinc-400 font-medium">Headline</Label>
-                            <Input
-                                value={headline} onChange={(e) => setHeadline(e.target.value)}
-                                placeholder="e.g. CMO at TechCorp"
-                                className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
-                            />
+                        <div className="grid grid-cols-2 gap-5">
+                            <div className="space-y-2">
+                                <Label className="text-zinc-400 font-medium">Full Name <span className="text-[#F5426C]">*</span></Label>
+                                <Input
+                                    value={name} onChange={(e) => setName(e.target.value)}
+                                    placeholder="e.g. Sarah Connor"
+                                    className="bg-zinc-900/50 border-zinc-800 focus:border-[#F5426C] focus:ring-1 focus:ring-[#F5426C]/50 text-zinc-200 placeholder:text-zinc-600 h-10 transition-all"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-zinc-400 font-medium">Headline</Label>
+                                <Input
+                                    value={headline} onChange={(e) => setHeadline(e.target.value)}
+                                    placeholder="e.g. CMO at TechCorp"
+                                    className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label className="text-zinc-400 font-medium">Email Address</Label>
-                            <Input
-                                type="email"
-                                value={email} onChange={(e) => setEmail(e.target.value)}
-                                placeholder="sarah@example.com"
-                                className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
-                            />
+                            <div className="w-1/2">
+                                <Input
+                                    type="email"
+                                    value={email} onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="sarah@example.com"
+                                    className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -160,21 +191,13 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-zinc-400 font-medium">Job Title</Label>
+                                    <Label className="text-zinc-400 font-medium">Website URL</Label>
                                     <Input
-                                        value={jobTitle} onChange={(e) => setJobTitle(e.target.value)}
-                                        placeholder="Chief Marketing Officer"
+                                        value={website} onChange={(e) => setWebsite(e.target.value)}
+                                        placeholder="https://techcorp.com"
                                         className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
                                     />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-zinc-400 font-medium">Website URL</Label>
-                                <Input
-                                    value={website} onChange={(e) => setWebsite(e.target.value)}
-                                    placeholder="https://techcorp.com"
-                                    className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
-                                />
                             </div>
                         </div>
 
@@ -197,14 +220,15 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
                 <div className="space-y-5">
                     <div className="space-y-2">
                         <Label className="text-zinc-400 font-medium">Rating</Label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2" onMouseLeave={() => setHoverRating(0)}>
                             {[1, 2, 3, 4, 5].map((s) => (
                                 <button
                                     key={s}
                                     onClick={() => setRating(s)}
+                                    onMouseEnter={() => setHoverRating(s)}
                                     className="focus:outline-none hover:scale-110 active:scale-95 transition-transform p-1 hover:bg-white/5 rounded-md"
                                 >
-                                    <Star className={`w-6 h-6 ${s <= rating ? "fill-[#F5426C] text-[#F5426C] drop-shadow-md" : "text-zinc-700 fill-zinc-800"}`} />
+                                    <Star className={`w-6 h-6 ${s <= (hoverRating || rating) ? "fill-[#F5426C] text-[#F5426C] drop-shadow-md" : "text-zinc-700 fill-zinc-800"}`} />
                                 </button>
                             ))}
                         </div>
@@ -263,58 +287,36 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
                         <p className="text-[10px] text-zinc-500">Original Post URL or verification for the comment.</p>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label className="text-zinc-400 font-medium">Date</Label>
-                        <div className="relative">
-                            <Input
-                                value={date} onChange={(e) => setDate(e.target.value)}
-                                className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10 pl-4"
-                            />
-                            <Calendar className="w-4 h-4 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <div className="grid grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                            <Label className="text-zinc-400 font-medium">Source</Label>
+                            <div className="relative">
+                                <select
+                                    value={source} onChange={(e) => setSource(e.target.value)}
+                                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-md h-10 px-3 text-sm text-zinc-200 focus:outline-none focus:border-[#F5426C]/50 transition-colors appearance-none cursor-pointer"
+                                >
+                                    <option value="manual">Select source</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="email">Email</option>
+                                </select>
+                                <ChevronDown className="w-4 h-4 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-zinc-400 font-medium">Date</Label>
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={date} onChange={(e) => setDate(e.target.value)}
+                                    className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10 pl-4 [color-scheme:dark]"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label className="text-zinc-400 font-medium">Tags</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {tags.map((tag, i) => (
-                                <span key={i} className="bg-zinc-800 text-zinc-300 pl-3 pr-1.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm border border-zinc-700/50 group">
-                                    {tag}
-                                    <button onClick={() => removeTag(tag)} className="p-0.5 hover:bg-zinc-700 rounded-full transition-colors">
-                                        <X className="w-3 h-3 text-zinc-500 group-hover:text-red-400" />
-                                    </button>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label className="text-zinc-400 font-medium">Source</Label>
-                        <div className="relative">
-                            <select
-                                value={source} onChange={(e) => setSource(e.target.value)}
-                                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-md h-10 px-3 text-sm text-zinc-200 focus:outline-none focus:border-[#F5426C]/50 transition-colors appearance-none cursor-pointer"
-                            >
-                                <option value="manual">Select source</option>
-                                <option value="twitter">Twitter</option>
-                                <option value="linkedin">LinkedIn</option>
-                                <option value="email">Email</option>
-                            </select>
-                            <ChevronDown className="w-4 h-4 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label className="text-zinc-400 font-medium">Tags</Label>
-                        <input
-                            type="text"
-                            value={newTag}
-                            onChange={(e) => setNewTag(e.target.value)}
-                            onKeyDown={handleAddTag}
-                            placeholder="Add a topic or tags..."
-                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-md h-10 px-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-[#F5426C]/50 transition-all"
-                        />
-                    </div>
                 </div>
             </div>
 
