@@ -167,7 +167,7 @@ export function CustomDateRangeDropdown({ dateRange, onChange, className }: Cust
       <Button
         type="button"
         variant="outline"
-        className="h-10 px-5 shadow-sm w-full sm:w-auto sm:min-w-[240px] justify-start text-left font-normal bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600"
+        className="h-10 px-5 shadow-sm w-full sm:w-auto sm:min-w-[180px] justify-start text-left font-normal bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600"
         onClick={() => setOpen(!open)}
       >
         <CalendarIcon className="mr-2 h-4 w-4" />

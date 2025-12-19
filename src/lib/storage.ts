@@ -5,16 +5,16 @@ export type ImageUploadAccess = 'public' | 'signed';
 
 export type UploadContext =
   | {
-      type: 'project';
-      projectId: string;
-      namespace?: string;
-    }
+    type: 'project';
+    projectId: string;
+    namespace?: string;
+  }
   | {
-      type: 'user';
-      userId: string;
-      namespace?: string;
-      fileName?: string;
-    };
+    type: 'user';
+    userId: string;
+    namespace?: string;
+    fileName?: string;
+  };
 
 export type UploadImageToStorageOptions = {
   file: File;
@@ -34,8 +34,11 @@ export type UploadImageResult = {
 const DEFAULT_BUCKET = 'assets';
 const DEFAULT_CACHE_CONTROL = '3600';
 const DEFAULT_SIGNED_EXPIRY = 60 * 60 * 24 * 7; // 7 days
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-const VALID_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+const VALID_MEDIA_TYPES = [
+  'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml',
+  'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'
+];
 
 type SupabaseStorageClient = SupabaseClient['storage'];
 
@@ -55,7 +58,7 @@ const buildStoragePath = (file: File, context: UploadContext) => {
       .split('/')
       .map(sanitizePathSegment)
       .filter(Boolean);
-      
+
     const namespace = namespaceParts.join('/');
     const projectSegment = sanitizePathSegment(context.projectId);
     return `projects/${projectSegment}/${namespace}/${crypto.randomUUID()}.${extension}`;
@@ -118,8 +121,8 @@ export const uploadImageToStorage = async ({
     throw new Error('File size exceeds the 5MB limit');
   }
 
-  if (!VALID_IMAGE_TYPES.includes(file.type)) {
-    throw new Error('Unsupported file type. Please upload a PNG, JPG, WebP, GIF, or SVG image.');
+  if (!VALID_MEDIA_TYPES.includes(file.type)) {
+    throw new Error('Unsupported file type. Please upload a valid image or video (PNG, JPG, MP4, etc).');
   }
 
   const supabaseClient = ensureSupabaseClient(supabase);

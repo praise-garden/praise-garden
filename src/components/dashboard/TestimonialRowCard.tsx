@@ -1,13 +1,17 @@
 "use client";
 
+import { useState, useRef } from "react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit2, Mail, Trash2, Video, MessageSquare, Twitter, Linkedin, Star } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Copy, Edit2, Mail, Trash2, Video, MessageSquare, Twitter, Linkedin, Star, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TestimonialRowCardProps {
     testimonial: {
         id: number | string;
+        type: string;
         reviewer: string;
         email: string;
         profession: string;
@@ -17,11 +21,14 @@ interface TestimonialRowCardProps {
         status: string;
         date: string;
         avatar: string;
+        attachments?: { type: 'image' | 'video', url: string }[];
     };
     onStatusChange: (id: string | number) => void;
     onDelete: (id: string | number) => void;
     onEdit: (id: string | number) => void;
     onCopy: (text: string) => void;
+    selected: boolean;
+    onSelect: () => void;
 }
 
 const getSourceName = (source: string): string => {
@@ -60,16 +67,48 @@ const getSourceStyles = (source: string): string => {
     return "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800 hover:border-zinc-700";
 };
 
+const VideoPreview = ({ url }: { url: string }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const handlePlay = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent row selection
+        if (videoRef.current) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        }
+    };
+
+    return (
+        <div className="rounded-xl overflow-hidden border border-zinc-800 bg-black/40 w-[140px] aspect-video relative group/video flex-shrink-0">
+            <video
+                ref={videoRef}
+                src={url}
+                className="w-full h-full object-cover"
+                controls={isPlaying}
+                playsInline
+                preload="metadata"
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => setIsPlaying(false)}
+                onClick={(e) => e.stopPropagation()}
+            />
+            {!isPlaying && (
+                <div
+                    onClick={handlePlay}
+                    className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/video:bg-black/40 transition-colors cursor-pointer z-10"
+                >
+                    <div className="size-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg group-hover/video:scale-110 transition-transform">
+                        <Play className="size-4 text-white fill-white ml-0.5" />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const StatusBadge = ({ status }: { status: string }) => {
     const s = status.toLowerCase();
 
-    if (s === 'pending') {
-        return (
-            <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 text-xs font-medium shadow-[0_0_10px_-3px_rgba(249,115,22,0.3)]">
-                Pending
-            </span>
-        );
-    }
     if (s === 'public' || s === 'approved') {
         return (
             <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-medium shadow-[0_0_10px_-3px_rgba(74,222,128,0.3)]">
@@ -77,10 +116,17 @@ const StatusBadge = ({ status }: { status: string }) => {
             </span>
         );
     }
-    if (s === 'hidden' || s === 'rejected') {
+    if (s === 'hidden' || s === 'rejected' || s === 'pending') {
         return (
-            <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-medium">
+            <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 text-xs font-medium">
                 Hidden
+            </span>
+        );
+    }
+    if (s === 'archived') {
+        return (
+            <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 text-xs font-medium">
+                Archived
             </span>
         );
     }
@@ -91,12 +137,25 @@ const StatusBadge = ({ status }: { status: string }) => {
     );
 };
 
-export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEdit, onCopy }: TestimonialRowCardProps) {
+export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEdit, onCopy, selected, onSelect }: TestimonialRowCardProps) {
     return (
-        <tr className="group flex items-center bg-zinc-950/30 hover:bg-zinc-900/40 border-b border-zinc-800/50 last:border-0 transition-all duration-200">
+        <tr className={cn(
+            "group flex items-center border-b border-zinc-800/50 last:border-0 transition-all duration-200",
+            selected ? "bg-indigo-900/20 hover:bg-indigo-900/30" : "bg-zinc-950/30 hover:bg-zinc-900/40"
+        )}>
+            {/* Checkbox Column */}
+            <td className="p-0 w-[60px] flex-shrink-0">
+                <div className="flex items-center justify-center px-4 py-10">
+                    <Checkbox
+                        checked={selected}
+                        onCheckedChange={() => onSelect()}
+                        id={`select-${testimonial.id}`}
+                    />
+                </div>
+            </td>
             {/* Reviewer Info */}
             <td className="p-0">
-                <div className="flex items-start gap-5 w-[14vw] min-w-[220px] max-w-[20vw] px-6 py-4">
+                <div className="flex items-start gap-5 w-[14vw] min-w-[220px] max-w-[20vw] px-6 py-10">
                     <Avatar className="size-14 rounded-full ring-2 ring-zinc-800/50 group-hover:ring-zinc-700/70 transition-all">
                         <AvatarImage src="" />
                         <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white font-bold text-lg">
@@ -125,26 +184,58 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
 
             {/* Vertical Divider */}
             <td className="p-0">
-                <div className="w-px h-14 bg-zinc-800/50 block" />
+                <div className="w-px h-28 bg-zinc-800/50 block" />
             </td>
 
             {/* Content Section */}
-            <td className="block p-0">
-                <div className="px-6 py-4 w-[40vw] min-w-[300px]">
+            {/* Content Section */}
+            <td className="block p-0 self-start">
+                <div className="px-6 py-10 w-[35vw] min-w-[300px]">
                     <p className="text-zinc-300 text-sm leading-relaxed line-clamp-2 w-full break-words">
                         {testimonial.text}
                     </p>
+
+                    {/* Attachments Container */}
+                    <div className="flex flex-wrap items-end gap-3 mt-4">
+                        {/* Video Preview - Larger Display */}
+                        {(testimonial.type.toLowerCase() === 'video' || testimonial.attachments?.some(a => a.type === 'video')) && (
+                            (() => {
+                                const vid = testimonial.attachments?.find(a => a.type === 'video');
+                                if (vid) {
+                                    return <VideoPreview url={vid.url} />;
+                                }
+                                return null;
+                            })()
+                        )}
+
+                        {/* Other Attachments */}
+                        {testimonial.attachments && testimonial.attachments.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                {testimonial.attachments.filter(a => testimonial.type.toLowerCase() !== 'video' || a.type !== 'video').map((att, i) => (
+                                    <div key={i} className="size-10 rounded-lg border border-zinc-800 bg-zinc-900/50 flex items-center justify-center overflow-hidden relative group/attachment">
+                                        {att.type === 'image' ? (
+                                            <img src={att.url} alt="Attachment" className="w-full h-full object-contain p-1" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                                                <Video className="size-4 text-zinc-500" />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </td>
 
             {/* Vertical Divider */}
             <td className="p-0">
-                <div className="w-px h-14 bg-zinc-800/50 block" />
+                <div className="w-px h-24 bg-zinc-800/50 block" />
             </td>
 
             {/* Meta Section */}
             <td className="p-0">
-                <div className="flex items-center gap-4 flex-shrink-0 px-6 py-4">
+                <div className="flex items-center gap-4 flex-shrink-0 px-6 py-10">
                     {/* Source */}
                     <div className="flex items-center justify-center w-[7vw] max-w-[100px] block">
                         <div className="relative group/tooltip">

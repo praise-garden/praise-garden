@@ -1,7 +1,6 @@
-"use client";
-
 import { Search } from "lucide-react";
 import { TestimonialRowCard } from "./TestimonialRowCard";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Testimonial {
     id: number | string;
@@ -22,6 +21,9 @@ interface TestimonialTableProps {
     onDelete: (id: string | number) => void;
     onEdit: (id: string | number) => void;
     onCopy: (text: string) => void;
+    selectedIds: Set<string | number>;
+    onSelect: (id: string | number) => void;
+    onSelectAll: (checked: boolean) => void;
 }
 
 export function TestimonialTable({
@@ -29,14 +31,30 @@ export function TestimonialTable({
     onStatusChange,
     onDelete,
     onEdit,
-    onCopy
+    onCopy,
+    selectedIds,
+    onSelect,
+    onSelectAll
 }: TestimonialTableProps) {
+    const allSelected = testimonials.length > 0 && testimonials.every(t => selectedIds.has(t.id));
+    const someSelected = testimonials.some(t => selectedIds.has(t.id));
+    const isIndeterminate = someSelected && !allSelected;
     return (
         <div className="bg-zinc-950/50 border border-zinc-800/60 rounded-2xl overflow-x-auto shadow-xl shadow-black/20">
             <table className="w-full min-w-max border-collapse">
                 {/* Table Header */}
                 <thead className="bg-zinc-900/40 border-b border-zinc-800/60">
                     <tr className="flex items-center text-left">
+                        {/* Checkbox Column Header */}
+                        <th className="p-0 font-normal w-[60px]">
+                            <div className="h-full flex items-center justify-center px-4 py-4">
+                                <Checkbox
+                                    checked={allSelected}
+                                    onCheckedChange={(checked) => onSelectAll(checked === true)}
+                                />
+                            </div>
+                        </th>
+
                         {/* Reviewer Column Header */}
                         <th className="p-0 font-normal">
                             <div className="w-[14vw] min-w-[220px] max-w-[20vw] px-6 py-4">
@@ -53,7 +71,7 @@ export function TestimonialTable({
 
                         {/* Testimonial Column Header */}
                         <th className="block p-0 font-normal">
-                            <div className="px-6 py-4 w-[40vw] min-w-[300px]">
+                            <div className="px-6 py-4 w-[35vw] min-w-[300px]">
                                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                     Testimonial
                                 </span>
@@ -107,7 +125,7 @@ export function TestimonialTable({
                 <tbody className="divide-y divide-zinc-800/40 block">
                     {testimonials.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className="p-8 text-center text-zinc-500 block">
+                            <td colSpan={6} className="p-8 text-center text-zinc-500 block">
                                 <div className="size-14 rounded-full bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center mx-auto mb-4">
                                     <Search className="size-6 text-zinc-600" />
                                 </div>
@@ -124,6 +142,8 @@ export function TestimonialTable({
                             <TestimonialRowCard
                                 key={t.id}
                                 testimonial={t}
+                                selected={selectedIds.has(t.id)}
+                                onSelect={() => onSelect(t.id)}
                                 onStatusChange={onStatusChange}
                                 onDelete={onDelete}
                                 onEdit={onEdit}

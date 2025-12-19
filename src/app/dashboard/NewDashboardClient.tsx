@@ -2,18 +2,19 @@
 
 import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
-import { Search, Filter, Calendar as CalendarIcon, Upload, ArrowUpRight, Copy, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Filter, Upload, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateRange } from "react-day-picker";
 import { CustomDateRangeDropdown } from "@/components/customdatepicker";
 import { TestimonialTable } from "@/components/dashboard/TestimonialTable";
 import { cn } from "@/lib/utils";
-import { TextTestimonialForm } from "./import/manual/TextTestimonialForm";
-import { VideoTestimonialForm } from "./import/manual/VideoTestimonialForm";
+import { BulkActionsFloatingBar } from "@/components/dashboard/BulkActionsFloatingBar";
 
 export interface Testimonial {
     id: number | string;
+    type: string;
     reviewer: string;
     email: string;
     profession: string;
@@ -23,6 +24,7 @@ export interface Testimonial {
     status: string;
     date: string;
     avatar: string;
+    attachments?: { type: 'image' | 'video', url: string }[];
     raw?: any;
 }
 
@@ -38,30 +40,39 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 // Static fallback data from previous file to ensure continuity
 const staticTestimonials = [
     {
         id: 1,
+        type: 'text',
         reviewer: "jamies",
         email: "jamies@marketing.com",
         profession: "Chief Marketing Officer",
         rating: 5,
         text: "This tool is fantastic. It has completely streamlined our workflow. Highly recommended!",
         source: "Email",
-        status: "Pending",
+        status: "Hidden",
         date: "12/17/2025",
         avatar: "J"
     },
     {
         id: 2,
+        type: 'text',
         reviewer: "sarah",
         email: "shivakrishnaajay@gmail.com",
         profession: "Product Manager",
         rating: 5,
         text: "A game-changer for our team. Support is excellent and features are powerful. Great value.",
         source: "Manual",
-        status: "Pending",
+        status: "Hidden",
         date: "1/17/2025",
         avatar: "S"
     }
@@ -76,21 +87,23 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     // To match the image exactly initially, I might want to prepend the image examples if the list is empty?
     // User asked for logic to handle "existing project has testimonials -> show them".
     const initialData = serverTestimonials.length > 0 ? serverTestimonials : staticTestimonials;
+    const router = useRouter();
 
     const [testimonials, setTestimonials] = useState<Testimonial[]>(initialData);
     const [activeTab, setActiveTab] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [date, setDate] = useState<DateRange | undefined>();
+    const [sortBy, setSortBy] = useState("newest");
 
     // Edit States
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isFullEditDialogOpen, setIsFullEditDialogOpen] = useState(false);
-    const [fullEditRating, setFullEditRating] = useState(5);
+    // Removed unused full edit states
     const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [testimonialToDelete, setTestimonialToDelete] = useState<string | number | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set());
 
-    const [isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
 
     useEffect(() => {
         if (serverTestimonials.length > 0) {
@@ -101,10 +114,10 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     const filtered = testimonials.filter(t => {
         // Tab Filter
         if (activeTab !== "All" && activeTab !== "Filters") {
-            // rough mapping
-            if (activeTab === "Pending" && t.status.toLowerCase() !== "pending") return false;
-            if (activeTab === "Public" && t.status.toLowerCase() !== "public" && t.status.toLowerCase() !== "approved") return false;
-            if (activeTab === "Hidden" && t.status.toLowerCase() !== "hidden" && t.status.toLowerCase() !== "rejected") return false;
+            // Updated mapping
+            if (activeTab === "Public" && t.status.toLowerCase() !== "public") return false;
+            if (activeTab === "Hidden" && t.status.toLowerCase() !== "hidden") return false;
+            if (activeTab === "Archived" && t.status.toLowerCase() !== "archived") return false;
         }
 
         // Search
@@ -128,34 +141,67 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
         return true;
     });
 
+    const sortedAndFiltered = [...filtered].sort((a, b) => {
+        if (sortBy === 'newest') {
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        }
+        if (sortBy === 'oldest') {
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+        }
+        if (sortBy === 'rating-high') {
+            return b.rating - a.rating;
+        }
+        if (sortBy === 'rating-low') {
+            return a.rating - b.rating;
+        }
+        return 0;
+    });
+
+    const handleSelect = (id: string | number) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(new Set(sortedAndFiltered.map(t => t.id)));
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
     const handleStatusChange = (id: string | number) => {
         const t = testimonials.find(x => x.id === id);
         if (!t) return;
 
-        // Values in DB are lowercase usually: pending, approved, rejected, hidden.
-        // We map 'Public' -> 'approved' and 'Hidden' -> 'hidden' for the backend logic? 
-        // Or if the DB stores string literals as visible in UI.
-        // Let's assume the UI 'Public' maps to 'approved' and 'Hidden' maps to 'hidden'.
-        // If current is 'Public' (approved), toggle to 'Hidden' (hidden).
-        // If current is 'Pending', toggle to 'Public' (approved).
+        // Values in DB are: public, hidden, archived
+        // UI uses: Public, Hidden, Archived
 
-        let newStatus = 'approved';
-        if (t.status === 'Public' || t.status === 'approved') newStatus = 'hidden';
-        else if (t.status === 'Hidden' || t.status === 'hidden') newStatus = 'approved';
+        let newStatus = 'public';
+        if (t.status === 'Public') newStatus = 'hidden';
+        else if (t.status === 'Hidden') newStatus = 'public';
+        else if (t.status === 'Archived') newStatus = 'hidden'; // Unarchive to hidden
 
         // Optimistic update
         setTestimonials(prev => prev.map(item =>
-            item.id === id ? { ...item, status: newStatus === 'approved' ? 'Public' : 'Hidden' } : item
+            item.id === id ? { ...item, status: newStatus === 'public' ? 'Public' : 'Hidden' } : item
         ));
 
-        startTransition(async () => {
-            try {
-                await updateTestimonialStatus(id, newStatus);
-            } catch (e) {
-                console.error(e);
-                // Revert if failed? For MVP we just alert or log
-            }
-        });
+        if (serverTestimonials.length > 0) {
+            startTransition(async () => {
+                try {
+                    await updateTestimonialStatus(id, newStatus);
+                } catch (e) {
+                    console.error(e);
+                    // Revert if failed? For MVP we just alert or log
+                }
+            });
+        }
     };
 
     const handleDelete = (id: string | number) => {
@@ -163,23 +209,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
         setDeleteDialogOpen(true);
     };
 
-    const confirmDelete = () => {
-        if (!testimonialToDelete) return;
 
-        // Optimistic
-        setTestimonials(prev => prev.filter(t => t.id !== testimonialToDelete));
-
-        startTransition(async () => {
-            try {
-                await deleteTestimonial(testimonialToDelete);
-            } catch (e) {
-                alert("Failed to delete");
-            }
-        });
-
-        setDeleteDialogOpen(false);
-        setTestimonialToDelete(null);
-    };
 
     const handleEdit = (id: string | number) => {
         const t = testimonials.find(x => x.id === id);
@@ -195,39 +225,100 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
             setTestimonials(prev => prev.map(t => t.id === editingTestimonial.id ? editingTestimonial : t));
             setIsEditDialogOpen(false);
 
-            startTransition(async () => {
-                // Map UI fields back to DB JSON structure expected by updateTestimonialContent
-                const updateData = {
-                    customer_name: editingTestimonial.reviewer,
-                    customer_email: editingTestimonial.email,
-                    message: editingTestimonial.text
-                };
-                try {
-                    await updateTestimonialContent(editingTestimonial.id, updateData);
-                } catch (e) {
-                    console.error(e);
-                    alert("Failed to save changes");
-                }
+            if (serverTestimonials.length > 0) {
+                startTransition(async () => {
+                    // Map UI fields back to DB JSON structure expected by updateTestimonialContent
+                    const updateData = {
+                        customer_name: editingTestimonial.reviewer,
+                        customer_email: editingTestimonial.email,
+                        message: editingTestimonial.text
+                    };
+                    try {
+                        await updateTestimonialContent(editingTestimonial.id, updateData);
+                    } catch (e) {
+                        console.error(e);
+                        alert("Failed to save changes");
+                    }
+                    setEditingTestimonial(null);
+                });
+            } else {
                 setEditingTestimonial(null);
-            });
+            }
         }
     };
 
-    const handleFullEditOpen = () => {
-        if (editingTestimonial) {
-            setFullEditRating(editingTestimonial.rating);
-            setIsEditDialogOpen(false);
-            setIsFullEditDialogOpen(true);
-        }
-    };
+
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
         // Could add toast here
     };
 
+    const handleBulkStatusChange = (status: 'Public' | 'Hidden') => {
+        // Optimistic
+        setTestimonials(prev => prev.map(t => selectedIds.has(t.id) ? { ...t, status } : t));
+        setSelectedIds(new Set()); // Clear selection after action
+
+        if (serverTestimonials.length > 0) {
+            startTransition(async () => {
+                try {
+                    // We need to iterate or have a bulk update API. Assuming iterative for now or a bulk wrapper.
+                    // Ideally, we'd add updateTestimonialStatusBulk(ids, status) to actions.
+                    // For MVP stability:
+                    const ids = Array.from(selectedIds);
+                    await Promise.all(ids.map(id => updateTestimonialStatus(id, status.toLowerCase())));
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+        }
+    };
+
+    const handleBulkDelete = () => {
+        if (selectedIds.size === 0) return;
+        setTestimonialToDelete('bulk'); // Use a special flag or handle differently
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (testimonialToDelete === 'bulk') {
+            // Bulk Delete
+            // Optimistic
+            setTestimonials(prev => prev.filter(t => !selectedIds.has(t.id)));
+
+            if (serverTestimonials.length > 0) {
+                startTransition(async () => {
+                    const ids = Array.from(selectedIds);
+                    try {
+                        await Promise.all(ids.map(id => deleteTestimonial(id)));
+                    } catch (e) {
+                        alert("Failed to delete some items");
+                    }
+                });
+            }
+            setSelectedIds(new Set());
+        } else if (testimonialToDelete) {
+            // Single Delete
+            // Optimistic
+            setTestimonials(prev => prev.filter(t => t.id !== testimonialToDelete));
+
+            if (serverTestimonials.length > 0) {
+                startTransition(async () => {
+                    try {
+                        await deleteTestimonial(testimonialToDelete);
+                    } catch (e) {
+                        alert("Failed to delete");
+                    }
+                });
+            }
+        }
+
+        setDeleteDialogOpen(false);
+        setTestimonialToDelete(null);
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 relative">
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -247,7 +338,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
             <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
                 <div className="flex items-center gap-4 overflow-x-auto pb-1 xl:pb-0 scrollbar-hide">
                     <div className="flex p-1 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                        {["All", "Pending", "Public", "Hidden"].map((tab) => (
+                        {["All", "Public", "Hidden", "Archived"].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -283,14 +374,29 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                         className="bg-[#0A0A0B] border-zinc-800 pl-10 h-11 focus:ring-indigo-500/20 focus:border-indigo-500/50 rounded-lg text-sm w-full"
                     />
                 </div>
-                <div className="sm:w-auto">
+                <div className="sm:w-auto flex items-center gap-3">
                     <CustomDateRangeDropdown dateRange={date} onChange={setDate} />
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="h-10 px-4 shadow-sm w-[180px] justify-start text-left font-normal bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600 text-zinc-300 focus:ring-0 focus:ring-offset-0">
+                            <ListFilter className="mr-2 h-4 w-4 opacity-70" />
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-300">
+                            <SelectItem value="newest">Newest First</SelectItem>
+                            <SelectItem value="oldest">Oldest First</SelectItem>
+                            <SelectItem value="rating-high">Highest Rating</SelectItem>
+                            <SelectItem value="rating-low">Lowest Rating</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
             {/* Testimonial Table Component - Encapsulated in a box */}
             <TestimonialTable
-                testimonials={filtered}
+                testimonials={sortedAndFiltered}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                onSelectAll={handleSelectAll}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
@@ -299,10 +405,10 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
 
             {/* Pagination Footer */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-900/50">
-                <p className="text-zinc-500 text-xs">Showing {filtered.length} results</p>
+                <p className="text-zinc-500 text-xs">Showing {sortedAndFiltered.length} results</p>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" className="bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white h-8 text-xs font-normal">
-                        Date Added (Newest First)
+                        {sortBy === 'newest' ? 'Date Added (Newest First)' : sortBy === 'oldest' ? 'Date Added (Oldest First)' : sortBy === 'rating-high' ? 'Rating (High to Low)' : 'Rating (Low to High)'}
                     </Button>
                     {/* Pagination buttons could go here if implemented */}
                 </div>
@@ -330,7 +436,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button onClick={handleFullEditOpen} variant="outline" className="sm:mr-auto border-indigo-500/30 bg-indigo-500/5 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all">Full Edit</Button>
+                            <Button onClick={() => router.push(`/dashboard/Edit-Testimonial/${editingTestimonial.id}`)} variant="outline" className="sm:mr-auto border-indigo-500/30 bg-indigo-500/5 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all">Full Edit</Button>
                             <DialogClose asChild>
                                 <Button variant="ghost">Cancel</Button>
                             </DialogClose>
@@ -339,48 +445,6 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                     </DialogContent>
                 </Dialog>
             )}
-
-            {/* Full Edit Dialog */}
-            <Dialog open={isFullEditDialogOpen} onOpenChange={setIsFullEditDialogOpen}>
-                <DialogContent className="w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-zinc-950 border-zinc-800 text-zinc-50 p-0 block [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                    <DialogHeader className="p-6 pb-0">
-                        <DialogTitle>Full Edit Testimonial</DialogTitle>
-                    </DialogHeader>
-                    {editingTestimonial && (() => {
-                        const fallbackData = {
-                            customer_name: editingTestimonial.reviewer,
-                            customer_email: editingTestimonial.email,
-                            message: editingTestimonial.text,
-                            profession: editingTestimonial.profession,
-                            rating: editingTestimonial.rating,
-                            testimonial_date: editingTestimonial.date,
-                            source: editingTestimonial.source,
-                        };
-                        const rawData = editingTestimonial.raw?.data || fallbackData;
-                        const type = rawData.type || 'Text';
-
-                        if (type.toLowerCase() === 'video') {
-                            return <VideoTestimonialForm
-                                rating={fullEditRating}
-                                setRating={setFullEditRating}
-                                initialData={rawData}
-                                testimonialId={editingTestimonial.id}
-                                isEditing={true}
-                                onSuccess={() => { setIsFullEditDialogOpen(false); setIsEditDialogOpen(false); }}
-                            />
-                        } else {
-                            return <TextTestimonialForm
-                                rating={fullEditRating}
-                                setRating={setFullEditRating}
-                                initialData={rawData}
-                                testimonialId={editingTestimonial.id}
-                                isEditing={true}
-                                onSuccess={() => { setIsFullEditDialogOpen(false); setIsEditDialogOpen(false); }}
-                            />
-                        }
-                    })()}
-                </DialogContent>
-            </Dialog>
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -402,6 +466,16 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                 </DialogContent>
             </Dialog>
 
-        </div>
+
+
+            <BulkActionsFloatingBar
+                selectedCount={selectedIds.size}
+                onClearSelection={() => setSelectedIds(new Set())}
+                onMakePublic={() => handleBulkStatusChange('Public')}
+                onMakeHidden={() => handleBulkStatusChange('Hidden')}
+                onDelete={handleBulkDelete}
+            />
+
+        </div >
     );
 }
