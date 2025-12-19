@@ -1,47 +1,109 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F8F9FA; /* Paper White */
-  --foreground: #212529; /* Charcoal */
-  --border: #E9ECEF; /* Light Gray */
+  /* ═══════════════════════════════════════════════════════════════════════════
+   * BRAND COLOR PALETTE — Praise Garden Identity System
+   * ═══════════════════════════════════════════════════════════════════════════ */
 
-  /* Brand & feedback */
-  --color-accent: #22c55e; /* Praise Green */
-  --color-info: #0D6EFD; /* Info Blue */
-  --color-warning: #FFC107; /* Warning Yellow */
-  --color-danger: #DC3545; /* Danger Red */
+  /* Primary Base: "The Room" — A deep, rich black that feels softer and more premium */
+  --background: #09090B;
+  /* Studio Black (Zinc-950) */
+
+  /* Text Body: "The Content" — Softened white that's easy on the eyes */
+  --foreground: #E4E4E7;
+  /* Mist White (Zinc-200) */
+
+  /* Surface: "The Tools" — Navigation, footers, elevated surfaces */
+  --surface: #27272A;
+  /* Glass Gray (Zinc-800) */
+  --border: #27272A;
+  /* Glass Gray for subtle borders */
+
+  /* Brand Identity: "The Trust Seal" — ONLY for Verified badge, primary CTA, logo icon */
+  --color-accent: #BFFF00;
+  /* Electric Lime */
+
+  /* The Pivot: "The Social Proof" — EXCLUSIVELY for testimonial card backgrounds */
+  --color-canvas: #FFFFFF;
+  /* Canvas White */
+
+  /* Semantic feedback colors */
+  --color-info: #3B82F6;
+  /* Blue-500 */
+  --color-warning: #F59E0B;
+  /* Amber-500 */
+  --color-danger: #EF4444;
+  /* Red-500 */
+  --color-success: #BFFF00;
+  /* Electric Lime (matches brand) */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
   --color-border: var(--border);
   --color-accent: var(--color-accent);
+  --color-canvas: var(--color-canvas);
   --color-info: var(--color-info);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
+  --color-success: var(--color-success);
   --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
 }
 
-/* Theme toggled via .dark on html */
+/* Dark theme is the primary identity */
 .dark {
-  --background: #121212; /* Deep Charcoal */
-  --foreground: #F8F9FA; /* Paper White */
-  --border: #2a2a2a; /* Derived dark border */
+  --background: #09090B;
+  /* Studio Black */
+  --foreground: #E4E4E7;
+  /* Mist White */
+  --surface: #27272A;
+  /* Glass Gray */
+  --border: #27272A;
 }
+
+/* Light theme (if ever needed — use sparingly) */
 .light {
-  --background: #F8F9FA; /* Paper White */
-  --foreground: #212529; /* Charcoal */
-  --border: #E9ECEF; /* Light Gray */
+  --background: #FAFAFA;
+  --foreground: #09090B;
+  --surface: #F4F4F5;
+  --border: #E4E4E7;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   font-smooth: antialiased;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TYPOGRAPHY — Space Grotesk for Headings, Inter for Body
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* All headings use Space Grotesk with tight tracking */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.heading {
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.025em;
+  /* tracking-tight */
+}
+
+/* Extra tight tracking for large headlines */
+h1,
+.heading-xl {
+  letter-spacing: -0.05em;
+  /* tracking-tighter */
 }
 
 /* Subtle global backdrop glow */
@@ -61,14 +123,18 @@ body::before {
 .ui-card {
   background: color-mix(in oklab, var(--background) 92%, transparent);
   border: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 /* Hide scrollbar utility - keeps scroll functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }

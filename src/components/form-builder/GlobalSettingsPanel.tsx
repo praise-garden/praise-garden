@@ -161,16 +161,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
         }
     };
 
-    const brandNameStyle = {
-        color: currentTheme.brandNameColor || 'white',
-        fontFamily: currentTheme.brandNameFont || currentTheme.headingFont,
-        fontSize: `${currentTheme.brandNameFontSize || 24}px`,
-        fontWeight: currentTheme.brandNameIsBold ? 700 : 400,
-        fontStyle: currentTheme.brandNameIsItalic ? 'italic' : 'normal',
-        textDecoration: currentTheme.brandNameIsUnderline ? 'underline' : 'none',
-    } as React.CSSProperties;
 
-    const logoTextGap = currentTheme.logoTextSpacing ?? 12;
 
     return (
         <div className="w-full max-w-3xl space-y-6">
@@ -187,202 +178,41 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                         <div className="w-7 h-7 rounded-lg bg-purple-600/20 flex items-center justify-center">
                             <TypeIcon className="w-3.5 h-3.5 text-purple-400" />
                         </div>
-                        Brand Identity
+                        Brand Logo
                     </h3>
                 </div>
 
-                {/* Live Preview Canvas */}
-                <div className="p-6 bg-black/30 border-b border-gray-800/30">
-                    <div className="flex items-center justify-center min-h-[80px]" style={{ gap: `${logoTextGap}px` }}>
-                        {/* Logo */}
-                        <div className="relative group">
-                            <div className="w-14 h-14 rounded-xl bg-gray-900/80 border-2 border-dashed border-gray-700 flex items-center justify-center overflow-hidden transition-all hover:border-purple-500/50 cursor-pointer">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                    onChange={handleLogoUpload}
-                                />
-                                {currentTheme.logoUrl ? (
-                                    <img src={currentTheme.logoUrl} alt="Logo" className="w-10 h-10 object-contain" />
-                                ) : (
-                                    <ImageIcon className="w-5 h-5 text-gray-600" />
-                                )}
-                                {isUploadingLogo && (
-                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-                                        <div className="w-4 h-4 border-2 border-white/50 border-t-transparent rounded-full animate-spin"></div>
-                                    </div>
-                                )}
+                <div className="p-6">
+                    <div className="flex flex-col items-center justify-center gap-6">
+                        {/* Logo Upload */}
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="relative group">
+                                <div className="w-20 h-20 rounded-xl bg-gray-900/80 border-2 border-dashed border-gray-700 flex items-center justify-center overflow-hidden transition-all hover:border-purple-500/50 cursor-pointer">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        onChange={handleLogoUpload}
+                                    />
+                                    {currentTheme.logoUrl ? (
+                                        <img src={currentTheme.logoUrl} alt="Logo" className="w-14 h-14 object-contain" />
+                                    ) : (
+                                        <ImageIcon className="w-8 h-8 text-gray-600" />
+                                    )}
+                                    {isUploadingLogo && (
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+                                            <div className="w-4 h-4 border-2 border-white/50 border-t-transparent rounded-full animate-spin"></div>
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-wider font-medium text-gray-500 whitespace-nowrap group-hover:text-purple-400 transition-colors">
+                                    Upload Logo
+                                </span>
                             </div>
-                            <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] text-gray-600 whitespace-nowrap">Upload</span>
                         </div>
-
-                        {/* Brand Name - Editable */}
-                        {currentTheme.showBrandName !== false && (
-                            <input
-                                type="text"
-                                value={currentTheme.brandName || ''}
-                                onChange={(e) => updateTheme(t => ({ ...t, brandName: e.target.value, showBrandName: true }))}
-                                placeholder="Brand Name"
-                                style={brandNameStyle}
-                                className="bg-transparent border-none outline-none min-w-[100px] max-w-[280px] placeholder:text-gray-700 focus:ring-2 focus:ring-purple-500/30 rounded-lg px-2 py-1 transition-all"
-                            />
-                        )}
                     </div>
                 </div>
-
-                {/* Customize Button */}
-                <button
-                    onClick={() => setShowAdvancedBrand(!showAdvancedBrand)}
-                    className="w-full px-5 py-3 flex items-center justify-between text-sm text-gray-400 hover:text-white hover:bg-gray-800/30 transition-all"
-                >
-                    <span className="flex items-center gap-2">
-                        <SettingsIcon className="w-4 h-4" />
-                        Customize Brand Styling
-                    </span>
-                    <motion.div
-                        animate={{ rotate: showAdvancedBrand ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <ChevronDownIcon className="w-4 h-4" />
-                    </motion.div>
-                </button>
-
-                {/* Collapsible Style Controls */}
-                <AnimatePresence>
-                    {showAdvancedBrand && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-visible"
-                        >
-                            <div className="p-5 bg-gray-900/30 space-y-4 border-t border-gray-800/30">
-                                {/* Row 1: Toggle, Color, Spacing */}
-                                <div className="flex flex-wrap items-center gap-4">
-                                    {/* Show/Hide Toggle */}
-                                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                                        <input
-                                            type="checkbox"
-                                            checked={currentTheme.showBrandName !== false}
-                                            onChange={(e) => updateTheme(t => ({ ...t, showBrandName: e.target.checked }))}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="w-9 h-5 bg-gray-700 rounded-full peer-checked:bg-purple-600 transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-transform peer-checked:after:translate-x-4"></div>
-                                        <span className="text-xs text-gray-300">Show Name</span>
-                                    </label>
-
-                                    <div className="h-5 w-px bg-gray-700"></div>
-
-                                    {/* Color Picker */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-400">Color</span>
-                                        <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-gray-600 cursor-pointer hover:border-purple-500/50 transition-colors">
-                                            <input
-                                                type="color"
-                                                value={currentTheme.brandNameColor || '#ffffff'}
-                                                onChange={(e) => updateTheme(t => ({ ...t, brandNameColor: e.target.value }))}
-                                                className="absolute inset-0 w-[150%] h-[150%] -left-1/4 -top-1/4 cursor-pointer opacity-0"
-                                            />
-                                            <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: currentTheme.brandNameColor || '#ffffff' }} />
-                                        </div>
-                                    </div>
-
-                                    <div className="h-5 w-px bg-gray-700"></div>
-
-                                    {/* Spacing */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-400">Gap</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={logoTextGap}
-                                            onChange={(e) => updateTheme(t => ({ ...t, logoTextSpacing: parseInt(e.target.value) || 0 }))}
-                                            className="w-16 h-8 bg-gray-800 border border-gray-600 rounded-lg px-2 text-sm text-white text-center focus:border-purple-500/50 outline-none"
-                                        />
-                                        <span className="text-xs text-gray-500">px</span>
-                                    </div>
-
-                                    <div className="h-5 w-px bg-gray-700"></div>
-
-                                    {/* Bold/Italic/Underline */}
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            onClick={() => updateTheme(t => ({ ...t, brandNameIsBold: !t.brandNameIsBold }))}
-                                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${currentTheme.brandNameIsBold ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                                }`}
-                                            title="Bold"
-                                        >
-                                            <BoldIcon className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => updateTheme(t => ({ ...t, brandNameIsItalic: !t.brandNameIsItalic }))}
-                                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${currentTheme.brandNameIsItalic ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                                }`}
-                                            title="Italic"
-                                        >
-                                            <ItalicIcon className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => updateTheme(t => ({ ...t, brandNameIsUnderline: !t.brandNameIsUnderline }))}
-                                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${currentTheme.brandNameIsUnderline ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                                }`}
-                                            title="Underline"
-                                        >
-                                            <UnderlineIcon className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Row 2: Font Size presets + custom */}
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <span className="text-xs text-gray-400 w-10">Size</span>
-                                    <div className="flex items-center gap-1.5">
-                                        {FONT_SIZE_PRESETS.map((size) => (
-                                            <button
-                                                key={size}
-                                                onClick={() => updateTheme(t => ({ ...t, brandNameFontSize: size }))}
-                                                className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${(currentTheme.brandNameFontSize || 24) === size
-                                                    ? 'bg-purple-600 text-white'
-                                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                                    }`}
-                                            >
-                                                {size}
-                                            </button>
-                                        ))}
-                                        {/* Custom size input */}
-                                        <div className="flex items-center gap-1.5 ml-2">
-                                            <input
-                                                type="number"
-                                                min="10"
-                                                max="100"
-                                                value={currentTheme.brandNameFontSize || 24}
-                                                onChange={(e) => updateTheme(t => ({ ...t, brandNameFontSize: parseInt(e.target.value) || 24 }))}
-                                                className="w-16 h-8 bg-gray-950 border border-gray-600 rounded-lg px-2 text-sm text-white text-center focus:border-purple-500/50 outline-none"
-                                            />
-                                            <span className="text-xs text-gray-500">px</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Row 3: Font Family - with overflow visible for dropdown */}
-                                <div className="flex items-center gap-3 relative z-50">
-                                    <span className="text-xs text-gray-400 w-10">Font</span>
-                                    <div className="flex-1 max-w-sm">
-                                        <ModernFontPicker
-                                            value={currentTheme.brandNameFont || currentTheme.headingFont}
-                                            onChange={(value) => updateTheme(t => ({ ...t, brandNameFont: value }))}
-                                            compact
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </section>
 
             {/* Colors Grid */}

@@ -41,32 +41,15 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
                     className="relative z-10 w-full max-w-3xl space-y-8"
                 >
                     {/* Company Branding */}
-                    <div
-                        className="flex justify-center items-center mb-2"
-                        style={{ gap: `${props.theme?.logoTextSpacing ?? 12}px` }}
-                    >
+                    <div className="flex justify-center items-center mb-6">
                         {config.props.logoUrl && (
                             <img
-                                className="w-12 h-12 object-contain"
+                                className="h-12 w-auto object-contain transition-all duration-300"
                                 src={config.props.logoUrl}
                                 alt="Company Logo"
                                 onClick={() => handleFieldClick('props.logoUrl')}
                                 data-field="props.logoUrl"
                             />
-                        )}
-                        {(props.theme?.showBrandName !== false && props.theme?.brandName) && (
-                            <span
-                                style={{
-                                    color: props.theme?.brandNameColor || 'white',
-                                    fontFamily: props.theme?.brandNameFont || props.theme?.headingFont,
-                                    fontSize: `${props.theme?.brandNameFontSize || 24}px`,
-                                    fontWeight: props.theme?.brandNameIsBold ? 700 : 400,
-                                    fontStyle: props.theme?.brandNameIsItalic ? 'italic' : 'normal',
-                                    textDecoration: props.theme?.brandNameIsUnderline ? 'underline' : 'none',
-                                }}
-                            >
-                                {props.theme.brandName}
-                            </span>
                         )}
                     </div>
 

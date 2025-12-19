@@ -10,8 +10,9 @@ type FontPickerProps = {
 
 const RECOMMENDED_FONTS: string[] = [
   "Default",
-  "DM Sans",
+  "Space Grotesk",
   "Inter",
+  "DM Sans",
   "Lora",
   "Crimson Text",
   "Poppins",
@@ -22,22 +23,22 @@ const RECOMMENDED_FONTS: string[] = [
 ];
 
 const GOOGLE_FONTS_FALLBACK: string[] = [
-  "ABeeZee","ADLaM Display","AR One Sans","Abel","Abhaya Libre","Abril Fatface","Afacad","Afacad Flux","Agdasima",
-  "Alata","Alatsi","Albert Sans","Alegreya","Alegreya Sans","Aleo","Alexandria","Alfa Slab One","Alice","Alkatra",
-  "Allerta","Almarai","Alumni Sans","Amaranth","Amatic SC","Amiri","Anaheim","Andika","Anton","Arima","Arimo",
-  "Archivo","Are You Serious","Assistant","Atkinson Hyperlegible","Bai Jamjuree","Barlow","Bebas Neue","Belgrano",
-  "Bitter","Bodoni Moda","Bricolage Grotesque","Brygada 1918","Cabin","Cairo","Cantarell","Cardo","Catamaran","Caveat",
-  "Chakra Petch","Chivo","Cinzel","Cormorant","Cormorant Garamond","Courgette","Crimson Pro","Crimson Text","DM Mono",
-  "DM Sans","DM Serif Display","DM Serif Text","Dancing Script","Darker Grotesque","Domine","Dosis","DynaPuff",
-  "EB Garamond","Encode Sans","Epilogue","Exo","Figtree","Fira Sans","Fraunces","Gabarito","Gelasio","Genos",
-  "Gentium Book Plus","Geist","Geist Mono","Glegoo","Gloock","Gloria Hallelujah","Hanken Grotesk","Heebo","IBM Plex Mono",
-  "IBM Plex Sans","IBM Plex Serif","Inter","Inter Tight","Inria Sans","Instrument Sans","Instrument Serif","Jost","Josefin Sans",
-  "Karla","Kdam Thmor Pro","Khand","Kumbh Sans","Lato","League Spartan","Lexend","Libre Baskerville","Libre Franklin",
-  "Lobster","Lora","Lusitana","M PLUS 1","Merriweather","Merriweather Sans","Montserrat","Mulish","Noto Sans","Noto Serif",
-  "Nunito","Nunito Sans","Open Sans","Outfit","Overpass","Poppins","Public Sans","Quicksand","Raleway","Readex Pro",
-  "Red Hat Display","Reddit Sans","Roboto","Roboto Condensed","Roboto Mono","Roboto Serif","Roboto Slab","Rokkitt","Rubik",
-  "Sen","Signika","Source Code Pro","Source Sans 3","Source Serif 4","Space Grotesk","Space Mono","Spectral","Titillium Web",
-  "Ubuntu","Urbanist","Work Sans","Yanone Kaffeesatz","Ysabeau","Young Serif"
+  "ABeeZee", "ADLaM Display", "AR One Sans", "Abel", "Abhaya Libre", "Abril Fatface", "Afacad", "Afacad Flux", "Agdasima",
+  "Alata", "Alatsi", "Albert Sans", "Alegreya", "Alegreya Sans", "Aleo", "Alexandria", "Alfa Slab One", "Alice", "Alkatra",
+  "Allerta", "Almarai", "Alumni Sans", "Amaranth", "Amatic SC", "Amiri", "Anaheim", "Andika", "Anton", "Arima", "Arimo",
+  "Archivo", "Are You Serious", "Assistant", "Atkinson Hyperlegible", "Bai Jamjuree", "Barlow", "Bebas Neue", "Belgrano",
+  "Bitter", "Bodoni Moda", "Bricolage Grotesque", "Brygada 1918", "Cabin", "Cairo", "Cantarell", "Cardo", "Catamaran", "Caveat",
+  "Chakra Petch", "Chivo", "Cinzel", "Cormorant", "Cormorant Garamond", "Courgette", "Crimson Pro", "Crimson Text", "DM Mono",
+  "DM Sans", "DM Serif Display", "DM Serif Text", "Dancing Script", "Darker Grotesque", "Domine", "Dosis", "DynaPuff",
+  "EB Garamond", "Encode Sans", "Epilogue", "Exo", "Figtree", "Fira Sans", "Fraunces", "Gabarito", "Gelasio", "Genos",
+  "Gentium Book Plus", "Geist", "Geist Mono", "Glegoo", "Gloock", "Gloria Hallelujah", "Hanken Grotesk", "Heebo", "IBM Plex Mono",
+  "IBM Plex Sans", "IBM Plex Serif", "Inter", "Inter Tight", "Inria Sans", "Instrument Sans", "Instrument Serif", "Jost", "Josefin Sans",
+  "Karla", "Kdam Thmor Pro", "Khand", "Kumbh Sans", "Lato", "League Spartan", "Lexend", "Libre Baskerville", "Libre Franklin",
+  "Lobster", "Lora", "Lusitana", "M PLUS 1", "Merriweather", "Merriweather Sans", "Montserrat", "Mulish", "Noto Sans", "Noto Serif",
+  "Nunito", "Nunito Sans", "Open Sans", "Outfit", "Overpass", "Poppins", "Public Sans", "Quicksand", "Raleway", "Readex Pro",
+  "Red Hat Display", "Reddit Sans", "Roboto", "Roboto Condensed", "Roboto Mono", "Roboto Serif", "Roboto Slab", "Rokkitt", "Rubik",
+  "Sen", "Signika", "Source Code Pro", "Source Sans 3", "Source Serif 4", "Space Grotesk", "Space Mono", "Spectral", "Titillium Web",
+  "Ubuntu", "Urbanist", "Work Sans", "Yanone Kaffeesatz", "Ysabeau", "Young Serif"
 ];
 
 const ensureGoogleFontLink = (family: string) => {
@@ -109,9 +110,8 @@ const FontOptionButton: React.FC<FontOptionButtonProps> = ({ family, isSelected,
       ref={ref}
       role="option"
       aria-selected={isSelected}
-      className={`h-10 rounded-lg border text-left px-2.5 py-2 text-[13px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/40 ${
-        isSelected ? "border-purple-600 bg-purple-600/10 text-white" : "border-gray-800 bg-[#0C0D0D] text-gray-200 hover:border-gray-700"
-      }`}
+      className={`h-10 rounded-lg border text-left px-2.5 py-2 text-[13px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/40 ${isSelected ? "border-purple-600 bg-purple-600/10 text-white" : "border-gray-800 bg-[#0C0D0D] text-gray-200 hover:border-gray-700"
+        }`}
       onClick={() => onSelect(family)}
       style={style}
       aria-label={`Select ${family}`}
@@ -182,7 +182,7 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, onChange, classNa
               setHasFetched(true);
             });
         }
-        
+
         // decide placement immediately
         setOpenUp(computePlacementUp());
         // refine after paint to account for exact panel height
@@ -269,7 +269,7 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, onChange, classNa
               {triggerFontName}
             </div>
           </div>
-          <svg className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
+          <svg className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
         </div>
       </button>
 
@@ -309,7 +309,7 @@ export const FontPicker: React.FC<FontPickerProps> = ({ value, onChange, classNa
                 </div>
                 <div className="px-3 pb-3">
                   <div className="relative">
-                    <svg className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 103.473 9.8l3.613 3.614a.75.75 0 101.06-1.06l-3.614-3.614A5.5 5.5 0 009 3.5zM5 9a4 4 0 118 0 4 4 0 01-8 0z" clipRule="evenodd"/></svg>
+                    <svg className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 103.473 9.8l3.613 3.614a.75.75 0 101.06-1.06l-3.614-3.614A5.5 5.5 0 009 3.5zM5 9a4 4 0 118 0 4 4 0 01-8 0z" clipRule="evenodd" /></svg>
                     <input
                       data-role="font-search"
                       type="text"
