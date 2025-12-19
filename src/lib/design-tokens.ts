@@ -1,6 +1,10 @@
 export const designTokens = {
   typography: {
-    primary: {
+    heading: {
+      name: "Space Grotesk",
+      stack: "'Space Grotesk', sans-serif",
+    },
+    body: {
       name: "Inter",
       stack: "'Inter', sans-serif",
     },
@@ -11,49 +15,49 @@ export const designTokens = {
   },
   palette: {
     primary: {
-      paperWhite: {
-        name: "Paper White",
-        hex: "#F8F9FA",
-        description: "Light mode background",
+      studioBlack: {
+        name: "Studio Black",
+        hex: "#09090B",
+        description: "The Room — Primary dark background (Zinc-950)",
       },
-      lightGray: {
-        name: "Light Gray",
-        hex: "#E9ECEF",
-        description: "Borders, dividers",
+      glassGray: {
+        name: "Glass Gray",
+        hex: "#27272A",
+        description: "The Tools — Navigation, footer, surfaces (Zinc-800)",
       },
-      charcoal: {
-        name: "Charcoal",
-        hex: "#212529",
-        description: "Primary text",
+      mistWhite: {
+        name: "Mist White",
+        hex: "#E4E4E7",
+        description: "The Content — Body text (Zinc-200)",
       },
-      deepCharcoal: {
-        name: "Deep Charcoal",
-        hex: "#121212",
-        description: "Dark mode background",
+      canvasWhite: {
+        name: "Canvas White",
+        hex: "#FFFFFF",
+        description: "The Pivot — ONLY for testimonial card backgrounds",
       },
     },
     accent: {
-      praiseGreen: {
-        name: "Praise Green",
-        hex: "#22c55e",
-        description: "The signature brand color for buttons, links, and highlights",
+      electricLime: {
+        name: "Electric Lime",
+        hex: "#BFFF00",
+        description: "The Trust Seal — Verified badge, primary CTA, logo icon ONLY",
       },
     },
     feedback: {
       infoBlue: {
         name: "Info Blue",
-        hex: "#0D6EFD",
-        description: "Informational messages",
+        hex: "#3B82F6",
+        description: "Informational messages (Blue-500)",
       },
-      warningYellow: {
-        name: "Warning Yellow",
-        hex: "#FFC107",
-        description: "Non-critical warnings",
+      warningAmber: {
+        name: "Warning Amber",
+        hex: "#F59E0B",
+        description: "Non-critical warnings (Amber-500)",
       },
       dangerRed: {
         name: "Danger Red",
-        hex: "#DC3545",
-        description: "Errors and destructive actions",
+        hex: "#EF4444",
+        description: "Errors and destructive actions (Red-500)",
       },
     },
   },

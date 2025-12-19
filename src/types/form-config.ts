@@ -51,7 +51,7 @@ export interface WelcomeBlockConfig extends BaseBlockConfig {
     timingMessage: string;
     consentMessage: string;
     logoUrl?: string;
-    brandName?: string;
+    // brandName removed
     titleColor: string;
     descriptionColor: string;
     buttonBgColor: string;
@@ -197,15 +197,8 @@ export interface FormTheme {
   headingFont: string;
   bodyFont: string;
   // Brand Identity
-  brandName?: string;
-  showBrandName?: boolean;
-  brandNameColor?: string;
-  brandNameFont?: string;
-  brandNameFontSize?: number; // in px
-  brandNameIsBold?: boolean;
-  brandNameIsItalic?: boolean;
-  brandNameIsUnderline?: boolean;
-  logoTextSpacing?: number; // gap in px between logo and text
+  // brandName intentionally removed
+  // brandName intentionally removed
 }
 
 export interface FormConfig {

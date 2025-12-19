@@ -131,7 +131,7 @@ const defaultTheme: FormTheme = {
   logoUrl: '/icon.png',
   primaryColor: '#A855F7',
   secondaryColor: '#22C55E',
-  headingFont: 'Inter',
+  headingFont: 'Space Grotesk',
   bodyFont: 'Inter',
 };
 

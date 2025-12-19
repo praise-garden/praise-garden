@@ -40,7 +40,7 @@ export const createDefaultFormConfig = ({
             logoUrl: '/icon.png',
             primaryColor: '#A855F7',
             secondaryColor: '#22C55E',
-            headingFont: 'Inter',
+            headingFont: 'Space Grotesk',
             bodyFont: 'Inter',
         },
         blocks: [
@@ -54,7 +54,7 @@ export const createDefaultFormConfig = ({
                     buttonText: 'Continue',
                     timingMessage: 'Takes less than 3 minutes',
                     consentMessage: "You control what's shared",
-                    brandName: 'PraiseGarden',
+                    // brandName removed
                     logoUrl: '/icon.png',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
