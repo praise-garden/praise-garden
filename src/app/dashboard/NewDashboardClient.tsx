@@ -9,6 +9,8 @@ import { DateRange } from "react-day-picker";
 import { CustomDateRangeDropdown } from "@/components/customdatepicker";
 import { TestimonialTable } from "@/components/dashboard/TestimonialTable";
 import { cn } from "@/lib/utils";
+import { TextTestimonialForm } from "./import/manual/TextTestimonialForm";
+import { VideoTestimonialForm } from "./import/manual/VideoTestimonialForm";
 
 export interface Testimonial {
     id: number | string;
@@ -21,6 +23,7 @@ export interface Testimonial {
     status: string;
     date: string;
     avatar: string;
+    raw?: any;
 }
 
 import { updateTestimonialStatus, deleteTestimonial, updateTestimonialContent } from "@/lib/actions/testimonials";
@@ -81,6 +84,8 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
 
     // Edit States
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isFullEditDialogOpen, setIsFullEditDialogOpen] = useState(false);
+    const [fullEditRating, setFullEditRating] = useState(5);
     const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [testimonialToDelete, setTestimonialToDelete] = useState<string | number | null>(null);
@@ -208,6 +213,14 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
         }
     };
 
+    const handleFullEditOpen = () => {
+        if (editingTestimonial) {
+            setFullEditRating(editingTestimonial.rating);
+            setIsEditDialogOpen(false);
+            setIsFullEditDialogOpen(true);
+        }
+    };
+
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
         // Could add toast here
@@ -317,6 +330,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                             </div>
                         </div>
                         <DialogFooter>
+                            <Button onClick={handleFullEditOpen} variant="outline" className="sm:mr-auto border-indigo-500/30 bg-indigo-500/5 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all">Full Edit</Button>
                             <DialogClose asChild>
                                 <Button variant="ghost">Cancel</Button>
                             </DialogClose>
@@ -325,6 +339,48 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                     </DialogContent>
                 </Dialog>
             )}
+
+            {/* Full Edit Dialog */}
+            <Dialog open={isFullEditDialogOpen} onOpenChange={setIsFullEditDialogOpen}>
+                <DialogContent className="w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-zinc-950 border-zinc-800 text-zinc-50 p-0 block [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <DialogHeader className="p-6 pb-0">
+                        <DialogTitle>Full Edit Testimonial</DialogTitle>
+                    </DialogHeader>
+                    {editingTestimonial && (() => {
+                        const fallbackData = {
+                            customer_name: editingTestimonial.reviewer,
+                            customer_email: editingTestimonial.email,
+                            message: editingTestimonial.text,
+                            profession: editingTestimonial.profession,
+                            rating: editingTestimonial.rating,
+                            testimonial_date: editingTestimonial.date,
+                            source: editingTestimonial.source,
+                        };
+                        const rawData = editingTestimonial.raw?.data || fallbackData;
+                        const type = rawData.type || 'Text';
+
+                        if (type.toLowerCase() === 'video') {
+                            return <VideoTestimonialForm
+                                rating={fullEditRating}
+                                setRating={setFullEditRating}
+                                initialData={rawData}
+                                testimonialId={editingTestimonial.id}
+                                isEditing={true}
+                                onSuccess={() => { setIsFullEditDialogOpen(false); setIsEditDialogOpen(false); }}
+                            />
+                        } else {
+                            return <TextTestimonialForm
+                                rating={fullEditRating}
+                                setRating={setFullEditRating}
+                                initialData={rawData}
+                                testimonialId={editingTestimonial.id}
+                                isEditing={true}
+                                onSuccess={() => { setIsFullEditDialogOpen(false); setIsEditDialogOpen(false); }}
+                            />
+                        }
+                    })()}
+                </DialogContent>
+            </Dialog>
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

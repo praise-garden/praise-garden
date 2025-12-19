@@ -15,24 +15,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { createTestimonial } from "@/lib/actions/testimonials";
+import { createTestimonial, updateTestimonialContent } from "@/lib/actions/testimonials";
 
 interface VideoTestimonialFormProps {
     rating: number;
     setRating: (rating: number) => void;
+    initialData?: any;
+    testimonialId?: string | number;
+    isEditing?: boolean;
+    onSuccess?: () => void;
 }
 
-export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialFormProps) {
+export function VideoTestimonialForm({ rating, setRating, initialData, testimonialId, isEditing, onSuccess }: VideoTestimonialFormProps) {
     const [isPending, startTransition] = useTransition();
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [hoverRating, setHoverRating] = useState(0);
-    const [name, setName] = useState("");
-    const [tagline, setTagline] = useState("");
-    const [email, setEmail] = useState("");
-    const [company, setCompany] = useState("");
-    const [team, setTeam] = useState("");
-    const [message, setMessage] = useState("");
-    const [date, setDate] = useState(new Date().toLocaleDateString());
+    const [name, setName] = useState(initialData?.customer_name || "");
+    const [tagline, setTagline] = useState(initialData?.customer_headline || initialData?.profession || "");
+    const [email, setEmail] = useState(initialData?.customer_email || "");
+    const [company, setCompany] = useState(initialData?.company?.name || initialData?.company_name || "");
+    const [team, setTeam] = useState(""); // Not checking initialData for team as no clear mapping
+    const [message, setMessage] = useState(initialData?.message || initialData?.testimonial_message || "");
+    const [date, setDate] = useState(initialData?.testimonial_date || initialData?.date || new Date().toLocaleDateString());
 
     const handleSubmit = () => {
         if (!name) {
@@ -57,17 +61,50 @@ export function VideoTestimonialForm({ rating, setRating }: VideoTestimonialForm
 
         startTransition(async () => {
             try {
-                await createTestimonial(formData);
-                setShowSuccessDialog(true);
-                // Reset form
-                setName("");
-                setTagline("");
-                setEmail("");
-                setCompany("");
-                setMessage("");
+                if (isEditing && testimonialId) {
+                    const updateData = {
+                        rating,
+                        customer_name: name,
+                        customer_headline: tagline,
+                        customer_email: email,
+                        company: {
+                            name: company
+                        },
+                        message,
+                        testimonial_date: date,
+                        source: 'manual',
+                        // preserve existing media if needed or handle updates (not implemented here)
+                    };
+                    await updateTestimonialContent(testimonialId, updateData);
+                    if (onSuccess) onSuccess();
+                } else {
+                    const formData = {
+                        type: 'video',
+                        rating,
+                        customer_name: name,
+                        customer_headline: tagline,
+                        customer_email: email,
+                        company_name: company,
+                        company_title: "", // Not explicitly in video form UI, could map Tagline to title but they are separate concept usually.
+                        testimonial_message: message,
+                        testimonial_date: date,
+                        source: 'manual',
+                        tags: [], // No tag input in this form except 'Add a tag' button which was dummy
+                        // media: { ... } // Video upload not yet implemented
+                    };
+
+                    await createTestimonial(formData);
+                    setShowSuccessDialog(true);
+                    // Reset form
+                    setName("");
+                    setTagline("");
+                    setEmail("");
+                    setCompany("");
+                    setMessage("");
+                }
             } catch (error: any) {
                 console.error(error);
-                alert("Failed to import: " + (error.message || "Unknown error"));
+                alert("Failed to " + (isEditing ? "update" : "import") + ": " + (error.message || "Unknown error"));
             }
         });
     };

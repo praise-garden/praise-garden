@@ -16,14 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { createTestimonial } from "@/lib/actions/testimonials";
+import { createTestimonial, updateTestimonialContent } from "@/lib/actions/testimonials";
 
 interface TextTestimonialFormProps {
     rating: number;
     setRating: (rating: number) => void;
+    initialData?: any;
+    testimonialId?: string | number;
+    isEditing?: boolean;
+    onSuccess?: () => void;
 }
 
-export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormProps) {
+export function TextTestimonialForm({ rating, setRating, initialData, testimonialId, isEditing, onSuccess }: TextTestimonialFormProps) {
 
     const [showCompanyDetails, setShowCompanyDetails] = useState(false);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -31,17 +35,17 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
 
     // Form States
     const [isPending, startTransition] = useTransition();
-    const [name, setName] = useState("");
-    const [headline, setHeadline] = useState("");
-    const [email, setEmail] = useState("");
-    const [companyName, setCompanyName] = useState("");
-    const [jobTitle, setJobTitle] = useState("");
-    const [website, setWebsite] = useState("");
-    const [title, setTitle] = useState("");
-    const [message, setMessage] = useState("");
-    const [date, setDate] = useState(new Date().toLocaleDateString());
-    const [originalPostUrl, setOriginalPostUrl] = useState("");
-    const [source, setSource] = useState("manual");
+    const [name, setName] = useState(initialData?.customer_name || "");
+    const [headline, setHeadline] = useState(initialData?.customer_headline || initialData?.profession || "");
+    const [email, setEmail] = useState(initialData?.customer_email || "");
+    const [companyName, setCompanyName] = useState(initialData?.company?.name || initialData?.company_name || "");
+    const [jobTitle, setJobTitle] = useState(initialData?.company?.job_title || initialData?.company_title || "");
+    const [website, setWebsite] = useState(initialData?.company?.website || initialData?.company_website || "");
+    const [title, setTitle] = useState(initialData?.title || initialData?.testimonial_title || "");
+    const [message, setMessage] = useState(initialData?.message || initialData?.testimonial_message || "");
+    const [date, setDate] = useState(initialData?.testimonial_date || initialData?.date || new Date().toLocaleDateString());
+    const [originalPostUrl, setOriginalPostUrl] = useState(initialData?.original_post_url || "");
+    const [source, setSource] = useState(initialData?.source || "manual");
 
 
 
@@ -53,36 +57,57 @@ export function TextTestimonialForm({ rating, setRating }: TextTestimonialFormPr
             return;
         }
 
-        const formData = {
-            type: 'Text',
-            rating,
-            tags: [],
-            customer_name: name,
-            customer_headline: headline,
-            customer_email: email,
-            company_name: companyName,
-            company_title: jobTitle,
-            company_website: website,
-            testimonial_title: title,
-            testimonial_message: message,
-            testimonial_date: date,
-            original_post_url: originalPostUrl,
-            source: source.toLowerCase()
-        };
-
         startTransition(async () => {
             try {
-                await createTestimonial(formData);
-                setShowSuccessDialog(true);
-                // Clear form or redirect could happen here
-                setName("");
-                setMessage("");
-                setTitle("");
-                setHeadline("");
-                // Reset other fields as needed
+                if (isEditing && testimonialId) {
+                    const updateData = {
+                        rating,
+                        customer_name: name,
+                        customer_headline: headline,
+                        customer_email: email,
+                        company: {
+                            name: companyName,
+                            job_title: jobTitle,
+                            website: website
+                        },
+                        title,
+                        message,
+                        testimonial_date: date,
+                        original_post_url: originalPostUrl,
+                        source: source.toLowerCase()
+                    };
+                    await updateTestimonialContent(testimonialId, updateData);
+                    if (onSuccess) onSuccess();
+                } else {
+                    const formData = {
+                        type: 'Text',
+                        rating,
+                        tags: [],
+                        customer_name: name,
+                        customer_headline: headline,
+                        customer_email: email,
+                        company_name: companyName,
+                        company_title: jobTitle,
+                        company_website: website,
+                        testimonial_title: title,
+                        testimonial_message: message,
+                        testimonial_date: date,
+                        original_post_url: originalPostUrl,
+                        source: source.toLowerCase()
+                    };
+
+                    await createTestimonial(formData);
+                    setShowSuccessDialog(true);
+                    // Clear form or redirect could happen here
+                    setName("");
+                    setMessage("");
+                    setTitle("");
+                    setHeadline("");
+                    // Reset other fields as needed
+                }
             } catch (error: any) {
                 console.error(error);
-                alert("Failed to import: " + (error.message || "Unknown error"));
+                alert("Failed to " + (isEditing ? "update" : "import") + ": " + (error.message || "Unknown error"));
             }
         });
     };
