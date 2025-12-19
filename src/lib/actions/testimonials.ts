@@ -104,7 +104,7 @@ export async function createTestimonial(formData: any) {
         },
         media: {
             avatar_url: customer_avatar_url,
-            // video_url handling would go here
+            video_url: formData.video_url
         }
     };
 
@@ -116,7 +116,7 @@ export async function createTestimonial(formData: any) {
             user_id: user.id,
             project_id: projectId,
             data: data,
-            status: 'pending' // Default to pending
+            status: 'hidden' // Default to hidden
         });
 
     if (error) {
@@ -146,7 +146,7 @@ export async function updateTestimonialStatus(id: string | number, status: strin
 
     if (error) {
         console.error("Update status error:", error);
-        throw new Error("Failed to update status");
+        throw new Error("Failed to update status: " + error.message);
     }
 
     revalidatePath("/dashboard");
@@ -167,7 +167,7 @@ export async function deleteTestimonial(id: string | number) {
 
     if (error) {
         console.error("Delete error:", error);
-        throw new Error("Failed to delete testimonial");
+        throw new Error("Failed to delete testimonial: " + error.message);
     }
 
     revalidatePath("/dashboard");
@@ -209,7 +209,7 @@ export async function updateTestimonialContent(id: string | number, data: any) {
 
     if (error) {
         console.error("Update content error:", error);
-        throw new Error("Failed to update content");
+        throw new Error("Failed to update content: " + error.message);
     }
 
     revalidatePath("/dashboard");

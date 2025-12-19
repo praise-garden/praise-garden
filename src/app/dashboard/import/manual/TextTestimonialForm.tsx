@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Camera, Calendar, Star, X, Image as ImageIcon, ChevronDown, Upload, Check } from "lucide-react";
+import { useState, useTransition, useRef } from "react";
+import { Camera, Calendar, Star, Image as ImageIcon, ChevronDown, Upload, Check, Loader2 } from "lucide-react";
+import { uploadImageToStorage } from "@/lib/storage";
+import { createClient } from "@/lib/supabase/client";
 import {
     Dialog,
     DialogContent,
@@ -47,6 +49,52 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
     const [originalPostUrl, setOriginalPostUrl] = useState(initialData?.original_post_url || "");
     const [source, setSource] = useState(initialData?.source || "manual");
 
+    // File Upload States
+    const [avatarUrl, setAvatarUrl] = useState(initialData?.customer_avatar_url || initialData?.avatar_url || initialData?.media?.avatar_url || "");
+    const [companyLogoUrl, setCompanyLogoUrl] = useState(initialData?.company_logo_url || initialData?.company?.logo_url || "");
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'logo') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const isAvatar = type === 'avatar';
+        isAvatar ? setIsUploadingAvatar(true) : setIsUploadingLogo(true);
+
+        try {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                const result = await uploadImageToStorage({
+                    file,
+                    context: { type: 'user', userId: user.id },
+                    bucket: 'assets'
+                });
+                if (isAvatar) setAvatarUrl(result.url);
+                else setCompanyLogoUrl(result.url);
+            } else {
+                // Fallback if no auth (e.g. public upload if allowed, or mock preview)
+                const objectUrl = URL.createObjectURL(file);
+                if (isAvatar) setAvatarUrl(objectUrl);
+                else setCompanyLogoUrl(objectUrl);
+                // Note: Real upload skipped if no user.
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Upload failed. Showing preview instead.");
+            const objectUrl = URL.createObjectURL(file);
+            if (isAvatar) setAvatarUrl(objectUrl);
+            else setCompanyLogoUrl(objectUrl);
+        } finally {
+            isAvatar ? setIsUploadingAvatar(false) : setIsUploadingLogo(false);
+        }
+    };
+
 
 
 
@@ -65,10 +113,12 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                         customer_name: name,
                         customer_headline: headline,
                         customer_email: email,
+                        customer_avatar_url: avatarUrl,
                         company: {
                             name: companyName,
                             job_title: jobTitle,
-                            website: website
+                            website: website,
+                            logo_url: companyLogoUrl
                         },
                         title,
                         message,
@@ -86,9 +136,11 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                         customer_name: name,
                         customer_headline: headline,
                         customer_email: email,
+                        customer_avatar_url: avatarUrl,
                         company_name: companyName,
                         company_title: jobTitle,
                         company_website: website,
+                        company_logo_url: companyLogoUrl,
                         testimonial_title: title,
                         testimonial_message: message,
                         testimonial_date: date,
@@ -178,9 +230,27 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                     </div>
 
                     <div className="flex flex-col gap-2 pt-8">
-                        <div className="group relative w-28 h-28 rounded-full bg-zinc-900 border-2 border-dashed border-[#F5426C]/50 hover:border-[#F5426C] hover:bg-[#F5426C]/5 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden">
-                            <Camera className="w-8 h-8 text-[#F5426C] mb-2 transition-colors" />
-                            <span className="text-[10px] uppercase font-bold text-[#F5426C] text-center tracking-wide">Upload<br />Avatar</span>
+                        <input
+                            type="file"
+                            ref={avatarInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, 'avatar')}
+                        />
+                        <div
+                            onClick={() => avatarInputRef.current?.click()}
+                            className="group relative w-28 h-28 rounded-full bg-zinc-900 border-2 border-dashed border-[#F5426C]/50 hover:border-[#F5426C] hover:bg-[#F5426C]/5 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden"
+                        >
+                            {isUploadingAvatar ? (
+                                <Loader2 className="w-8 h-8 text-[#F5426C] animate-spin" />
+                            ) : avatarUrl ? (
+                                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <>
+                                    <Camera className="w-8 h-8 text-[#F5426C] mb-2 transition-colors" />
+                                    <span className="text-[10px] uppercase font-bold text-[#F5426C] text-center tracking-wide">Upload<br />Avatar</span>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -227,9 +297,27 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                         </div>
 
                         <div className="flex flex-col gap-2 pt-8">
-                            <div className="group relative w-28 h-28 rounded-xl bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden">
-                                <ImageIcon className="w-8 h-8 text-zinc-600 group-hover:text-zinc-400 mb-2 transition-colors" />
-                                <span className="text-[10px] uppercase font-medium text-zinc-600 group-hover:text-zinc-400 text-center tracking-wide">Company<br />Logo</span>
+                            <input
+                                type="file"
+                                ref={logoInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => handleFileUpload(e, 'logo')}
+                            />
+                            <div
+                                onClick={() => logoInputRef.current?.click()}
+                                className="group relative w-28 h-28 rounded-xl bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden"
+                            >
+                                {isUploadingLogo ? (
+                                    <Loader2 className="w-8 h-8 text-zinc-600 animate-spin" />
+                                ) : companyLogoUrl ? (
+                                    <img src={companyLogoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
+                                ) : (
+                                    <>
+                                        <ImageIcon className="w-8 h-8 text-zinc-600 group-hover:text-zinc-400 mb-2 transition-colors" />
+                                        <span className="text-[10px] uppercase font-medium text-zinc-600 group-hover:text-zinc-400 text-center tracking-wide">Company<br />Logo</span>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

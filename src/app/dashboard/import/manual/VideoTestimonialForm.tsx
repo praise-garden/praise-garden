@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Video, Upload, ChevronDown, ImageIcon, Star, Tag, Calendar, Check } from "lucide-react";
+import { useState, useTransition, useRef } from "react";
+import { Video, Upload, ChevronDown, ImageIcon, Star, Tag, Calendar, Check, Loader2 } from "lucide-react";
+import { uploadImageToStorage } from "@/lib/storage";
+import { createClient } from "@/lib/supabase/client";
 import {
     Dialog,
     DialogContent,
@@ -38,6 +40,62 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
     const [message, setMessage] = useState(initialData?.message || initialData?.testimonial_message || "");
     const [date, setDate] = useState(initialData?.testimonial_date || initialData?.date || new Date().toLocaleDateString());
 
+    // File Upload States
+    const [videoUrl, setVideoUrl] = useState(initialData?.video_url || initialData?.media?.video_url || "");
+    const [avatarUrl, setAvatarUrl] = useState(initialData?.customer_avatar_url || initialData?.avatar_url || initialData?.media?.avatar_url || "");
+    const [companyLogoUrl, setCompanyLogoUrl] = useState(initialData?.company_logo_url || initialData?.company?.logo_url || "");
+
+    const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+    const videoInputRef = useRef<HTMLInputElement>(null);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'video' | 'avatar' | 'logo') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (type === 'video') setIsUploadingVideo(true);
+        else if (type === 'avatar') setIsUploadingAvatar(true);
+        else setIsUploadingLogo(true);
+
+        try {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                const result = await uploadImageToStorage({
+                    file,
+                    context: { type: 'user', userId: user.id },
+                    bucket: 'assets'
+                });
+
+                if (type === 'video') setVideoUrl(result.url);
+                else if (type === 'avatar') setAvatarUrl(result.url);
+                else setCompanyLogoUrl(result.url);
+            } else {
+                // Fallback
+                const objectUrl = URL.createObjectURL(file);
+                if (type === 'video') setVideoUrl(objectUrl);
+                else if (type === 'avatar') setAvatarUrl(objectUrl);
+                else setCompanyLogoUrl(objectUrl);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Upload failed. Showing preview instead.");
+            const objectUrl = URL.createObjectURL(file);
+            if (type === 'video') setVideoUrl(objectUrl);
+            else if (type === 'avatar') setAvatarUrl(objectUrl);
+            else setCompanyLogoUrl(objectUrl);
+        } finally {
+            if (type === 'video') setIsUploadingVideo(false);
+            else if (type === 'avatar') setIsUploadingAvatar(false);
+            else setIsUploadingLogo(false);
+        }
+    };
+
     const handleSubmit = () => {
         if (!name) {
             alert("Please enter a customer name.");
@@ -67,13 +125,15 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                         customer_name: name,
                         customer_headline: tagline,
                         customer_email: email,
+                        customer_avatar_url: avatarUrl,
                         company: {
-                            name: company
+                            name: company,
+                            logo_url: companyLogoUrl
                         },
                         message,
                         testimonial_date: date,
                         source: 'manual',
-                        // preserve existing media if needed or handle updates (not implemented here)
+                        video_url: videoUrl
                     };
                     await updateTestimonialContent(testimonialId, updateData);
                     if (onSuccess) onSuccess();
@@ -84,13 +144,15 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                         customer_name: name,
                         customer_headline: tagline,
                         customer_email: email,
+                        customer_avatar_url: avatarUrl,
                         company_name: company,
-                        company_title: "", // Not explicitly in video form UI, could map Tagline to title but they are separate concept usually.
+                        company_title: "",
+                        company_logo_url: companyLogoUrl,
                         testimonial_message: message,
                         testimonial_date: date,
                         source: 'manual',
-                        tags: [], // No tag input in this form except 'Add a tag' button which was dummy
-                        // media: { ... } // Video upload not yet implemented
+                        tags: [],
+                        video_url: videoUrl
                     };
 
                     await createTestimonial(formData);
@@ -136,22 +198,48 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                 </DialogContent>
             </Dialog>
             {/* Video Upload Zone */}
-            <div className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden">
-                <div className="w-16 h-16 mb-4 relative">
-                    <div className="absolute inset-0 bg-[#F5426C]/10 rounded-xl transform rotate-6"></div>
-                    <div className="absolute inset-0 bg-[#F5426C]/20 rounded-xl transform -rotate-6"></div>
-                    <div className="relative z-10 w-full h-full bg-zinc-900 border border-[#F5426C] rounded-xl flex items-center justify-center shadow-lg shadow-[#F5426C]/10">
-                        <Video className="w-8 h-8 text-[#F5426C]" />
-                        <div className="absolute -bottom-2 -right-2 bg-[#F5426C] rounded-full p-1 border-4 border-zinc-950">
-                            <Upload className="w-3 h-3 text-white" />
+            <input
+                type="file"
+                ref={videoInputRef}
+                className="hidden"
+                accept="video/*"
+                onChange={(e) => handleFileUpload(e, 'video')}
+            />
+            <div
+                onClick={() => videoInputRef.current?.click()}
+                className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden"
+            >
+                {isUploadingVideo ? (
+                    <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="w-8 h-8 text-[#F5426C] animate-spin" />
+                        <span className="text-zinc-400 text-sm">Uploading video...</span>
+                    </div>
+                ) : videoUrl ? (
+                    <div className="relative w-full h-full bg-black flex items-center justify-center">
+                        <video src={videoUrl} className="max-h-full max-w-full" controls playsInline />
+                        <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full cursor-pointer hover:bg-black/80" onClick={(e) => { e.stopPropagation(); videoInputRef.current?.click(); }}>
+                            <Upload className="w-4 h-4 text-white" />
                         </div>
                     </div>
-                </div>
-                <p className="text-zinc-400 text-sm font-medium">Drag and drop video here or <span className="text-white underline decoration-[#F5426C] decoration-2 underline-offset-4">Choose file</span></p>
-                <div className="flex justify-between w-full px-4 mt-6 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">
-                    <span>Supported formats: MP4, MOV, AVI, ...</span>
-                    <span>Maximum size: 1000MB</span>
-                </div>
+                ) : (
+                    <>
+                        <div className="w-16 h-16 mb-4 relative">
+                            <div className="absolute inset-0 bg-[#F5426C]/10 rounded-xl transform rotate-6"></div>
+                            <div className="absolute inset-0 bg-[#F5426C]/20 rounded-xl transform -rotate-6"></div>
+                            <div className="relative z-10 w-full h-full bg-zinc-900 border border-[#F5426C] rounded-xl flex items-center justify-center shadow-lg shadow-[#F5426C]/10">
+                                <Video className="w-8 h-8 text-[#F5426C]" />
+                                <div className="absolute -bottom-2 -right-2 bg-[#F5426C] rounded-full p-1 border-4 border-zinc-950">
+                                    <Upload className="w-3 h-3 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-zinc-400 text-sm font-medium">Drag and drop video here or <span className="text-white underline decoration-[#F5426C] decoration-2 underline-offset-4">Choose file</span></p>
+                        <div className="flex justify-between w-full px-4 mt-6 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">
+                            <span>Supported formats: MP4, MOV, AVI, ...</span>
+                            <span>Maximum size: 50MB</span>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Form Fields */}
@@ -177,12 +265,23 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                 <div className="space-y-2">
                     <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Avatar</Label>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
-                            <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
-                                <div className="w-full h-full bg-zinc-700 animate-pulse"></div>
-                            </div>
+                        <input
+                            type="file"
+                            ref={avatarInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, 'avatar')}
+                        />
+                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                            {isUploadingAvatar ? (
+                                <Loader2 className="w-4 h-4 text-[#F5426C] animate-spin" />
+                            ) : avatarUrl ? (
+                                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-zinc-700"></div>
+                            )}
                         </div>
-                        <Button variant="outline" className="border-[#F5426C] text-[#F5426C] bg-transparent hover:bg-[#F5426C]/10 h-9 text-xs font-semibold px-4 tracking-wide uppercase">Pick an image</Button>
+                        <Button onClick={() => avatarInputRef.current?.click()} variant="outline" className="border-[#F5426C] text-[#F5426C] bg-transparent hover:bg-[#F5426C]/10 h-9 text-xs font-semibold px-4 tracking-wide uppercase">Pick an image</Button>
                     </div>
                 </div>
 
@@ -218,10 +317,23 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                 <div className="space-y-2">
                     <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Company Logo</Label>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-8 rounded-md bg-zinc-800 flex items-center justify-center shrink-0">
-                            <ImageIcon className="w-4 h-4 text-zinc-600" />
+                        <input
+                            type="file"
+                            ref={logoInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, 'logo')}
+                        />
+                        <div className="w-10 h-8 rounded-md bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                            {isUploadingLogo ? (
+                                <Loader2 className="w-4 h-4 text-zinc-600 animate-spin" />
+                            ) : companyLogoUrl ? (
+                                <img src={companyLogoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                            ) : (
+                                <ImageIcon className="w-4 h-4 text-zinc-600" />
+                            )}
                         </div>
-                        <Button variant="outline" className="border-[#F5426C] text-[#F5426C] bg-transparent hover:bg-[#F5426C]/10 h-9 text-xs font-semibold px-4 tracking-wide uppercase">Pick an image</Button>
+                        <Button onClick={() => logoInputRef.current?.click()} variant="outline" className="border-[#F5426C] text-[#F5426C] bg-transparent hover:bg-[#F5426C]/10 h-9 text-xs font-semibold px-4 tracking-wide uppercase">Pick an image</Button>
                     </div>
                 </div>
 
