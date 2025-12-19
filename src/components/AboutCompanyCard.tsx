@@ -1,17 +1,16 @@
 import React from 'react';
-import Image from 'next/image';
-import { PageItem, FormCardProps } from '@/app/form-builder/page';
-import { FormCard } from '@/app/form-builder/page';
+import Logo from '@/components/ui/Logo';
+import { FormCardProps, FormCard } from '@/app/form-builder/page';
 
-interface AboutCompanyCardProps extends FormCardProps {}
+interface AboutCompanyCardProps extends FormCardProps { }
 
 const AboutCompanyCard: React.FC<AboutCompanyCardProps> = (props) => {
   return (
     <FormCard {...props}>
       <div className="flex-grow flex flex-col items-center justify-center p-10 text-center overflow-y-auto">
         <div className="flex justify-center items-center mb-4 flex-none">
-          <Image src="/icon.png" alt="PraiseGarden Logo" width={28} height={28} className="mr-2" />
-          <span className="text-white text-2xl font-bold">PraiseGarden</span>
+          <Logo size={28} className="mr-2 text-emerald-500" />
+          <span className="text-white text-2xl font-bold">Trustimonials</span>
         </div>
 
         <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch px-4 sm:px-12">
@@ -26,12 +25,12 @@ const AboutCompanyCard: React.FC<AboutCompanyCardProps> = (props) => {
                 <label htmlFor="headline" className="font-medium text-sm text-gray-300">
                   Job title <span className="text-red-500 pr-0.5">*</span>
                 </label>
-                <input 
-                  name="headline" 
-                  required 
-                  type="text" 
-                  className="bg-[#1E1E1E] rounded-lg border border-gray-700 text-white text-sm px-3 py-2.5 focus:ring-2 focus:ring-purple-600 focus:outline-none" 
-                  placeholder="Head of Investigations" 
+                <input
+                  name="headline"
+                  required
+                  type="text"
+                  className="bg-[#1E1E1E] rounded-lg border border-gray-700 text-white text-sm px-3 py-2.5 focus:ring-2 focus:ring-purple-600 focus:outline-none"
+                  placeholder="Head of Investigations"
                   spellCheck="false"
                 />
               </div>
@@ -39,12 +38,12 @@ const AboutCompanyCard: React.FC<AboutCompanyCardProps> = (props) => {
                 <label htmlFor="company" className="font-medium text-sm text-gray-300">
                   Company <span className="text-red-500 pr-0.5">*</span>
                 </label>
-                <input 
-                  name="company" 
-                  required 
-                  type="text" 
-                  className="bg-[#1E1E1E] rounded-lg border border-gray-700 text-white text-sm px-3 py-2.5 focus:ring-2 focus:ring-purple-600 focus:outline-none" 
-                  placeholder="Baker street detectives" 
+                <input
+                  name="company"
+                  required
+                  type="text"
+                  className="bg-[#1E1E1E] rounded-lg border border-gray-700 text-white text-sm px-3 py-2.5 focus:ring-2 focus:ring-purple-600 focus:outline-none"
+                  placeholder="Baker street detectives"
                   spellCheck="false"
                 />
               </div>
@@ -54,11 +53,11 @@ const AboutCompanyCard: React.FC<AboutCompanyCardProps> = (props) => {
               <label htmlFor="website" className="font-medium text-sm text-gray-300">
                 Website
               </label>
-              <input 
-                name="website" 
-                type="text" 
-                className="bg-[#1E1E1E] rounded-lg border border-gray-700 text-white text-sm px-3 py-2.5 focus:ring-2 focus:ring-purple-600 focus:outline-none" 
-                placeholder="https://bakerstreet.com" 
+              <input
+                name="website"
+                type="text"
+                className="bg-[#1E1E1E] rounded-lg border border-gray-700 text-white text-sm px-3 py-2.5 focus:ring-2 focus:ring-purple-600 focus:outline-none"
+                placeholder="https://bakerstreet.com"
                 spellCheck="false"
               />
             </div>
@@ -74,30 +73,30 @@ const AboutCompanyCard: React.FC<AboutCompanyCardProps> = (props) => {
                   <span className="sr-only" aria-label="required">not-required</span>
                   <div className="relative flex items-center gap-2">
                     <div slot="image">
-                      <img 
-                        src="https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" 
-                        alt="" 
+                      <img
+                        src="https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"
+                        alt=""
                         className="h-14 w-14 rounded-md object-cover"
                       />
                     </div>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="rounded-lg bg-[#1E1E1E] border border-gray-700 px-3 py-2 text-sm font-medium text-gray-300 hover:bg-[#2A2A2A]"
                     >
                       Pick an image
                     </button>
-                    <input 
-                      tabIndex={-1} 
-                      name="companyLogo" 
-                      className="absolute left-0 top-3" 
-                      style={{width: '0px', height: '0px', border: 'none', pointerEvents: 'none', opacity: 0}}
+                    <input
+                      tabIndex={-1}
+                      name="companyLogo"
+                      className="absolute left-0 top-3"
+                      style={{ width: '0px', height: '0px', border: 'none', pointerEvents: 'none', opacity: 0 }}
                     />
-                    <input 
-                      type="file" 
-                      multiple 
-                      accept="image/png,image/jpg,image/gif,image/jpeg,image/webp" 
-                      autoComplete="off" 
-                      style={{display: 'none'}}
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/png,image/jpg,image/gif,image/jpeg,image/webp"
+                      autoComplete="off"
+                      style={{ display: 'none' }}
                     />
                   </div>
                 </label>

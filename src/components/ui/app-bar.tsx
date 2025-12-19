@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import Logo from '@/components/ui/Logo';
 
 interface AppBarProps {
   onBack?: () => void;
@@ -14,32 +14,26 @@ const AppBar = ({ onBack, showBackButton = true, maxWidthClass = 'max-w-3xl', pa
       <div className={`mx-auto flex w-full items-center justify-between pt-8 ${maxWidthClass} ${paddingXClass}`}>
         {/* Logo */}
         <div className="flex items-center gap-4">
-          <Image 
-            src="/icon.png" 
-            alt="PraiseGarden Logo" 
-            width={32} 
-            height={32} 
-            className="h-8 max-w-[200px] sm:h-10 object-contain" 
-          />
-          <span className="text-white text-xl font-bold hidden sm:block">PraiseGarden</span>
+          <Logo size={32} className="h-8 sm:h-10" />
+          <span className="text-white text-xl font-bold hidden sm:block">Trustimonials</span>
         </div>
 
         {/* Back Button */}
         {showBackButton && onBack && (
-          <button 
+          <button
             onClick={onBack}
             className="rounded-full border border-gray-700 bg-transparent p-1.5 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors"
             aria-label="Go back"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="18" 
-              height="18" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor" 
-              fill="none" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <line x1="19" y1="12" x2="5" y2="12"></line>

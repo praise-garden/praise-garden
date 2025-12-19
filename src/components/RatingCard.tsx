@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
+import Logo from '@/components/ui/Logo';
 import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -67,8 +67,8 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
             transition={{ duration: 0.6 }}
             className="flex justify-center items-center gap-2.5"
           >
-            <Image src="/icon.png" alt="PraiseGarden Logo" width={32} height={32} className="object-contain" />
-            <span className="text-white text-xl font-bold">PraiseGarden</span>
+            <Logo size={32} className="object-contain" />
+            <span className="text-white text-xl font-bold">Trustimonials</span>
           </motion.div>
 
           {/* Main Heading */}

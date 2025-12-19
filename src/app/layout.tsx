@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/Providers";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -21,12 +22,14 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Praise Garden",
-  description: "Grow your praise garden",
+  title: "Trustimonials",
+  description: "Collect and showcase trusted testimonials",
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
 };
 
@@ -37,8 +40,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable} antialiased`} suppressHydrationWarning={true}>
-        {children}
+      <body className={`${inter.variable} ${jetBrainsMono.variable} antialiased`} suppressHydrationWarning={true}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

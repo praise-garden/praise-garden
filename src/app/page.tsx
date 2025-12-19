@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import Logo from "@/components/ui/Logo";
 
 export default function Home() {
   return (
@@ -14,15 +14,8 @@ export default function Home() {
       <section className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image
-              src="/favicon.ico"
-              alt="Praise Garden logo"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-md border border-border shadow-sm object-contain"
-              priority
-            />
-            <span className="text-sm font-medium tracking-[-0.05em]">Praise Garden</span>
+            <Logo size={28} />
+            <span className="text-sm font-medium tracking-[-0.05em]">Trustimonials</span>
           </div>
           <nav className="hidden sm:flex items-center gap-6 text-sm text-foreground/80">
             <a className="hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-sm px-1" href="#features">Features</a>
@@ -37,15 +30,15 @@ export default function Home() {
         </div>
 
         <div className="relative mx-auto mt-8 max-w-3xl text-center">
-            <div className="mx-auto w-fit rounded-full border border-border bg-background/70 px-3 py-1 text-xs text-foreground/70 backdrop-blur">
-              Open-source engine for your Wall of Love
-            </div>
-            <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-[-0.06em] leading-[1.05]">
-              Turn happy users into high‑converting testimonials.
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg text-foreground/70">
-              Collect video and text testimonials with one link. Approve in one click. Embed a beautiful Wall of Love anywhere.
-            </p>
+          <div className="mx-auto w-fit rounded-full border border-border bg-background/70 px-3 py-1 text-xs text-foreground/70 backdrop-blur">
+            Open-source engine for your Wall of Love
+          </div>
+          <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-[-0.06em] leading-[1.05]">
+            Turn happy users into high‑converting testimonials.
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg text-foreground/70">
+            Collect video and text testimonials with one link. Approve in one click. Embed a beautiful Wall of Love anywhere.
+          </p>
           <div className="mt-8 flex items-center justify-center gap-3">
             <Button asChild size="lg" style={{ backgroundColor: "var(--color-accent)" }} className="text-background shadow-sm">
               <a href="/dashboard">Collect testimonials now</a>
@@ -54,37 +47,37 @@ export default function Home() {
               <a href="#developers">View Docs</a>
             </Button>
           </div>
-          
+
 
           {/* UI Mock with lime stroke + glow */}
           <div className="relative mt-14 rounded-2xl border border-border bg-background/60 p-3 backdrop-blur shadow-sm">
             <div className="absolute inset-0 -z-10 rounded-2xl" style={{ boxShadow: "0 0 120px 20px rgba(137,254,101,0.18)" }} aria-hidden="true" />
             <div className="rounded-xl border border-[rgba(137,254,101,0.45)] bg-background p-6 text-left">
               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block size-2 rounded-full bg-[rgba(137,254,101,0.9)]" aria-hidden="true" />
-                    <span className="text-xs font-medium tracking-[-0.03em]">Your Testimonial Wall</span>
-                  </div>
-                  <a href="#" className="text-xs text-foreground/60 hover:text-foreground">Share Page ↗</a>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block size-2 rounded-full bg-[rgba(137,254,101,0.9)]" aria-hidden="true" />
+                  <span className="text-xs font-medium tracking-[-0.03em]">Your Testimonial Wall</span>
                 </div>
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {[
-                    { n: "A", name: "Alex D.", quote: '"Switching from closed tools to open-source was a no-brainer. Gorgeous UX."' },
-                    { n: "B", name: "Brianna C.", quote: '"Collecting testimonials went from days to minutes. The embed is perfect."' },
-                    { n: "C", name: "Chris P.", quote: '"Moderation is seamless. Approve and publish in one click."' },
-                    { n: "D", name: "Dev Co.", quote: '"We self-hosted in hours. Great docs, love the SDK."' },
-                  ].map((t) => (
-                    <div key={t.name} className="rounded-lg border border-border p-3">
-                      <div className="flex items-center gap-2">
-                        <span aria-label="avatar" className="inline-flex size-6 items-center justify-center rounded-full border border-border bg-background text-[10px]">{t.n}</span>
-                        <span className="text-xs font-medium">{t.name}</span>
-                      </div>
-                      <p className="mt-2 text-xs text-foreground/80">{t.quote}</p>
+                <a href="#" className="text-xs text-foreground/60 hover:text-foreground">Share Page ↗</a>
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {[
+                  { n: "A", name: "Alex D.", quote: '"Switching from closed tools to open-source was a no-brainer. Gorgeous UX."' },
+                  { n: "B", name: "Brianna C.", quote: '"Collecting testimonials went from days to minutes. The embed is perfect."' },
+                  { n: "C", name: "Chris P.", quote: '"Moderation is seamless. Approve and publish in one click."' },
+                  { n: "D", name: "Dev Co.", quote: '"We self-hosted in hours. Great docs, love the SDK."' },
+                ].map((t) => (
+                  <div key={t.name} className="rounded-lg border border-border p-3">
+                    <div className="flex items-center gap-2">
+                      <span aria-label="avatar" className="inline-flex size-6 items-center justify-center rounded-full border border-border bg-background text-[10px]">{t.n}</span>
+                      <span className="text-xs font-medium">{t.name}</span>
                     </div>
-                  ))}
-                  <div className="sm:col-span-2 rounded-lg border border-dashed border-border p-3 text-center">
-                    <button className="text-xs text-foreground/70 hover:text-foreground w-full h-full">+ Add your testimonial</button>
+                    <p className="mt-2 text-xs text-foreground/80">{t.quote}</p>
                   </div>
+                ))}
+                <div className="sm:col-span-2 rounded-lg border border-dashed border-border p-3 text-center">
+                  <button className="text-xs text-foreground/70 hover:text-foreground w-full h-full">+ Add your testimonial</button>
+                </div>
               </div>
             </div>
           </div>
@@ -94,31 +87,31 @@ export default function Home() {
       {/* Feature grid */}
       <section id="features" className="mx-auto mt-20 max-w-6xl px-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "One-link submissions",
-                desc: "Share a branded page and collect text, image, or video in seconds.",
-              },
-              {
-                title: "Moderate & approve",
-                desc: "Review, edit, and publish to your Wall with one click.",
-              },
-              {
-                title: "Embed anywhere",
-                desc: "Drop the Wall or carousel into your site, docs, or Notion.",
-              },
-              {
-                title: "Open-source & self-hosted",
-                desc: "Own your data, customize flows, and contribute. MIT core.",
-              },
-              {
-                title: "Developer-friendly SDKs",
-                desc: "Type-safe APIs, webhooks, and CLI for automations and pipelines.",
-              },
-              {
-                title: "Privacy & control",
-                desc: "Consent-first submissions, custom fields, and granular visibility.",
-              },
+          {[
+            {
+              title: "One-link submissions",
+              desc: "Share a branded page and collect text, image, or video in seconds.",
+            },
+            {
+              title: "Moderate & approve",
+              desc: "Review, edit, and publish to your Wall with one click.",
+            },
+            {
+              title: "Embed anywhere",
+              desc: "Drop the Wall or carousel into your site, docs, or Notion.",
+            },
+            {
+              title: "Open-source & self-hosted",
+              desc: "Own your data, customize flows, and contribute. MIT core.",
+            },
+            {
+              title: "Developer-friendly SDKs",
+              desc: "Type-safe APIs, webhooks, and CLI for automations and pipelines.",
+            },
+            {
+              title: "Privacy & control",
+              desc: "Consent-first submissions, custom fields, and granular visibility.",
+            },
           ].map((f) => (
             <div key={f.title} className="group relative overflow-hidden rounded-xl border border-border bg-background/60 p-6 backdrop-blur transition shadow-sm">
               <div className="absolute -inset-0.5 -z-10 rounded-xl opacity-0 blur-2xl transition-opacity group-hover:opacity-40" style={{ background: "radial-gradient(60% 60% at 50% 50%, rgba(137,254,101,0.25) 0%, rgba(137,254,101,0) 70%)" }} />
@@ -148,7 +141,7 @@ export default function Home() {
           <div className="relative rounded-xl border border-[rgba(137,254,101,0.45)] bg-background p-4 shadow-sm">
             <div className="absolute inset-0 -z-10 rounded-xl" style={{ boxShadow: "0 0 80px 12px rgba(137,254,101,0.15)" }} aria-hidden="true" />
             <pre className="font-mono text-xs leading-relaxed text-foreground/90">
-{`// Collect a testimonial via SDK
+              {`// Collect a testimonial via SDK
 import { client } from "@praise/sdk"
 
 const submit = async () => {
@@ -179,7 +172,7 @@ submit()`}
             <div className="text-center sm:text-left">
               <p className="text-sm text-foreground/70">Trusted by creators and teams building in public</p>
               <div className="mt-3 flex -space-x-2">
-                {["A","B","C","D","E"].map((l) => (
+                {["A", "B", "C", "D", "E"].map((l) => (
                   <span key={l} aria-label={`avatar ${l}`} className="inline-flex size-8 items-center justify-center rounded-full border border-border bg-background text-xs">
                     {l}
                   </span>
@@ -187,7 +180,7 @@ submit()`}
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3 text-xs text-foreground/60">
-              {['Next.js','Vercel','Tailwind'].map((logo) => (
+              {['Next.js', 'Vercel', 'Tailwind'].map((logo) => (
                 <div key={logo} className="rounded-md border border-border bg-background px-3 py-2 text-center">{logo}</div>
               ))}
             </div>

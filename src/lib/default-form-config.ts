@@ -37,7 +37,7 @@ export const createDefaultFormConfig = ({
         createdAt: new Date().toISOString(),
         theme: {
             backgroundColor: '#0A0A0A',
-            logoUrl: '/icon.png',
+            logoUrl: '/logo.svg',
             primaryColor: '#A855F7',
             secondaryColor: '#22C55E',
             headingFont: 'Space Grotesk',
@@ -54,8 +54,8 @@ export const createDefaultFormConfig = ({
                     buttonText: 'Continue',
                     timingMessage: 'Takes less than 3 minutes',
                     consentMessage: "You control what's shared",
-                    // brandName removed
-                    logoUrl: '/icon.png',
+                    brandName: 'Trustimonials',
+                    logoUrl: '/logo.svg',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
                     buttonBgColor: '#89fe65',
@@ -67,7 +67,7 @@ export const createDefaultFormConfig = ({
                 type: FormBlockType.Rating,
                 enabled: true,
                 props: {
-                    title: 'How was your experience with PraiseGarden?',
+                    title: 'How was your experience with Trustimonials?',
                     description: 'Your feedback helps us improve',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
@@ -79,7 +79,7 @@ export const createDefaultFormConfig = ({
                 type: FormBlockType.Question,
                 enabled: true,
                 props: {
-                    question: 'What do you like the most about PraiseGarden?',
+                    question: 'What do you like the most about Trustimonials?',
                     description: 'Be specific and honest. Your feedback will help us improve our product.',
                     questionColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',

@@ -55,7 +55,7 @@ export const getUserWithProjects = async () => {
   const { data: projects, error } = await supabase
     .from("projects")
     .select("*")
-    .eq("owner_id", user.id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -86,7 +86,7 @@ export const getUserProfileWithProjects = async () => {
     supabase
       .from("projects")
       .select("*")
-      .eq("owner_id", user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
   ]);
 
@@ -122,11 +122,11 @@ export const verifyProjectOwnership = async (
 
   const { data: project } = await supabase
     .from("projects")
-    .select("owner_id")
+    .select("user_id")
     .eq("id", projectId)
     .single();
 
-  return project?.owner_id === userId;
+  return project?.user_id === userId;
 };
 
 /**

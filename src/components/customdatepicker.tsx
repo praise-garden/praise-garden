@@ -22,10 +22,10 @@ export function CustomDatePicker({ date, onDateChange, className }: CustomDatePi
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
   const formatDisplayDate = (date: Date) => {
-    return date.toLocaleDateString("en-IN", { 
-      day: "2-digit", 
-      month: "short", 
-      year: "numeric" 
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
     })
   }
 
@@ -42,19 +42,19 @@ export function CustomDatePicker({ date, onDateChange, className }: CustomDatePi
     const month = date.getMonth()
     const firstDay = new Date(year, month, 1)
     const startDate = new Date(firstDay)
-    
+
     // Adjust to start from Sunday (0 = Sunday)
     startDate.setDate(startDate.getDate() - firstDay.getDay())
-    
+
     const days = []
     const currentDate = new Date(startDate)
-    
+
     // Generate 42 days (6 weeks) to fill the calendar grid
     for (let i = 0; i < 42; i++) {
       days.push(new Date(currentDate))
       currentDate.setDate(currentDate.getDate() + 1)
     }
-    
+
     return days
   }
 
@@ -167,7 +167,7 @@ export function CustomDateRangeDropdown({ dateRange, onChange, className }: Cust
       <Button
         type="button"
         variant="outline"
-        className="h-12 px-5 shadow-sm min-w-[360px] justify-start text-left font-normal bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600"
+        className="h-10 px-5 shadow-sm w-full sm:w-auto sm:min-w-[240px] justify-start text-left font-normal bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600"
         onClick={() => setOpen(!open)}
       >
         <CalendarIcon className="mr-2 h-4 w-4" />

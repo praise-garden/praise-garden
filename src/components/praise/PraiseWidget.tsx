@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { PraiseTestimonial, PraiseTestimonialCard } from "@/components/praise/PraiseTestimonialCard"
+import { PraiseTestimonial, PraiseTestimonialCard, ColorConfig } from "@/components/praise/PraiseTestimonialCard"
 import { PraiseCarousel } from "@/components/praise/PraiseCarousel"
 
 export type PraiseWidgetLayout = "grid" | "list" | "carousel"
@@ -16,6 +16,7 @@ export type PraiseWidgetProps = {
   compact?: boolean
   className?: string
   ariaLabel?: string
+  colorConfig?: ColorConfig
 }
 
 export function PraiseWidget({
@@ -26,7 +27,8 @@ export function PraiseWidget({
   showSource = true,
   compact = false,
   className,
-  ariaLabel = "PraiseGarden testimonials",
+  ariaLabel = "Trustimonials testimonials",
+  colorConfig,
 }: PraiseWidgetProps) {
   if (!testimonials?.length) {
     return (
@@ -42,7 +44,7 @@ export function PraiseWidget({
         items={testimonials}
         ariaLabel={ariaLabel}
         renderItem={(t) => (
-          <PraiseTestimonialCard testimonial={t} showRating={showRating} showSource={showSource} compact={compact} />
+          <PraiseTestimonialCard testimonial={t} showRating={showRating} showSource={showSource} compact={compact} colorConfig={colorConfig} />
         )}
         className={className}
       />
@@ -54,14 +56,14 @@ export function PraiseWidget({
       <ul className={cn("grid gap-4", className)} aria-label={ariaLabel}>
         {testimonials.map((t) => (
           <li key={t.id} className="list-none">
-            <PraiseTestimonialCard testimonial={t} showRating={showRating} showSource={showSource} compact={compact} />
+            <PraiseTestimonialCard testimonial={t} showRating={showRating} showSource={showSource} compact={compact} colorConfig={colorConfig} />
           </li>
         ))}
       </ul>
     )
   }
 
-  const columnClasses: Record<PraiseWidgetProps["columns"], string> = {
+  const columnClasses: Record<1 | 2 | 3 | 4, string> = {
     1: "grid-cols-1",
     2: "grid-cols-1 sm:grid-cols-2",
     3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
@@ -69,10 +71,10 @@ export function PraiseWidget({
   }
 
   return (
-    <ul className={cn("grid gap-4", columnClasses[columns], className)} aria-label={ariaLabel}>
+    <ul className={cn("grid gap-4", columnClasses[columns ?? 3], className)} aria-label={ariaLabel}>
       {testimonials.map((t) => (
         <li key={t.id} className="list-none">
-          <PraiseTestimonialCard testimonial={t} showRating={showRating} showSource={showSource} compact={compact} />
+          <PraiseTestimonialCard testimonial={t} showRating={showRating} showSource={showSource} compact={compact} colorConfig={colorConfig} />
         </li>
       ))}
     </ul>
@@ -80,6 +82,3 @@ export function PraiseWidget({
 }
 
 export default PraiseWidget
-
-
-
