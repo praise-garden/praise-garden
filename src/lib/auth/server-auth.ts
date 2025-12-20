@@ -80,7 +80,7 @@ export const getUserProfileWithProjects = async () => {
   const [{ data: profile, error: profileError }, { data: projects, error: projectsError }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, username, full_name, plan, active_project_id, avatar_url")
+      .select("id, full_name, plan, active_project_id, avatar_url")
       .eq("id", user.id)
       .maybeSingle(),
     supabase

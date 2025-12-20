@@ -12,7 +12,7 @@ import {
 import {
     getTestimonials,
     createTestimonial as createTestimonialAction,
-    updateTestimonial as updateTestimonialAction,
+    updateTestimonialContent as updateTestimonialAction,
     deleteTestimonial as deleteTestimonialAction,
 } from "@/lib/actions/testimonials"
 
@@ -210,22 +210,22 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         )
 
         try {
-            const { data, error } = await updateTestimonialAction(input)
+            const { id, ...data } = input
+            const result = await updateTestimonialAction(id, data)
 
-            if (error || !data) {
+            if (!result.success) {
                 // Rollback on error
                 setTestimonials(prev => prev.map(t => t.id === input.id ? original : t))
-                return { success: false, error: error || "Failed to update testimonial" }
+                return { success: false, error: "Failed to update testimonial" }
             }
 
-            // Update with server response
-            setTestimonials(prev => prev.map(t => t.id === input.id ? data : t))
-
+            // Update successful - keep optimistic state or fetch fresh if needed
+            // For now, optimistic state is fine as it matches input
             return { success: true }
-        } catch (err) {
+        } catch (err: any) {
             // Rollback on error
             setTestimonials(prev => prev.map(t => t.id === input.id ? original : t))
-            return { success: false, error: "An unexpected error occurred" }
+            return { success: false, error: err.message || "An unexpected error occurred" }
         }
     }, [user, testimonials])
 
