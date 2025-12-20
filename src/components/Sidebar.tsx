@@ -25,11 +25,23 @@ const navSections = [
     items: [
       { label: "Form Builder", icon: "form", href: "/forms" },
       { label: "Design", icon: "widget", href: "/design" },
+      { label: "Brand", icon: "palette", href: "/brand" },
     ],
   },
 ];
 
 const Icon = ({ name, className }: { name: string; className?: string }) => {
+  if (name === "palette") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 24" className={className}>
+        <path d="M12 21a6 6 0 0 1-3.8-10.4 2 2 0 0 0 .8-2.6A2 2 0 0 1 11 4a2 2 0 0 1 2-2 10 10 0 0 1 10 10c0 5-2 9-9 9z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="7.5" cy="10.5" r=".5" fill="currentColor" />
+        <circle cx="12" cy="7.5" r=".5" fill="currentColor" />
+        <circle cx="16.5" cy="10.5" r=".5" fill="currentColor" />
+        <circle cx="12" cy="15" r=".5" fill="currentColor" />
+      </svg>
+    )
+  }
   if (name === "star") {
     return (
       <svg aria-hidden viewBox="0 0 24 24" className={className}>

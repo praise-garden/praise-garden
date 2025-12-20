@@ -81,3 +81,32 @@ export async function switchProject(projectId: string) {
     revalidatePath("/dashboard");
     return { success: true };
 }
+
+export async function updateProjectBrand(projectId: string, brandSettings: any) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error("Unauthorized");
+
+    // Verify ownership
+    const { count } = await supabase
+        .from('projects')
+        .select('*', { count: 'exact', head: true })
+        .eq('id', projectId)
+        .eq('user_id', user.id);
+
+    if (count === 0) throw new Error("Unauthorized");
+
+    const { error } = await supabase
+        .from('projects')
+        .update({ brand_settings: brandSettings })
+        .eq('id', projectId);
+
+    if (error) {
+        throw new Error("Failed to update brand settings: " + error.message);
+    }
+
+    revalidatePath("/brand");
+    revalidatePath("/form-builder");
+    return { success: true };
+}

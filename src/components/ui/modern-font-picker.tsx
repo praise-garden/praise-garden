@@ -320,8 +320,8 @@ export const ModernFontPicker: React.FC<ModernFontPickerProps> = ({
               "
                             onKeyDown={handleKeyDown}
                         >
-                            {/* Search Input */}
-                            <div className="p-3 border-b border-gray-800/60">
+                            {/* Search Input - Sticky */}
+                            <div className="sticky top-0 z-10 p-3 border-b border-gray-800/60 bg-[#0E0E10]">
                                 <div className="relative">
                                     <svg
                                         className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"

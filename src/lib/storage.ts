@@ -16,7 +16,7 @@ export type UploadContext =
     fileName?: string;
   };
 
-export type UploadImageToStorageOptions = {
+export type UploadMediaOptions = {
   file: File;
   context: UploadContext;
   bucket?: string;
@@ -26,7 +26,7 @@ export type UploadImageToStorageOptions = {
   supabase?: SupabaseClient;
 };
 
-export type UploadImageResult = {
+export type UploadResult = {
   url: string;
   path: string;
 };
@@ -34,11 +34,19 @@ export type UploadImageResult = {
 const DEFAULT_BUCKET = 'assets';
 const DEFAULT_CACHE_CONTROL = '3600';
 const DEFAULT_SIGNED_EXPIRY = 60 * 60 * 24 * 7; // 7 days
-const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
-const VALID_MEDIA_TYPES = [
-  'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml',
+
+// File size limits
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;   // 5MB for images
+const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;  // 50MB for videos
+
+// Valid file types
+const VALID_IMAGE_TYPES = [
+  'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'
+];
+const VALID_VIDEO_TYPES = [
   'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'
 ];
+const VALID_MEDIA_TYPES = [...VALID_IMAGE_TYPES, ...VALID_VIDEO_TYPES];
 
 type SupabaseStorageClient = SupabaseClient['storage'];
 
@@ -104,7 +112,10 @@ const getSignedUrl = async (
   return data.signedUrl;
 };
 
-export const uploadImageToStorage = async ({
+/**
+ * Core upload function used by both image and video upload functions
+ */
+const uploadToStorage = async ({
   file,
   context,
   bucket = DEFAULT_BUCKET,
@@ -112,24 +123,16 @@ export const uploadImageToStorage = async ({
   cacheControl = DEFAULT_CACHE_CONTROL,
   expireInSeconds = DEFAULT_SIGNED_EXPIRY,
   supabase,
-}: UploadImageToStorageOptions): Promise<UploadImageResult> => {
+}: UploadMediaOptions): Promise<UploadResult> => {
   if (!file) {
     throw new Error('No file provided for upload');
   }
 
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    throw new Error('File size exceeds the 5MB limit');
-  }
-
-  if (!VALID_MEDIA_TYPES.includes(file.type)) {
-    throw new Error('Unsupported file type. Please upload a valid image or video (PNG, JPG, MP4, etc).');
-  }
-
   const supabaseClient = ensureSupabaseClient(supabase);
-  console.info('[uploadImageToStorage] Ensured Supabase client instance');
+  console.info('[uploadToStorage] Ensured Supabase client instance');
 
   const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-  console.info('[uploadImageToStorage] Session inspection', {
+  console.info('[uploadToStorage] Session inspection', {
     hasSession: Boolean(sessionData?.session),
     userId: sessionData?.session?.user?.id ?? null,
     sessionError: sessionError?.message ?? null,
@@ -137,7 +140,7 @@ export const uploadImageToStorage = async ({
 
   const storage = supabaseClient.storage;
   const path = buildStoragePath(file, context);
-  console.info('[uploadImageToStorage] Prepared upload payload', {
+  console.info('[uploadToStorage] Prepared upload payload', {
     bucket,
     path,
     access,
@@ -153,19 +156,19 @@ export const uploadImageToStorage = async ({
     });
 
   if (uploadError) {
-    console.error('[uploadImageToStorage] Upload failed', {
+    console.error('[uploadToStorage] Upload failed', {
       bucket,
       path,
       storageError: uploadError,
     });
-    throw new Error(uploadError.message || 'Failed to upload image');
+    throw new Error(uploadError.message || 'Failed to upload file');
   }
 
   const url = access === 'public'
     ? getPublicUrl(storage, bucket, path)
     : await getSignedUrl(storage, bucket, path, expireInSeconds ?? DEFAULT_SIGNED_EXPIRY);
 
-  console.info('[uploadImageToStorage] Upload succeeded', {
+  console.info('[uploadToStorage] Upload succeeded', {
     bucket,
     path,
     access,
@@ -173,7 +176,7 @@ export const uploadImageToStorage = async ({
   });
 
   if (!url) {
-    throw new Error('Unable to generate a URL for the uploaded image');
+    throw new Error('Unable to generate a URL for the uploaded file');
   }
 
   return {
@@ -181,3 +184,79 @@ export const uploadImageToStorage = async ({
     path,
   };
 };
+
+/**
+ * Upload an image file to Supabase storage
+ * Max file size: 5MB
+ * Supported formats: PNG, JPEG, WebP, GIF, SVG
+ */
+export const uploadImageToStorage = async (options: UploadMediaOptions): Promise<UploadResult> => {
+  const { file } = options;
+
+  if (!file) {
+    throw new Error('No file provided for upload');
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error('Image size exceeds the 5MB limit');
+  }
+
+  if (!VALID_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Unsupported file type. Please upload a valid image (PNG, JPG, WebP, GIF, or SVG).');
+  }
+
+  return uploadToStorage(options);
+};
+
+/**
+ * Upload a video file to Supabase storage
+ * Max file size: 50MB
+ * Supported formats: MP4, MOV, AVI, WebM
+ */
+export const uploadVideoToStorage = async (options: UploadMediaOptions): Promise<UploadResult> => {
+  const { file } = options;
+
+  if (!file) {
+    throw new Error('No file provided for upload');
+  }
+
+  if (file.size > MAX_VIDEO_SIZE_BYTES) {
+    throw new Error('Video size exceeds the 50MB limit');
+  }
+
+  if (!VALID_VIDEO_TYPES.includes(file.type)) {
+    throw new Error('Unsupported file type. Please upload a valid video (MP4, MOV, AVI, or WebM).');
+  }
+
+  return uploadToStorage(options);
+};
+
+/**
+ * Legacy function - kept for backward compatibility
+ * Automatically detects if file is image or video and applies appropriate limits
+ * @deprecated Use uploadImageToStorage or uploadVideoToStorage instead
+ */
+export const uploadMediaToStorage = async (options: UploadMediaOptions): Promise<UploadResult> => {
+  const { file } = options;
+
+  if (!file) {
+    throw new Error('No file provided for upload');
+  }
+
+  const isVideo = VALID_VIDEO_TYPES.includes(file.type);
+  const isImage = VALID_IMAGE_TYPES.includes(file.type);
+
+  if (!isVideo && !isImage) {
+    throw new Error('Unsupported file type. Please upload a valid image or video.');
+  }
+
+  if (isVideo) {
+    return uploadVideoToStorage(options);
+  }
+
+  return uploadImageToStorage(options);
+};
+
+// Type exports for backward compatibility
+export type UploadImageToStorageOptions = UploadMediaOptions;
+export type UploadImageResult = UploadResult;
