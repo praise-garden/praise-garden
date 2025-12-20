@@ -5,19 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import {
     Star,
     Video as VideoIcon,
-    Scissors,
-    Copy,
-    Trash2,
-    Tag,
-    Share2,
     Facebook,
     Twitter,
     Linkedin,
     ChevronLeft,
     Lock,
-    Pencil,
     Download
 } from "lucide-react";
+import { TestimonialToolbar } from "@/components/dashboard/TestimonialToolbar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TranscriptEditor } from "./TranscriptEditor";
@@ -137,38 +132,8 @@ export default async function EditTestimonialPage({ params }: { params: { id: st
                         <span className="font-medium text-sm">User did not consent to public sharing</span>
                     </div>
 
-                    {/* Card Footer Toolbar */}
-                    <div className="border-t border-zinc-800 px-4 py-3 flex flex-wrap items-center justify-between gap-4 bg-[#18181b]">
-                        <div className="flex items-center gap-1">
-                            <Button variant="ghost" className="h-9 px-3 gap-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-all">
-                                <Pencil className="size-4" />
-                                Edit
-                            </Button>
-                            {isVideo && (
-                                <Button variant="ghost" className="h-9 px-3 gap-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-all">
-                                    <Scissors className="size-4" />
-                                    Trim
-                                </Button>
-                            )}
-                            <Button variant="ghost" className="h-9 px-3 gap-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-all">
-                                <Copy className="size-4" />
-                                Duplicate
-                            </Button>
-                            <Button variant="ghost" className="h-9 px-3 gap-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-all">
-                                <Trash2 className="size-4" />
-                                Delete
-                            </Button>
-                            <Button variant="ghost" className="h-9 px-3 gap-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-all">
-                                <Tag className="size-4" />
-                                Tags
-                            </Button>
-                        </div>
-
-                        <Button className="bg-zinc-100 hover:bg-white text-black h-9 px-4 gap-2 rounded-lg font-medium shadow-lg shadow-zinc-950/50 transition-all">
-                            <Share2 className="size-4" />
-                            Share
-                        </Button>
-                    </div>
+                    {/* Card Footer Toolbar - Interactive */}
+                    <TestimonialToolbar testimonialId={testimonial.id} isVideo={isVideo} />
 
                 </div>
             </div>
