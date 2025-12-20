@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface Testimonial {
     id: number | string;
+    type: string;
     reviewer: string;
     email: string;
     profession: string;
@@ -13,6 +14,7 @@ interface Testimonial {
     status: string;
     date: string;
     avatar: string;
+    attachments?: { type: 'image' | 'video', url: string }[];
 }
 
 interface TestimonialTableProps {
@@ -40,8 +42,8 @@ export function TestimonialTable({
     const someSelected = testimonials.some(t => selectedIds.has(t.id));
     const isIndeterminate = someSelected && !allSelected;
     return (
-        <div className="bg-zinc-950/50 border border-zinc-800/60 rounded-2xl overflow-x-auto shadow-xl shadow-black/20">
-            <table className="w-full min-w-max border-collapse">
+        <div className="bg-gradient-to-b from-zinc-950/80 to-zinc-950/50 border border-zinc-800/60 rounded-t-2xl rounded-b-none overflow-x-auto shadow-xl shadow-black/30 backdrop-blur-sm">
+            <table className="w-full border-collapse">
                 {/* Table Header */}
                 <thead className="bg-zinc-900/40 border-b border-zinc-800/60">
                     <tr className="flex items-center text-left">
@@ -57,7 +59,7 @@ export function TestimonialTable({
 
                         {/* Reviewer Column Header */}
                         <th className="p-0 font-normal">
-                            <div className="w-[14vw] min-w-[220px] max-w-[20vw] px-6 py-4">
+                            <div className="w-[220px] px-4 py-4">
                                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                     Reviewer
                                 </span>
@@ -70,8 +72,8 @@ export function TestimonialTable({
                         </th>
 
                         {/* Testimonial Column Header */}
-                        <th className="block p-0 font-normal">
-                            <div className="px-6 py-4 w-[35vw] min-w-[300px]">
+                        <th className="block p-0 font-normal flex-1 min-w-0">
+                            <div className="px-4 py-4 w-full min-w-[300px]">
                                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                     Testimonial
                                 </span>
@@ -85,23 +87,23 @@ export function TestimonialTable({
 
                         {/* Meta Columns Header */}
                         <th className="p-0 font-normal">
-                            <div className="flex items-center gap-4 flex-shrink-0 px-6 py-4">
+                            <div className="flex items-center gap-2 flex-shrink-0 px-4 py-4">
                                 {/* Source */}
-                                <div className="w-[7vw] max-w-[100px] flex justify-center block">
+                                <div className="w-[60px] flex justify-center block">
                                     <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                         Source
                                     </span>
                                 </div>
 
                                 {/* Status */}
-                                <div className="w-[7vw] min-w-[80px] max-w-[100px] flex justify-center">
+                                <div className="w-[80px] flex justify-center">
                                     <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                         Status
                                     </span>
                                 </div>
 
                                 {/* Date */}
-                                <div className="w-[9vw] min-w-[90px] max-w-[120px] flex justify-center block">
+                                <div className="w-[100px] flex justify-center block">
                                     <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
                                         Date
                                         <svg className="size-3 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,7 +113,7 @@ export function TestimonialTable({
                                 </div>
 
                                 {/* Actions */}
-                                <div className="w-[9vw] min-w-[100px] max-w-[120px] flex justify-center">
+                                <div className="w-[100px] flex justify-center items-center">
                                     <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                         Actions
                                     </span>
@@ -122,7 +124,7 @@ export function TestimonialTable({
                 </thead>
 
                 {/* Table Body */}
-                <tbody className="divide-y divide-zinc-800/40 block">
+                <tbody className="divide-y divide-zinc-800/40">
                     {testimonials.length === 0 ? (
                         <tr>
                             <td colSpan={6} className="p-8 text-center text-zinc-500 block">

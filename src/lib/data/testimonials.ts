@@ -28,7 +28,7 @@ export async function getTestimonialsForProject(projectId: string) {
         source: t.data.source || "Manual",
         status: t.status === 'public' ? 'Public' : (t.status === 'hidden' ? 'Hidden' : 'Archived'),
         date: new Date(t.data.testimonial_date || t.created_at).toLocaleDateString(),
-        avatar: (t.data.customer_name?.[0] || "A").toUpperCase(),
+        avatar: t.data.customer_avatar_url || t.data.media?.avatar_url || "",
         attachments: [
             t.data.company?.logo_url ? { type: 'image', url: t.data.company.logo_url } : null,
             t.data.media?.video_url ? { type: 'video', url: t.data.media.video_url } : null
@@ -63,7 +63,7 @@ export async function getTestimonialById(id: string) {
         source: data.data.source || "Manual",
         status: data.status === 'public' ? 'Public' : (data.status === 'hidden' ? 'Hidden' : 'Archived'),
         date: new Date(data.data.testimonial_date || data.created_at).toLocaleDateString(),
-        avatar: (data.data.customer_name?.[0] || "A").toUpperCase(),
+        avatar: data.data.customer_avatar_url || data.data.media?.avatar_url || "",
         attachments: [
             data.data.company?.logo_url ? { type: 'image', url: data.data.company.logo_url } : null,
             data.data.media?.video_url ? { type: 'video', url: data.data.media.video_url } : null
