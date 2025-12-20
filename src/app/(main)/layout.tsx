@@ -8,7 +8,7 @@ type DashboardLayoutProps = {
   children: ReactNode;
 };
 
-const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
+const MainLayout = async ({ children }: DashboardLayoutProps) => {
   const result = await getUserProfileWithProjects();
 
   if (!result?.user) {
@@ -30,4 +30,4 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   );
 };
 
-export default DashboardLayout;
+export default MainLayout;
