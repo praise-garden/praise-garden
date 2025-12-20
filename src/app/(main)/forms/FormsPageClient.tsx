@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
-import Sidebar from "@/components/Sidebar";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -114,7 +113,7 @@ const getTimeAgo = (dateString: string) => {
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  
+
   if (diffInHours < 1) return 'Just now';
   if (diffInHours < 24) return `${diffInHours}h ago`;
   const diffInDays = Math.floor(diffInHours / 24);
@@ -205,233 +204,200 @@ const FormsPageClient: React.FC<FormsPageClientProps> = ({ initialForms }) => {
   const hasForms = forms.length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-50 font-sans">
+    <div className="min-h-full space-y-8">
       <Toaster position="top-center" theme="dark" />
-      <div className="grid grid-cols-1 lg:grid-cols-[16rem_1fr] min-h-screen">
-        {/* Sidebar */}
-        <Sidebar />
 
-        {/* Main Content */}
-        <div className="flex flex-col">
-          {/* Header */}
-          <header className="sticky top-0 z-50 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800">
-            <div className="flex items-center justify-between h-16 px-6">
-              <div className="flex items-center gap-4">
-                <button
-                  className="lg:hidden inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-gray-800 transition-colors"
-                  aria-label="Open navigation"
-                >
-                  <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  Menu
-                </button>
-                <div>
-                  <h1 className="text-xl font-semibold tracking-tight">Forms</h1>
-                  <p className="text-sm text-gray-400">Create and manage your testimonial forms</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-                  <span>Acme Corporation</span>
-                  <span>/</span>
-                  <span className="text-gray-50">Forms</span>
-                </div>
-              </div>
+      {/* Header */}
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Forms</h1>
+        <p className="text-sm text-gray-400">Create and manage your testimonial forms</p>
+      </div>
+
+      {/* Hero Section with Create Button */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-8 lg:p-12 border border-gray-800">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+        </div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white/90 text-xs font-medium">
+              <SparklesIcon className="size-3" />
+              <span>Forms Management</span>
             </div>
-          </header>
+            <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
+              Create Beautiful Forms
+            </h2>
+            <p className="text-lg text-white/70 leading-relaxed">
+              Design stunning testimonial collection forms in minutes. Customize every detail to match your brand.
+            </p>
+          </div>
 
-          {/* Content */}
-          <main className="flex-1 p-6 lg:p-8 space-y-8">
-            {/* Hero Section with Create Button */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-8 lg:p-12 border border-gray-800">
-              {/* Animated background elements */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
-              </div>
-              
-              <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                <div className="space-y-3 max-w-2xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white/90 text-xs font-medium">
-                    <SparklesIcon className="size-3" />
-                    <span>Forms Management</span>
-                  </div>
-                  <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                    Create Beautiful Forms
-                  </h2>
-                  <p className="text-lg text-white/70 leading-relaxed">
-                    Design stunning testimonial collection forms in minutes. Customize every detail to match your brand.
-                  </p>
-                </div>
-                
-                <Button 
-                  onClick={handleCreateForm}
-                  disabled={isCreating}
-                  className="group relative overflow-hidden bg-white hover:bg-gray-200 text-gray-900 px-6 py-6 rounded-2xl shadow-2xl shadow-purple-900/20 hover:shadow-purple-900/40 transition-all duration-300 font-semibold text-base hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative flex items-center gap-2">
-                    {isCreating ? (
-                      <>
-                        <div className="size-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-                        <span>Creating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <PlusIcon className="size-5" />
-                        <span>Create New Form</span>
-                      </>
-                    )}
-                  </div>
-                </Button>
-              </div>
+          <Button
+            onClick={handleCreateForm}
+            disabled={isCreating}
+            className="group relative overflow-hidden bg-white hover:bg-gray-200 text-gray-900 px-6 py-6 rounded-2xl shadow-2xl shadow-purple-900/20 hover:shadow-purple-900/40 transition-all duration-300 font-semibold text-base hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative flex items-center gap-2">
+              {isCreating ? (
+                <>
+                  <div className="size-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <PlusIcon className="size-5" />
+                  <span>Create New Form</span>
+                </>
+              )}
             </div>
-
-            
-            {/* Forms Grid */}
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="size-12 border-4 border-purple-900/50 border-t-purple-500 rounded-full animate-spin"></div>
-                  <p className="text-sm text-gray-400">Loading your forms...</p>
-                </div>
-              </div>
-            ) : forms.length > 0 ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-50">Your Forms</h3>
-                    <p className="text-sm text-gray-400">Manage and edit your testimonial collection forms</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {forms.map((form, index) => (
-                    <Card 
-                      key={form.id}
-                      className="group relative border border-gray-800 shadow-lg hover:shadow-purple-500/10 transition-all duration-500 rounded-3xl overflow-hidden bg-gray-900 hover:-translate-y-1"
-                      style={{ 
-                        animationDelay: `${index * 100}ms`,
-                      }}
-                    >
-                      {/* Gradient Header */}
-                      <div className={`h-32 ${getGradientClass(index)} relative overflow-hidden`}>
-                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300"></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        
-                        {/* Status Badge */}
-                        <div className="absolute top-4 right-4">
-                          <Badge 
-                            className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm shadow-lg text-xs font-medium px-3 py-1 rounded-full"
-                          >
-                            Active
-                          </Badge>
-                        </div>
-
-                        {/* Form Icon */}
-                        <div className="absolute bottom-4 left-4">
-                          <div className="size-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                            <FileTextIcon className="size-5 text-white" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <CardContent className="p-6 space-y-4">
-                        {/* Form Name & Description */}
-                        <div className="space-y-2">
-                          <h4 className="text-lg font-semibold text-gray-50 truncate group-hover:text-purple-400 transition-colors">
-                            {form.name}
-                          </h4>
-                          <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
-                            Collect testimonials from your customers
-                          </p>
-                        </div>
-
-                        {/* Metrics */}
-                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-800">
-                          <div className="flex items-center gap-2">
-                            <div className="size-8 rounded-lg bg-gray-800 flex items-center justify-center">
-                              <UsersIcon className="size-3.5 text-gray-400" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Responses</p>
-                              <p className="text-sm font-semibold text-gray-50">0</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="size-8 rounded-lg bg-gray-800 flex items-center justify-center">
-                              <ClockIcon className="size-3.5 text-gray-400" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Created</p>
-                              <p className="text-sm font-semibold text-gray-50">{getTimeAgo(form.created_at)}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Created Date */}
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <CalendarIcon className="size-3.5" />
-                          <span>Created {formatDate(form.created_at)}</span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 pt-2">
-                          <Link href={`/form-builder?id=${form.id}`} className="flex-1">
-                            <Button 
-                              variant="default"
-                              className="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"
-                            >
-                              <EditIcon className="mr-2" />
-                              Edit Form
-                            </Button>
-                          </Link>
-                          <Button 
-                            variant="outline"
-                            className="px-3 rounded-xl border-gray-700 hover:border-gray-600 hover:bg-gray-800 transition-all duration-300"
-                          >
-                            <MoreVerticalIcon />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              /* Empty State (shown when no forms exist) */
-              <div className="flex flex-col items-center justify-center py-20 px-4">
-                <div className="size-20 rounded-3xl bg-gradient-to-br from-purple-900/50 to-violet-900/50 flex items-center justify-center mb-6 border border-purple-500/20">
-                  <FileTextIcon className="size-10 text-purple-400" />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-50 mb-2">No forms yet</h3>
-                <p className="text-gray-400 text-center max-w-md mb-8">
-                  Get started by creating your first testimonial collection form. It only takes a few minutes!
-                </p>
-                <Button 
-                  onClick={handleCreateForm}
-                  disabled={isCreating}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-6 rounded-2xl shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50"
-                >
-                  {isCreating ? (
-                    <>
-                      <div className="size-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <PlusIcon className="mr-2" />
-                      Create Your First Form
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </main>
+          </Button>
         </div>
       </div>
+
+
+      {/* Forms Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-4">
+            <div className="size-12 border-4 border-purple-900/50 border-t-purple-500 rounded-full animate-spin"></div>
+            <p className="text-sm text-gray-400">Loading your forms...</p>
+          </div>
+        </div>
+      ) : forms.length > 0 ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-50">Your Forms</h3>
+              <p className="text-sm text-gray-400">Manage and edit your testimonial collection forms</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {forms.map((form, index) => (
+              <Card
+                key={form.id}
+                className="group relative border border-gray-800 shadow-lg hover:shadow-purple-500/10 transition-all duration-500 rounded-3xl overflow-hidden bg-gray-900 hover:-translate-y-1"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                }}
+              >
+                {/* Gradient Header */}
+                <div className={`h-32 ${getGradientClass(index)} relative overflow-hidden`}>
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                  {/* Status Badge */}
+                  <div className="absolute top-4 right-4">
+                    <Badge
+                      className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm shadow-lg text-xs font-medium px-3 py-1 rounded-full"
+                    >
+                      Active
+                    </Badge>
+                  </div>
+
+                  {/* Form Icon */}
+                  <div className="absolute bottom-4 left-4">
+                    <div className="size-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                      <FileTextIcon className="size-5 text-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <CardContent className="p-6 space-y-4">
+                  {/* Form Name & Description */}
+                  <div className="space-y-2">
+                    <h4 className="text-lg font-semibold text-gray-50 truncate group-hover:text-purple-400 transition-colors">
+                      {form.name}
+                    </h4>
+                    <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+                      Collect testimonials from your customers
+                    </p>
+                  </div>
+
+                  {/* Metrics */}
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-800">
+                    <div className="flex items-center gap-2">
+                      <div className="size-8 rounded-lg bg-gray-800 flex items-center justify-center">
+                        <UsersIcon className="size-3.5 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Responses</p>
+                        <p className="text-sm font-semibold text-gray-50">0</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="size-8 rounded-lg bg-gray-800 flex items-center justify-center">
+                        <ClockIcon className="size-3.5 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Created</p>
+                        <p className="text-sm font-semibold text-gray-50">{getTimeAgo(form.created_at)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Created Date */}
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <CalendarIcon className="size-3.5" />
+                    <span>Created {formatDate(form.created_at)}</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-2">
+                    <Link href={`/form-builder?id=${form.id}`} className="flex-1">
+                      <Button
+                        variant="default"
+                        className="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <EditIcon className="mr-2" />
+                        Edit Form
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      className="px-3 rounded-xl border-gray-700 hover:border-gray-600 hover:bg-gray-800 transition-all duration-300"
+                    >
+                      <MoreVerticalIcon />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Empty State (shown when no forms exist) */
+        <div className="flex flex-col items-center justify-center py-20 px-4">
+          <div className="size-20 rounded-3xl bg-gradient-to-br from-purple-900/50 to-violet-900/50 flex items-center justify-center mb-6 border border-purple-500/20">
+            <FileTextIcon className="size-10 text-purple-400" />
+          </div>
+          <h3 className="text-2xl font-semibold text-gray-50 mb-2">No forms yet</h3>
+          <p className="text-gray-400 text-center max-w-md mb-8">
+            Get started by creating your first testimonial collection form. It only takes a few minutes!
+          </p>
+          <Button
+            onClick={handleCreateForm}
+            disabled={isCreating}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-6 rounded-2xl shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50"
+          >
+            {isCreating ? (
+              <>
+                <div className="size-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Creating...
+              </>
+            ) : (
+              <>
+                <PlusIcon className="mr-2" />
+                Create Your First Form
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

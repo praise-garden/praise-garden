@@ -21,9 +21,9 @@ export async function GET() {
     .from('forms')
     .select(`
       *,
-      project:projects!inner(id, name, owner_id)
+      project:projects!inner(id, name, user_id)
     `)
-    .eq('project.owner_id', user.id)
+    .eq('project.user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const { data: existingProjects, error: projectsError } = await supabase
       .from('projects')
       .select('id')
-      .eq('owner_id', user.id)
+      .eq('user_id', user.id)
       .limit(1);
 
     if (projectsError) {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       const { data: newProject, error: createProjectError } = await supabase
         .from('projects')
         .insert({
-          owner_id: user.id, // Ensure this is explicitly set
+          user_id: user.id, // Ensure this is explicitly set
           name: 'My First Project',
         })
         .select('id')

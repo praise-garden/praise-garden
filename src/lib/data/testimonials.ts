@@ -26,7 +26,7 @@ export async function getTestimonialsForProject(projectId: string) {
         rating: t.data.rating || 5,
         text: t.data.message || "",
         source: t.data.source || "Manual",
-        status: t.status === 'public' ? 'Public' : (t.status === 'hidden' ? 'Hidden' : 'Archived'),
+        status: t.status === 'public' ? 'Public' : (t.status === 'hidden' ? 'Hidden' : 'Pending'),
         date: new Date(t.data.testimonial_date || t.created_at).toLocaleDateString(),
         avatar: t.data.customer_avatar_url || t.data.media?.avatar_url || "",
         attachments: [
@@ -61,7 +61,7 @@ export async function getTestimonialById(id: string) {
         rating: data.data.rating || 5,
         text: data.data.message || "",
         source: data.data.source || "Manual",
-        status: data.status === 'public' ? 'Public' : (data.status === 'hidden' ? 'Hidden' : 'Archived'),
+        status: data.status === 'public' ? 'Public' : (data.status === 'hidden' ? 'Hidden' : 'Pending'),
         date: new Date(data.data.testimonial_date || data.created_at).toLocaleDateString(),
         avatar: data.data.customer_avatar_url || data.data.media?.avatar_url || "",
         attachments: [

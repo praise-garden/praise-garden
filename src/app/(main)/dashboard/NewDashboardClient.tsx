@@ -121,7 +121,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
             // Updated mapping
             if (activeTab === "Public" && t.status.toLowerCase() !== "public") return false;
             if (activeTab === "Hidden" && t.status.toLowerCase() !== "hidden") return false;
-            if (activeTab === "Archived" && t.status.toLowerCase() !== "archived") return false;
+            if (activeTab === "Pending" && t.status.toLowerCase() !== "pending") return false;
         }
 
         // Search
@@ -203,13 +203,13 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
         const t = testimonials.find(x => x.id === id);
         if (!t) return;
 
-        // Values in DB are: public, hidden, archived
-        // UI uses: Public, Hidden, Archived
+        // Values in DB are: public, hidden, pending
+        // UI uses: Public, Hidden, Pending
 
         let newStatus = 'public';
         if (t.status === 'Public') newStatus = 'hidden';
         else if (t.status === 'Hidden') newStatus = 'public';
-        else if (t.status === 'Archived') newStatus = 'hidden'; // Unarchive to hidden
+        else if (t.status === 'Pending') newStatus = 'public'; // Approve pending to public
 
         // Optimistic update
         setTestimonials(prev => prev.map(item =>
@@ -342,13 +342,10 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     };
 
     return (
-        <div className="min-h-screen pb-10 relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+        <div className="min-h-full pb-10 relative max-w-[1600px] mx-auto">
             {/* Header Section with gradient accent */}
             <div className="relative mb-8">
-                {/* Decorative gradient line */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-1">
                         <h1 className="text-3xl font-bold text-white tracking-tight">Testimonials</h1>
                         <p className="text-zinc-400 text-sm">Organize the testimonials you have received or imported.</p>
@@ -366,16 +363,16 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
             <div className="space-y-6">
                 {/* Filters Bar */}
                 <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
-                    <div className="flex items-center gap-4 overflow-x-auto pb-1 xl:pb-0 scrollbar-hide">
-                        <div className="flex p-1.5 bg-zinc-900/70 border border-zinc-800/80 rounded-xl backdrop-blur-sm">
-                            {["All", "Public", "Hidden", "Archived"].map((tab) => (
+                    <div className="flex items-center gap-3 overflow-x-auto pb-1 xl:pb-0 scrollbar-hide">
+                        <div className="flex p-1 bg-zinc-900/70 border border-zinc-800/80 rounded-lg backdrop-blur-sm">
+                            {["All", "Public", "Hidden", "Pending"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={cn(
-                                        "px-5 py-2 text-sm font-medium rounded-lg transition-all duration-300",
+                                        "px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-300",
                                         activeTab === tab
-                                            ? "bg-gradient-to-r from-zinc-700/90 to-zinc-800/90 text-white shadow-md shadow-black/20"
+                                            ? "bg-gradient-to-r from-zinc-700/90 to-zinc-800/90 text-white shadow-sm shadow-black/20"
                                             : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"
                                     )}
                                 >
@@ -384,8 +381,8 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                             ))}
                         </div>
 
-                        <Button variant="outline" className="bg-zinc-900/70 border-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-800 h-10 rounded-xl transition-all duration-200">
-                            <Filter className="size-4 mr-2" />
+                        <Button variant="outline" className="bg-zinc-900/70 border-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 text-xs rounded-lg transition-all duration-200">
+                            <Filter className="size-3.5 mr-1.5" />
                             Filters
                         </Button>
                     </div>

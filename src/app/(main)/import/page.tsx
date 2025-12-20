@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function ImportPage() {
     return (
-        <div className="flex flex-col h-full max-w-4xl mx-auto py-8 px-4">
+        <div className="flex flex-col h-full max-w-4xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-white mb-2">Add proof to your account</h1>
                 <p className="text-zinc-400">Import your proof from 30 sources.</p>

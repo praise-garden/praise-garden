@@ -29,7 +29,7 @@ export async function GET(
       .from('forms')
       .select(`
         *,
-        project:projects!inner(owner_id)
+        project:projects!inner(user_id)
       `)
       .eq('id', formId)
       .single();
@@ -39,7 +39,7 @@ export async function GET(
     }
 
     // Check ownership
-    if (form.project.owner_id !== user.id) {
+    if (form.project.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -82,7 +82,7 @@ export async function PUT(
       .from('forms')
       .select(`
         id,
-        project:projects!inner(owner_id)
+        project:projects!inner(user_id)
       `)
       .eq('id', formId)
       .single();
@@ -92,7 +92,7 @@ export async function PUT(
     }
 
     // Check ownership
-    if ('owner_id' in existingForm.project && existingForm.project.owner_id !== user.id) {
+    if ('user_id' in existingForm.project && existingForm.project.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -125,17 +125,17 @@ const StatusBadge = ({ status }: { status: string }) => {
             </span>
         );
     }
-    if (s === 'hidden' || s === 'rejected' || s === 'pending') {
+    if (s === 'hidden' || s === 'rejected') {
         return (
             <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 text-xs font-medium">
                 Hidden
             </span>
         );
     }
-    if (s === 'archived') {
+    if (s === 'pending') {
         return (
-            <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 text-xs font-medium">
-                Archived
+            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-medium">
+                Pending
             </span>
         );
     }

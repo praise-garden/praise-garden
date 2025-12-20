@@ -133,7 +133,7 @@ export default function WidgetsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white p-8 font-sans">
+    <div className="min-h-full bg-[#09090b] text-white font-sans">
       <div className="max-w-7xl mx-auto space-y-10">
 
         {/* Header Section */}
