@@ -31,7 +31,7 @@ export default function ImportPage() {
                 </div>
 
                 {/* Import from web */}
-                <Link href="/dashboard/import/web" className="block">
+                <Link href="/import/web" className="block">
                     <div className="w-full group bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 flex items-center justify-between transition-all">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
@@ -73,7 +73,7 @@ export default function ImportPage() {
                 </button>
 
                 {/* Manual import */}
-                <Link href="/dashboard/import/manual" className="block">
+                <Link href="/import/manual" className="block">
                     <div className="w-full group bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 flex items-center gap-4 transition-all text-left">
                         <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                             <PenTool className="w-5 h-5 text-emerald-500" />

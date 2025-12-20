@@ -16,15 +16,15 @@ const navSections = [
     title: "Testimonials",
     items: [
       { label: "All Testimonials", icon: "star", href: "/dashboard" },
-      { label: "Video Testimonials", icon: "video", href: "/dashboard/video-testimonial" },
-      { label: "Import", icon: "upload", href: "/dashboard/import" },
+      { label: "Video Testimonials", icon: "video", href: "/video-testimonial" },
+      { label: "Import", icon: "upload", href: "/import" },
     ],
   },
   {
     title: "Collection",
     items: [
-      { label: "Form Builder", icon: "form", href: "/dashboard/forms" },
-      { label: "Design", icon: "widget", href: "/dashboard/widgets" },
+      { label: "Form Builder", icon: "form", href: "/forms" },
+      { label: "Design", icon: "widget", href: "/design" },
     ],
   },
 ];
@@ -88,7 +88,7 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
 
 type ProfileSummary = {
   id: string;
-  username: string | null;
+  username?: string | null;
   full_name: string | null;
   plan: string | null;
   active_project_id: string | null;

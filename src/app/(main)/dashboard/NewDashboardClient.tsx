@@ -353,7 +353,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                         <h1 className="text-3xl font-bold text-white tracking-tight">Testimonials</h1>
                         <p className="text-zinc-400 text-sm">Organize the testimonials you have received or imported.</p>
                     </div>
-                    <Link href="/dashboard/import">
+                    <Link href="/import">
                         <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/25 rounded-xl px-6 h-11 font-medium transition-all duration-300 hover:shadow-indigo-500/40 hover:scale-[1.02]">
                             <Upload className="size-4 mr-2" />
                             Import Testimonials
