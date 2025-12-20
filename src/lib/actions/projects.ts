@@ -17,16 +17,53 @@ export async function createProject(formData: FormData) {
         throw new Error("Project name is required");
     }
 
-    const { error } = await supabase
+    const { data: project, error } = await supabase
         .from('projects')
         .insert({
             user_id: user.id,
             name: name.trim()
-        });
+        })
+        .select()
+        .single();
 
     if (error) {
         console.error("Failed to create project:", error);
         throw new Error("Failed to create project: " + error.message);
+    }
+
+    revalidatePath("/dashboard");
+    return { success: true, project };
+}
+
+export async function switchProject(projectId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+
+    // Verify project belongs to user
+    const { data: project } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('id', projectId)
+        .eq('user_id', user.id)
+        .single();
+
+    if (!project) {
+        throw new Error("Project not found or unauthorized");
+    }
+
+    // Update active project in profile
+    const { error } = await supabase
+        .from('profiles')
+        .update({ active_project_id: projectId })
+        .eq('id', user.id);
+
+    if (error) {
+        console.error("Failed to switch project:", error);
+        throw new Error("Failed to switch project");
     }
 
     revalidatePath("/dashboard");
