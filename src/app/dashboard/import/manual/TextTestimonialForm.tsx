@@ -130,7 +130,7 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                     if (onSuccess) onSuccess();
                 } else {
                     const formData = {
-                        type: 'Text',
+                        type: 'text',
                         rating,
                         tags: [],
                         customer_name: name,

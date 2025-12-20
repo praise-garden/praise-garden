@@ -58,6 +58,15 @@ const SourceIcon = ({ source }: { source: string }) => {
     return <MessageSquare className="size-4" />;
 };
 
+const getInitials = (name: string) => {
+    return name
+        .split(' ')
+        .map(n => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+};
+
 const getSourceStyles = (source: string): string => {
     const s = source.toLowerCase();
     if (s.includes("twitter") || s.includes("x")) return "bg-sky-500/10 border-sky-500/20 text-sky-500 hover:bg-sky-500/20 hover:border-sky-500/30";
@@ -140,7 +149,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEdit, onCopy, selected, onSelect }: TestimonialRowCardProps) {
     return (
         <tr className={cn(
-            "group flex items-center border-b border-zinc-800/50 last:border-0 transition-all duration-200",
+            "group flex items-center border-b border-zinc-800/50 last:border-0 transition-all duration-200 w-full",
             selected ? "bg-indigo-900/20 hover:bg-indigo-900/30" : "bg-zinc-950/30 hover:bg-zinc-900/40"
         )}>
             {/* Checkbox Column */}
@@ -155,11 +164,11 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
             </td>
             {/* Reviewer Info */}
             <td className="p-0">
-                <div className="flex items-start gap-5 w-[14vw] min-w-[220px] max-w-[20vw] px-6 py-10">
-                    <Avatar className="size-14 rounded-full ring-2 ring-zinc-800/50 group-hover:ring-zinc-700/70 transition-all">
-                        <AvatarImage src="" />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white font-bold text-lg">
-                            {testimonial.avatar}
+                <div className="flex items-start gap-4 w-[220px] px-4 py-8">
+                    <Avatar className="size-10 rounded-full ring-2 ring-zinc-800/50 group-hover:ring-zinc-700/70 transition-all">
+                        <AvatarImage src={testimonial.avatar} />
+                        <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white font-bold text-sm">
+                            {getInitials(testimonial.reviewer)}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-0.5 overflow-hidden">
@@ -172,7 +181,7 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                                 <Star
                                     key={i}
                                     className={cn(
-                                        "size-3.5 flex-shrink-0",
+                                        "size-3 flex-shrink-0",
                                         i < testimonial.rating ? "fill-amber-400 text-amber-400" : "fill-zinc-800 text-zinc-800"
                                     )}
                                 />
@@ -189,14 +198,14 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
 
             {/* Content Section */}
             {/* Content Section */}
-            <td className="block p-0 self-start">
-                <div className="px-6 py-10 w-[35vw] min-w-[300px]">
+            <td className="block p-0 self-stretch flex-1 min-w-0">
+                <div className="px-4 py-8 h-full flex flex-col justify-start min-w-[250px]">
                     <p className="text-zinc-300 text-sm leading-relaxed line-clamp-2 w-full break-words">
                         {testimonial.text}
                     </p>
 
                     {/* Attachments Container */}
-                    <div className="flex flex-wrap items-end gap-3 mt-4">
+                    <div className="flex flex-wrap items-end gap-3 mt-3">
                         {/* Video Preview - Larger Display */}
                         {(testimonial.type.toLowerCase() === 'video' || testimonial.attachments?.some(a => a.type === 'video')) && (
                             (() => {
@@ -212,12 +221,12 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                         {testimonial.attachments && testimonial.attachments.length > 0 && (
                             <div className="flex items-center gap-2">
                                 {testimonial.attachments.filter(a => testimonial.type.toLowerCase() !== 'video' || a.type !== 'video').map((att, i) => (
-                                    <div key={i} className="size-10 rounded-lg border border-zinc-800 bg-zinc-900/50 flex items-center justify-center overflow-hidden relative group/attachment">
+                                    <div key={i} className="size-9 rounded-lg border border-zinc-800 bg-zinc-900/50 flex items-center justify-center overflow-hidden relative group/attachment">
                                         {att.type === 'image' ? (
                                             <img src={att.url} alt="Attachment" className="w-full h-full object-contain p-1" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                                                <Video className="size-4 text-zinc-500" />
+                                                <Video className="size-3 text-zinc-500" />
                                             </div>
                                         )}
                                     </div>
@@ -235,9 +244,9 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
 
             {/* Meta Section */}
             <td className="p-0">
-                <div className="flex items-center gap-4 flex-shrink-0 px-6 py-10">
+                <div className="flex items-center gap-2 flex-shrink-0 px-4 py-8">
                     {/* Source */}
-                    <div className="flex items-center justify-center w-[7vw] max-w-[100px] block">
+                    <div className="flex items-center justify-center w-[60px]">
                         <div className="relative group/tooltip">
                             <div className={cn(
                                 "size-8 rounded-lg border flex items-center justify-center transition-all duration-200 cursor-default",
@@ -252,40 +261,40 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                     </div>
 
                     {/* Status */}
-                    <div className="w-[7vw] min-w-[80px] max-w-[100px] flex justify-center cursor-pointer" onClick={() => onStatusChange(testimonial.id)}>
+                    <div className="w-[80px] flex justify-center cursor-pointer" onClick={() => onStatusChange(testimonial.id)}>
                         <StatusBadge status={testimonial.status} />
                     </div>
 
                     {/* Date */}
-                    <span className="text-xs text-zinc-500 font-mono w-[9vw] min-w-[90px] max-w-[120px] flex justify-center block">
+                    <span className="text-xs text-zinc-500 font-mono w-[100px] flex justify-center block">
                         {testimonial.date}
                     </span>
 
                     {/* Actions */}
-                    <div className="w-[9vw] min-w-[100px] max-w-[120px] flex items-center justify-center gap-1">
+                    <div className="w-[100px] flex items-center justify-center gap-1">
                         <Button
                             size="icon"
                             variant="ghost"
                             onClick={() => onCopy(testimonial.text)}
-                            className="size-9 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80"
+                            className="size-8 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80"
                         >
-                            <Copy className="size-4" />
+                            <Copy className="size-3.5" />
                         </Button>
                         <Button
                             size="icon"
                             variant="ghost"
                             onClick={() => onEdit(testimonial.id)}
-                            className="size-9 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
+                            className="size-8 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
                         >
-                            <Edit2 className="size-4" />
+                            <Edit2 className="size-3.5" />
                         </Button>
                         <Button
                             size="icon"
                             variant="ghost"
                             onClick={() => onDelete(testimonial.id)}
-                            className="size-9 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                            className="size-8 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10"
                         >
-                            <Trash2 className="size-4" />
+                            <Trash2 className="size-3.5" />
                         </Button>
                     </div>
                 </div>

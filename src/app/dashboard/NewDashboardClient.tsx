@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Filter, Upload, ListFilter } from "lucide-react";
+import { Search, Filter, Upload, ListFilter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateRange } from "react-day-picker";
@@ -95,6 +95,10 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     const [date, setDate] = useState<DateRange | undefined>();
     const [sortBy, setSortBy] = useState("newest");
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
     // Edit States
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     // Removed unused full edit states
@@ -156,6 +160,26 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
         }
         return 0;
     });
+
+    // Pagination Logic
+    const totalPages = Math.ceil(sortedAndFiltered.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, sortedAndFiltered.length);
+    const paginatedTestimonials = sortedAndFiltered.slice(startIndex, startIndex + itemsPerPage);
+
+    // Pagination Page Numbers Logic
+    const pageNumbers = (() => {
+        if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, currentPage + 2);
+        if (currentPage <= 3) { start = 1; end = Math.min(5, totalPages); }
+        if (currentPage >= totalPages - 2) { start = Math.max(1, totalPages - 4); end = totalPages; }
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    })();
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab, searchQuery, date, sortBy]);
 
     const handleSelect = (id: string | number) => {
         const newSelected = new Set(selectedIds);
@@ -318,99 +342,166 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     };
 
     return (
-        <div className="space-y-6 pb-24 relative">
+        <div className="min-h-screen pb-10 relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+            {/* Header Section with gradient accent */}
+            <div className="relative mb-8">
+                {/* Decorative gradient line */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
 
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight">Testimonials</h1>
-                    <p className="text-zinc-400 text-sm mt-1">Organize the testimonials you have received or imported.</p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Testimonials</h1>
+                        <p className="text-zinc-400 text-sm">Organize the testimonials you have received or imported.</p>
+                    </div>
+                    <Link href="/dashboard/import">
+                        <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/25 rounded-xl px-6 h-11 font-medium transition-all duration-300 hover:shadow-indigo-500/40 hover:scale-[1.02]">
+                            <Upload className="size-4 mr-2" />
+                            Import Testimonials
+                        </Button>
+                    </Link>
                 </div>
-                <Link href="/dashboard/import">
-                    <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/20 rounded-lg px-6 h-10 font-medium transition-all">
-                        <Upload className="size-4 mr-2" />
-                        Import Testimonials
-                    </Button>
-                </Link>
             </div>
 
-            {/* Filters Bar */}
-            <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
-                <div className="flex items-center gap-4 overflow-x-auto pb-1 xl:pb-0 scrollbar-hide">
-                    <div className="flex p-1 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                        {["All", "Public", "Hidden", "Archived"].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={cn(
-                                    "px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
-                                    activeTab === tab
-                                        ? "bg-zinc-800 text-white shadow-sm"
-                                        : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
-                                )}
-                            >
-                                {tab}
-                            </button>
-                        ))}
+            {/* Main Content Container */}
+            <div className="space-y-6">
+                {/* Filters Bar */}
+                <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
+                    <div className="flex items-center gap-4 overflow-x-auto pb-1 xl:pb-0 scrollbar-hide">
+                        <div className="flex p-1.5 bg-zinc-900/70 border border-zinc-800/80 rounded-xl backdrop-blur-sm">
+                            {["All", "Public", "Hidden", "Archived"].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={cn(
+                                        "px-5 py-2 text-sm font-medium rounded-lg transition-all duration-300",
+                                        activeTab === tab
+                                            ? "bg-gradient-to-r from-zinc-700/90 to-zinc-800/90 text-white shadow-md shadow-black/20"
+                                            : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"
+                                    )}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <Button variant="outline" className="bg-zinc-900/70 border-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-800 h-10 rounded-xl transition-all duration-200">
+                            <Filter className="size-4 mr-2" />
+                            Filters
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Search & Sorting Controls */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
+                        <Input
+                            placeholder="Search testimonials by name, email, or content..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-zinc-900/50 border-zinc-800/80 pl-11 h-12 focus:ring-indigo-500/30 focus:border-indigo-500/50 rounded-xl text-sm w-full placeholder:text-zinc-600 transition-all duration-200"
+                        />
+                    </div>
+                    <div className="sm:w-auto flex flex-wrap items-center gap-3">
+                        <CustomDateRangeDropdown dateRange={date} onChange={setDate} />
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                            <SelectTrigger className="h-12 px-4 shadow-sm w-[180px] justify-start text-left font-normal bg-zinc-900/70 border-zinc-800/80 hover:bg-zinc-800/80 hover:border-zinc-700 text-zinc-300 focus:ring-0 focus:ring-offset-0 rounded-xl transition-all duration-200">
+                                <ListFilter className="mr-2 h-4 w-4 opacity-70" />
+                                <SelectValue placeholder="Sort by" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-300 rounded-xl">
+                                <SelectItem value="newest">Newest First</SelectItem>
+                                <SelectItem value="oldest">Oldest First</SelectItem>
+                                <SelectItem value="rating-high">Highest Rating</SelectItem>
+                                <SelectItem value="rating-low">Lowest Rating</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Unified Table and Pagination Section */}
+                <div className="flex flex-col">
+                    <div className="z-10">
+                        <TestimonialTable
+                            testimonials={paginatedTestimonials}
+                            selectedIds={selectedIds}
+                            onSelect={handleSelect}
+                            onSelectAll={handleSelectAll}
+                            onStatusChange={handleStatusChange}
+                            onDelete={handleDelete}
+                            onEdit={handleEdit}
+                            onCopy={handleCopy}
+                        />
                     </div>
 
-                    <Button variant="outline" className="bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 h-9">
-                        <Filter className="size-4 mr-2" />
-                        Filters
-                    </Button>
-                </div>
-            </div>
+                    {/* Pagination Footer */}
+                    <div className="bg-zinc-950/50 border border-t-0 border-zinc-800/60 rounded-b-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-sm -mt-[1px] relative z-0">
+                        {/* Left: Showing results */}
+                        <p className="text-sm text-zinc-400 pl-2">
+                            Showing <span className="font-bold text-zinc-200">{paginatedTestimonials.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-bold text-zinc-200">{Math.min(endIndex, sortedAndFiltered.length)}</span> of <span className="font-bold text-zinc-200">{sortedAndFiltered.length}</span> results
+                        </p>
 
-            {/* Search & Date */}
-            {/* Search & Date */}
-            {/* Search & Date */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
-                    <Input
-                        placeholder="Search a testimonial..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-[#0A0A0B] border-zinc-800 pl-10 h-11 focus:ring-indigo-500/20 focus:border-indigo-500/50 rounded-lg text-sm w-full"
-                    />
-                </div>
-                <div className="sm:w-auto flex items-center gap-3">
-                    <CustomDateRangeDropdown dateRange={date} onChange={setDate} />
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="h-10 px-4 shadow-sm w-[180px] justify-start text-left font-normal bg-zinc-900/80 border-zinc-700/60 hover:bg-zinc-800/80 hover:border-zinc-600 text-zinc-300 focus:ring-0 focus:ring-offset-0">
-                            <ListFilter className="mr-2 h-4 w-4 opacity-70" />
-                            <SelectValue placeholder="Sort by" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-300">
-                            <SelectItem value="newest">Newest First</SelectItem>
-                            <SelectItem value="oldest">Oldest First</SelectItem>
-                            <SelectItem value="rating-high">Highest Rating</SelectItem>
-                            <SelectItem value="rating-low">Lowest Rating</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
+                        {/* Right: Controls */}
+                        <div className="flex items-center gap-4">
+                            {/* Rows per page */}
+                            <div className="flex items-center">
+                                <Select value={itemsPerPage.toString()} onValueChange={(v) => setItemsPerPage(Number(v))}>
+                                    <SelectTrigger className="h-9 w-[130px] bg-zinc-900 border-zinc-800 text-xs text-zinc-300 focus:ring-1 focus:ring-indigo-500 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <span>{itemsPerPage} per page</span>
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-300">
+                                        <SelectItem value="5">5 per page</SelectItem>
+                                        <SelectItem value="10">10 per page</SelectItem>
+                                        <SelectItem value="25">25 per page</SelectItem>
+                                        <SelectItem value="50">50 per page</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-            {/* Testimonial Table Component - Encapsulated in a box */}
-            <TestimonialTable
-                testimonials={sortedAndFiltered}
-                selectedIds={selectedIds}
-                onSelect={handleSelect}
-                onSelectAll={handleSelectAll}
-                onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-                onCopy={handleCopy}
-            />
+                            {/* Pagination Buttons */}
+                            <div className="flex items-center gap-1 bg-zinc-900/50 rounded-lg p-1 border border-zinc-800/50">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft className="size-4" />
+                                </Button>
 
-            {/* Pagination Footer */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-900/50">
-                <p className="text-zinc-500 text-xs">Showing {sortedAndFiltered.length} results</p>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" className="bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white h-8 text-xs font-normal">
-                        {sortBy === 'newest' ? 'Date Added (Newest First)' : sortBy === 'oldest' ? 'Date Added (Oldest First)' : sortBy === 'rating-high' ? 'Rating (High to Low)' : 'Rating (Low to High)'}
-                    </Button>
-                    {/* Pagination buttons could go here if implemented */}
+                                {/* Page Numbers */}
+                                <div className="flex items-center gap-1 px-1">
+                                    {pageNumbers.map((pageNum) => (
+                                        <Button
+                                            key={pageNum}
+                                            variant="ghost"
+                                            onClick={() => setCurrentPage(pageNum)}
+                                            className={cn("h-7 min-w-[1.75rem] px-1 rounded-md text-xs font-bold transition-all",
+                                                currentPage === pageNum
+                                                    ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white shadow-md shadow-indigo-900/20"
+                                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                                            )}
+                                        >
+                                            {pageNum}
+                                        </Button>
+                                    ))}
+                                </div>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                >
+                                    <ChevronRight className="size-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

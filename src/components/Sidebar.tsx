@@ -216,7 +216,7 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
     <>
       <aside
         aria-label="Primary navigation"
-        className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
+        className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
       >
         <div className="flex h-full flex-col">
           {/* 1. Trustimonials Logo Section - Top */}
