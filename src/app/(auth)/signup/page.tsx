@@ -31,7 +31,7 @@ const SignupPage = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (session) router.replace("/dashboard");
+      if (session) router.replace("/onboarding"); // New users go to onboarding
     };
     checkSession();
   }, [router, supabase]);
@@ -62,7 +62,7 @@ const SignupPage = () => {
     if (signupData?.session) {
       await initializeUserResources(supabase, signupData.session.user);
       setIsSubmitting(false);
-      router.replace("/dashboard");
+      router.replace("/onboarding");
       return;
     }
 
@@ -86,7 +86,7 @@ const SignupPage = () => {
       await initializeUserResources(supabase, user);
     }
     setIsSubmitting(false);
-    router.replace("/dashboard");
+    router.replace("/onboarding");
   };
 
   const handleGoogle = async () => {

@@ -31,6 +31,18 @@ export async function createProject(formData: FormData) {
         throw new Error("Failed to create project: " + error.message);
     }
 
+    // Set as active project
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ active_project_id: project.id })
+        .eq('id', user.id);
+
+    if (profileError) {
+        console.error("Failed to set active project:", profileError);
+        // Don't throw here, as project was created successfully.
+        // The user might just need to manually switch or refresh.
+    }
+
     revalidatePath("/dashboard");
     return { success: true, project };
 }

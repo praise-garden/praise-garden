@@ -1,15 +1,20 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { initializeUserResources } from "@/lib/auth/initialize-user";
+import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const response = NextResponse.redirect(`${requestUrl.origin}/dashboard`);
 
   if (!code) {
-    return response;
+    console.log("No code in callback, redirecting to dashboard");
+    return NextResponse.redirect(`${requestUrl.origin}/dashboard`);
   }
+
+  console.log("OAuth callback received code");
+
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,27 +22,79 @@ export async function GET(request: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return request.cookies.get(name)?.value;
+          return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options) {
-          response.cookies.set(name, value, options);
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Server component can't set cookies during render
+            console.log("Cookie set attempted:", name);
+          }
         },
-        remove(name: string, options) {
-          response.cookies.set(name, "", { ...options, maxAge: 0 });
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch (error) {
+            console.log("Cookie remove attempted:", name);
+          }
         },
       },
     }
   );
 
-  await supabase.auth.exchangeCodeForSession(code);
+  try {
+    console.log("Exchanging code for session...");
+    const { data: sessionData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    if (exchangeError) {
+      console.error("Error exchanging code for session:", exchangeError);
+      return NextResponse.redirect(
+        `${requestUrl.origin}/login?error=${encodeURIComponent(exchangeError.message)}`
+      );
+    }
 
-  if (user) {
+    console.log("Session exchanged successfully");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.error("No user after session exchange");
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=no_user`);
+    }
+
+    console.log("User authenticated:", user.id);
+
+    // Initialize user resources (create profile)
     await initializeUserResources(supabase, user);
-  }
 
-  return response;
+    // Check if user has projects to determine redirect
+    const { data: projects, error: projectsError } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (projectsError) {
+      console.error("Error checking projects:", projectsError);
+    }
+
+    // New users go to onboarding, existing users to dashboard
+    const hasProjects = projects && projects.length > 0;
+    const redirectUrl = hasProjects
+      ? `${requestUrl.origin}/dashboard`
+      : `${requestUrl.origin}/onboarding`;
+
+    console.log(`Redirecting to: ${hasProjects ? 'dashboard' : 'onboarding'}`);
+
+    return NextResponse.redirect(redirectUrl);
+
+  } catch (error) {
+    console.error("OAuth callback error:", error);
+    return NextResponse.redirect(
+      `${requestUrl.origin}/login?error=callback_failed`
+    );
+  }
 }

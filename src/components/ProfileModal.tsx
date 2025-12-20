@@ -14,7 +14,6 @@ import type { User } from "@supabase/supabase-js";
 // ==================== TYPES ====================
 type ProfileSummary = {
     id: string;
-    username: string | null;
     full_name: string | null;
     plan: string | null;
     active_project_id: string | null;

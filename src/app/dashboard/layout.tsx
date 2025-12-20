@@ -15,6 +15,11 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     redirect("/login");
   }
 
+  // Check if user needs to complete onboarding (must have at least one project)
+  if (!result.projects || result.projects.length === 0) {
+    redirect("/onboarding");
+  }
+
   return (
     <div className="h-screen bg-gray-950 text-gray-50 font-sans overflow-hidden">
       <div className="grid h-full grid-cols-1 lg:grid-cols-[18rem_1fr]">
