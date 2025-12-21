@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import { Video, Upload, ChevronDown, ImageIcon, Star, Tag, Calendar, Check, Loader2 } from "lucide-react";
 import { uploadImageToStorage } from "@/lib/storage";
+import { generateVideoThumbnail } from "@/lib/utils/thumbnail-generator";
 import { createClient } from "@/lib/supabase/client";
 import {
     Dialog,
@@ -44,6 +45,7 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
     const [videoUrl, setVideoUrl] = useState(initialData?.video_url || initialData?.media?.video_url || "");
     const [avatarUrl, setAvatarUrl] = useState(initialData?.customer_avatar_url || initialData?.avatar_url || initialData?.media?.avatar_url || "");
     const [companyLogoUrl, setCompanyLogoUrl] = useState(initialData?.company_logo_url || initialData?.company?.logo_url || "");
+    const [thumbnailBlobs, setThumbnailBlobs] = useState<Blob[]>([]);
 
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -72,7 +74,17 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                     bucket: 'assets'
                 });
 
-                if (type === 'video') setVideoUrl(result.url);
+                if (type === 'video') {
+                    setVideoUrl(result.url);
+                    // Generate thumbnails client-side
+                    try {
+                        const t20 = await generateVideoThumbnail(file, 0.2);
+                        const t50 = await generateVideoThumbnail(file, 0.5);
+                        setThumbnailBlobs([t20, t50]);
+                    } catch (e) {
+                        console.error("Thumbnail generation failed", e);
+                    }
+                }
                 else if (type === 'avatar') setAvatarUrl(result.url);
                 else setCompanyLogoUrl(result.url);
             } else {
@@ -138,7 +150,29 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                     await updateTestimonialContent(testimonialId, updateData);
                     if (onSuccess) onSuccess();
                 } else {
+                    // Upload Thumbnails
+                    const thumbUrls: string[] = [];
+                    if (thumbnailBlobs.length > 0) {
+                        try {
+                            const supabase = createClient();
+                            const { data: { user } } = await supabase.auth.getUser();
+                            if (user) {
+                                for (let i = 0; i < thumbnailBlobs.length; i++) {
+                                    const blob = thumbnailBlobs[i];
+                                    const thumbFile = new File([blob], `thumb_${Date.now()}_${i}.webp`, { type: "image/webp" });
+                                    const res = await uploadImageToStorage({
+                                        file: thumbFile,
+                                        context: { type: 'user', userId: user.id },
+                                        bucket: 'assets'
+                                    });
+                                    thumbUrls.push(res.url);
+                                }
+                            }
+                        } catch (e) { console.error("Thumbnail upload failed", e); }
+                    }
+
                     const formData = {
+                        thumbnails: thumbUrls,
                         type: 'video',
                         rating,
                         customer_name: name,

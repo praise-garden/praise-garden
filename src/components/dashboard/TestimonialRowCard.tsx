@@ -22,6 +22,7 @@ interface TestimonialRowCardProps {
         date: string;
         avatar: string;
         attachments?: { type: 'image' | 'video', url: string }[];
+        videoThumbnail?: string;
     };
     onStatusChange: (id: string | number) => void;
     onDelete: (id: string | number) => void;
@@ -76,7 +77,7 @@ const getSourceStyles = (source: string): string => {
     return "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800 hover:border-zinc-700";
 };
 
-const VideoPreview = ({ url }: { url: string }) => {
+const VideoPreview = ({ url, poster }: { url: string; poster?: string }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -93,6 +94,7 @@ const VideoPreview = ({ url }: { url: string }) => {
             <video
                 ref={videoRef}
                 src={url}
+                poster={poster}
                 className="w-full h-full object-cover"
                 controls={isPlaying}
                 playsInline
@@ -211,7 +213,7 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                             (() => {
                                 const vid = testimonial.attachments?.find(a => a.type === 'video');
                                 if (vid) {
-                                    return <VideoPreview url={vid.url} />;
+                                    return <VideoPreview url={vid.url} poster={testimonial.videoThumbnail} />;
                                 }
                                 return null;
                             })()

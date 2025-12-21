@@ -33,6 +33,7 @@ export async function getTestimonialsForProject(projectId: string) {
             t.data.company?.logo_url ? { type: 'image', url: t.data.company.logo_url } : null,
             t.data.media?.video_url ? { type: 'video', url: t.data.media.video_url } : null
         ].filter(Boolean) as { type: 'image' | 'video', url: string }[],
+        videoThumbnail: t.data.thumbnails?.[t.data.selected_thumbnail_index || 0] || "",
         // Keep original data handy if needed
         raw: t
     }));
@@ -68,6 +69,7 @@ export async function getTestimonialById(id: string) {
             data.data.company?.logo_url ? { type: 'image', url: data.data.company.logo_url } : null,
             data.data.media?.video_url ? { type: 'video', url: data.data.media.video_url } : null
         ].filter(Boolean) as { type: 'image' | 'video', url: string }[],
+        videoThumbnail: data.data.thumbnails?.[data.data.selected_thumbnail_index || 0] || "",
         raw: data
     };
 }

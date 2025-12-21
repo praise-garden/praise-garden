@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+
 export async function getTestimonials() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -108,7 +109,13 @@ export async function createTestimonial(formData: any) {
         }
     };
 
-    // 3. Insert Testimonial
+    // 3. Handle Client-Provided Thumbnails
+    if (type === 'video' && formData.thumbnails && Array.isArray(formData.thumbnails)) {
+        (data as any).thumbnails = formData.thumbnails;
+        (data as any).selected_thumbnail_index = 0;
+    }
+
+    // 4. Insert Testimonial
     const { error } = await supabase
         .from('testimonials')
         .insert({
@@ -159,6 +166,54 @@ export async function deleteTestimonial(id: string | number) {
 
     if (!user) throw new Error("Unauthorized");
 
+    // 1. Fetch data to identify files
+    const { data: record } = await supabase
+        .from('testimonials')
+        .select('data')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+
+    if (record?.data) {
+        const pathsToDelete: string[] = [];
+        const d = record.data;
+
+        const extractPath = (url: string) => {
+            if (!url || typeof url !== 'string') return null;
+            try {
+                if (url.includes('/storage/v1/object/public/assets/')) {
+                    const parts = url.split('/public/assets/');
+                    return parts[1];
+                }
+                return null;
+            } catch { return null; }
+        };
+
+        const potentialUrls = [
+            d.customer_avatar_url,
+            d.media?.avatar_url,
+            d.company_logo_url,
+            d.company?.logo_url,
+            d.media?.video_url,
+            ...(Array.isArray(d.thumbnails) ? d.thumbnails : [])
+        ];
+
+        potentialUrls.forEach(url => {
+            const path = extractPath(url);
+            if (path) pathsToDelete.push(path);
+        });
+
+        if (pathsToDelete.length > 0) {
+            const { error: storageError } = await supabase.storage
+                .from('assets')
+                .remove(pathsToDelete);
+
+            if (storageError) {
+                console.error("Failed to delete associated files:", storageError);
+            }
+        }
+    }
+
     const { error } = await supabase
         .from('testimonials')
         .delete()
@@ -196,10 +251,14 @@ export async function updateTestimonialContent(id: string | number, data: any) {
 
     if (fetchError || !existing) throw new Error("Testimonial not found");
 
+
+
     const newData = {
         ...existing.data,
-        ...data // Merge incoming updates (e.g., customer_name, message, etc.)
+        ...data // Merge incoming updates
     };
+
+
 
     const { error } = await supabase
         .from('testimonials')

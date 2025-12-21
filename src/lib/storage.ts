@@ -181,3 +181,16 @@ export const uploadImageToStorage = async ({
     path,
   };
 };
+
+export const deleteImageFromStorage = async (path: string, bucket = DEFAULT_BUCKET, supabase?: SupabaseClient) => {
+  const supabaseClient = ensureSupabaseClient(supabase);
+  const { error } = await supabaseClient.storage.from(bucket).remove([path]);
+
+  if (error) {
+    console.error('[deleteImageFromStorage] Delete failed', { bucket, path, error });
+    throw new Error(error.message || 'Failed to delete image');
+  }
+
+  console.info('[deleteImageFromStorage] Delete succeeded', { bucket, path });
+  return true;
+};

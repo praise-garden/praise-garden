@@ -17,9 +17,10 @@ import {
 interface TestimonialToolbarProps {
     testimonialId: string | number;
     isVideo: boolean;
+    onEdit?: () => void;
 }
 
-export function TestimonialToolbar({ testimonialId, isVideo }: TestimonialToolbarProps) {
+export function TestimonialToolbar({ testimonialId, isVideo, onEdit }: TestimonialToolbarProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -52,7 +53,10 @@ export function TestimonialToolbar({ testimonialId, isVideo }: TestimonialToolba
                 <div className="flex items-center gap-2">
                     <Button
                         variant="ghost"
-                        onClick={() => handleFeatureNotReady("Edit Metadata")}
+                        onClick={() => {
+                            if (onEdit) onEdit();
+                            else handleFeatureNotReady("Edit Metadata");
+                        }}
                         className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                     >
                         <Pencil className="size-4" />
