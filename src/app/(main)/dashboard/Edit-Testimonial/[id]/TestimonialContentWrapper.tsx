@@ -31,20 +31,7 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
     const videoUrl = testimonial.attachments?.find((a: any) => a.type === 'video')?.url;
     const companyLogo = testimonial.attachments?.find((a: any) => a.type === 'image')?.url;
 
-    if (isEditing) {
-        return (
-            <div className="h-screen flex flex-col bg-[#09090b] text-zinc-50 font-sans">
-                <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                    <div className="max-w-[1400px] mx-auto h-full">
-                        <EditVideoTestimonialForm
-                            testimonial={testimonial}
-                            onClose={() => setIsEditing(false)}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
         <div className="h-screen flex flex-col bg-[#09090b] text-zinc-50 font-sans overflow-hidden">
@@ -115,7 +102,14 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                {activeTab === 'testimonials' && (
+                {isEditing ? (
+                    <div className="max-w-[1400px] mx-auto h-full">
+                        <EditVideoTestimonialForm
+                            testimonial={testimonial}
+                            onClose={() => setIsEditing(false)}
+                        />
+                    </div>
+                ) : activeTab === 'testimonials' && (
                     <div className="max-w-[1400px] mx-auto bg-[#18181b] border border-zinc-800/50 shadow-xl rounded-xl overflow-hidden text-zinc-50">
                         {/* Card Header */}
                         <div className="p-6 pb-4 flex items-start justify-between border-b border-zinc-800/30">
@@ -139,7 +133,16 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                             {/* Video Player */}
                             {isVideo && videoUrl ? (
                                 <div className="w-full md:w-[50%] rounded-lg overflow-hidden bg-black aspect-video relative group shadow-lg ring-1 ring-zinc-800">
-                                    <video src={videoUrl} poster={testimonial.videoThumbnail} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" controls playsInline />
+                                    {videoUrl.startsWith('http') || videoUrl.startsWith('blob:') ? (
+                                        <video src={videoUrl} poster={testimonial.videoThumbnail} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" controls playsInline />
+                                    ) : (
+                                        <iframe
+                                            src={`https://iframe.videodelivery.net/${videoUrl}${testimonial.videoThumbnail ? `?poster=${encodeURIComponent(testimonial.videoThumbnail)}` : ''}`}
+                                            className="w-full h-full"
+                                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                                            allowFullScreen
+                                        ></iframe>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="w-full md:w-[50%] aspect-video bg-zinc-900/50 border border-zinc-800 rounded-lg flex items-center justify-center text-zinc-600">

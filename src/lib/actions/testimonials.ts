@@ -131,7 +131,41 @@ export async function createTestimonial(formData: any) {
         throw new Error("Failed to save testimonial: " + error.message);
     }
 
-    // 4. Revalidate
+    // 5. Sync Customer to Customers Table
+    if (customer_email) {
+        try {
+            // Check if customer exists in this project
+            const { data: existingCustomer } = await supabase
+                .from('customers')
+                .select('id')
+                .eq('project_id', projectId)
+                .eq('email', customer_email)
+                .single();
+
+            if (!existingCustomer) {
+                // Insert new customer
+                await supabase.from('customers').insert({
+                    project_id: projectId,
+                    email: customer_email,
+                    full_name: customer_name || 'Anonymous',
+                    headline: customer_headline,
+                    avatar_url: customer_avatar_url,
+                    company_details: {
+                        name: company_name,
+                        job_title: company_title,
+                        website: company_website,
+                        logo_url: company_logo_url
+                    },
+                    social_profiles: {} // Empty for manual imports usually, or create from source URL if valid
+                });
+            }
+        } catch (customerError) {
+            // Don't block testimonial creation just because customer sync failed
+            console.error("Failed to sync customer:", customerError);
+        }
+    }
+
+    // 6. Revalidate
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/import/manual");
 
@@ -178,6 +212,18 @@ export async function deleteTestimonial(id: string | number) {
         const pathsToDelete: string[] = [];
         const d = record.data;
 
+        // Helper to check if a string is a Cloudflare UID (alphanumeric, no slashes, not a URL)
+        const isCloudflareUid = (value: string): boolean => {
+            if (!value || typeof value !== 'string') return false;
+            // Cloudflare UIDs are typically 32 character alphanumeric strings
+            // They don't contain slashes, dots, or http
+            return !value.includes('/') &&
+                !value.includes('.') &&
+                !value.startsWith('http') &&
+                !value.startsWith('blob:') &&
+                value.length > 10; // UIDs are typically 32 chars
+        };
+
         const extractPath = (url: string) => {
             if (!url || typeof url !== 'string') return null;
             try {
@@ -189,13 +235,32 @@ export async function deleteTestimonial(id: string | number) {
             } catch { return null; }
         };
 
+        // Check for Cloudflare video UID and delete from Cloudflare
+        const videoUrl = d.media?.video_url || d.video_url;
+        if (videoUrl && isCloudflareUid(videoUrl)) {
+            console.log(`Detected Cloudflare video UID: ${videoUrl}, attempting deletion...`);
+            try {
+                // Dynamically import to avoid circular dependencies
+                const { deleteCloudflareVideo } = await import('./cloudflare-stream');
+                const result = await deleteCloudflareVideo(videoUrl);
+                if (result.success) {
+                    console.log(`Successfully deleted Cloudflare video: ${videoUrl}`);
+                } else {
+                    console.error(`Failed to delete Cloudflare video: ${result.error}`);
+                }
+            } catch (cfError) {
+                console.error("Error deleting Cloudflare video:", cfError);
+                // Continue with deletion even if Cloudflare delete fails
+            }
+        }
+
         const potentialUrls = [
             d.customer_avatar_url,
             d.media?.avatar_url,
             d.company_logo_url,
             d.company?.logo_url,
             d.media?.video_url,
-            ...(Array.isArray(d.thumbnails) ? d.thumbnails : [])
+            ...(Array.isArray(d.thumbnails) ? d.thumbnails.map((t: any) => typeof t === 'string' ? t : t?.url) : [])
         ];
 
         potentialUrls.forEach(url => {

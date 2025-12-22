@@ -66,7 +66,7 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit }: Testimoni
                     {isVideo && (
                         <Button
                             variant="ghost"
-                            onClick={() => handleFeatureNotReady("Video Trim")}
+                            onClick={() => router.push(`/dashboard/Trim-Video/${testimonialId}`)}
                             className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                         >
                             <Scissors className="size-4" />

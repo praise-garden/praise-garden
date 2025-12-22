@@ -10,7 +10,8 @@ import { X, Upload, Play, Plus, Calendar, Star } from "lucide-react";
 import { toast } from "sonner";
 import { uploadImageToStorage, deleteImageFromStorage } from "@/lib/storage";
 import { updateTestimonialContent } from "@/lib/actions/testimonials";
-import { generateVideoThumbnail } from "@/lib/utils/thumbnail-generator";
+import { generateVideoThumbnail } from "@/lib/supabase/thumbnail-generator";
+import { cn } from "@/lib/utils";
 
 interface EditVideoTestimonialFormProps {
     testimonial: any;
@@ -50,7 +51,28 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
             videoRef.current.load();
             setIsPlaying(false);
         }
-    }, [selectedThumbnailIndex]);
+
+        // Auto-generate Cloudflare thumbnails if videoUrl is a UID
+        // Ensure it's not a URL (http/https) and not a blob
+        const isUid = videoUrl && !videoUrl.includes('/') && !videoUrl.startsWith('http') && !videoUrl.startsWith('blob:');
+
+        if (isUid) {
+            const cfThumb1 = `https://videodelivery.net/${videoUrl}/thumbnails/thumbnail.jpg?height=600`;
+            const cfThumb2 = `https://videodelivery.net/${videoUrl}/thumbnails/thumbnail.jpg?time=4s&height=600`;
+
+            setThumbnails(prev => {
+                // Check if we need to update to avoid infinite loops
+                if (prev[0]?.url === cfThumb1 && prev[1]?.url === cfThumb2) return prev;
+
+                const newThumbs = [...prev];
+                // Update 0 and 1
+                newThumbs[0] = { url: cfThumb1 };
+                newThumbs[1] = { url: cfThumb2 };
+
+                return newThumbs;
+            });
+        }
+    }, [videoUrl, selectedThumbnailIndex]);
 
     const handleThumbnailClick = () => {
         thumbnailInputRef.current?.click();
@@ -95,19 +117,21 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
             setVideoFile(file);
             setIsPlaying(false);
 
-            try {
-                // Generate thumbnails client-side
-                const t20 = await generateVideoThumbnail(file, 0.2);
-                const t50 = await generateVideoThumbnail(file, 0.5);
+            if (process.env.NEXT_PUBLIC_VIDEO_PROVIDER !== 'cloudflare-stream') {
+                // Generate thumbnails client-side only for Supabase uploads
+                try {
+                    const t20 = await generateVideoThumbnail(file, 0.2);
+                    const t50 = await generateVideoThumbnail(file, 0.5);
 
-                const newThumbs = [
-                    { url: URL.createObjectURL(t20), file: new File([t20], `thumb_1_${Date.now()}.webp`, { type: "image/webp" }) },
-                    { url: URL.createObjectURL(t50), file: new File([t50], `thumb_2_${Date.now()}.webp`, { type: "image/webp" }) }
-                ];
-                setThumbnails(newThumbs);
-                setSelectedThumbnailIndex(0);
-            } catch (err) {
-                console.error("Thumbnail generation failed", err);
+                    const newThumbs = [
+                        { url: URL.createObjectURL(t20), file: new File([t20], `thumb_1_${Date.now()}.webp`, { type: "image/webp" }) },
+                        { url: URL.createObjectURL(t50), file: new File([t50], `thumb_2_${Date.now()}.webp`, { type: "image/webp" }) }
+                    ];
+                    setThumbnails(newThumbs);
+                    setSelectedThumbnailIndex(0);
+                } catch (err) {
+                    console.error("Thumbnail generation failed", err);
+                }
             }
         }
     };
@@ -126,15 +150,14 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
             if (videoFile) {
                 toast.loading("Uploading video...");
 
-                const { url } = await uploadImageToStorage({
-                    file: videoFile,
-                    context: {
-                        type: 'user',
-                        userId: userId,
-                        namespace: 'videos'
-                    }
-                });
-                finalVideoUrl = url;
+                const { uploadVideo } = await import("@/lib/video-upload");
+                const result = await uploadVideo(videoFile);
+
+                if (result.type === 'cloudflare') {
+                    finalVideoUrl = result.uid!;
+                } else {
+                    finalVideoUrl = result.url || finalVideoUrl;
+                }
 
                 // 2. Delete old video if replaced and it was a storage URL
                 if (initialVideoUrl && initialVideoUrl !== finalVideoUrl) {
@@ -239,25 +262,34 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                     <div className="space-y-3">
                         <label className="text-sm font-medium text-zinc-400">Thumbnail</label>
                         <div className="grid grid-cols-4 gap-2">
-                            {[0, 1, 2].map((i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => setSelectedThumbnailIndex(i)}
-                                    className={`relative aspect-video bg-zinc-800 rounded-md border border-zinc-700/50 overflow-hidden cursor-pointer transition-all group ${selectedThumbnailIndex === i ? 'ring-2 ring-indigo-500' : 'hover:ring-2 hover:ring-indigo-500'
-                                        }`}
-                                >
-                                    {thumbnails[i] ? (
-                                        <>
-                                            <img src={thumbnails[i].url} alt={`Frame ${i + 1}`} className="w-full h-full object-cover rounded-md" />
+                            {[0, 1, 2].map((i) => {
+                                const hasThumbnail = !!thumbnails[i];
+                                const isFrame3 = i === 2;
 
-                                        </>
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center text-zinc-600 bg-zinc-900 text-xs">
-                                            Frame {i + 1}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                                return (
+                                    <div
+                                        key={i}
+                                        onClick={() => hasThumbnail && setSelectedThumbnailIndex(i)}
+                                        className={cn(
+                                            "relative aspect-video bg-zinc-800 rounded-md border border-zinc-700/50 overflow-hidden transition-all group",
+                                            hasThumbnail ? "cursor-pointer" : "cursor-default opacity-50",
+                                            selectedThumbnailIndex === i && hasThumbnail ? 'ring-2 ring-indigo-500' : hasThumbnail ? 'hover:ring-2 hover:ring-indigo-500' : ''
+                                        )}
+                                    >
+                                        {hasThumbnail ? (
+                                            <img src={thumbnails[i].url} alt={`Frame ${i + 1}`} className="w-full h-full object-cover rounded-md" />
+                                        ) : (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 bg-zinc-900 text-[10px] p-1 text-center leading-tight">
+                                                {isFrame3 ? (
+                                                    <span>Upload<br />Image</span>
+                                                ) : (
+                                                    `Frame ${i + 1}`
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
 
                             <div
                                 onClick={handleThumbnailClick}
@@ -280,20 +312,29 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                         <label className="text-sm font-medium text-zinc-400">Video</label>
                         <div className="w-full aspect-video bg-black rounded-lg border border-zinc-800 relative group overflow-hidden">
                             {videoUrl ? (
-                                <video
-                                    ref={videoRef}
-                                    src={videoUrl}
-                                    poster={thumbnails[selectedThumbnailIndex]?.url}
-                                    className="w-full h-full object-cover"
-                                    controls={isPlaying}
-                                    onPlay={() => setIsPlaying(true)}
-                                    onPause={() => setIsPlaying(false)}
-                                    onEnded={() => setIsPlaying(false)}
-                                />
+                                videoUrl.startsWith('http') || videoUrl.startsWith('blob:') ? (
+                                    <video
+                                        ref={videoRef}
+                                        src={videoUrl}
+                                        poster={thumbnails[selectedThumbnailIndex]?.url}
+                                        className="w-full h-full object-cover"
+                                        controls={isPlaying}
+                                        onPlay={() => setIsPlaying(true)}
+                                        onPause={() => setIsPlaying(false)}
+                                        onEnded={() => setIsPlaying(false)}
+                                    />
+                                ) : (
+                                    <iframe
+                                        src={`https://iframe.videodelivery.net/${videoUrl}${thumbnails[selectedThumbnailIndex]?.url ? `?poster=${encodeURIComponent(thumbnails[selectedThumbnailIndex].url)}` : ''}`}
+                                        className="w-full h-full"
+                                        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                                        allowFullScreen
+                                    ></iframe>
+                                )
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-zinc-700">No Video</div>
                             )}
-                            {!isPlaying && videoUrl && (
+                            {!isPlaying && videoUrl && (videoUrl.startsWith('http') || videoUrl.startsWith('blob:')) && (
                                 <div
                                     className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors cursor-pointer"
                                     onClick={handlePlay}

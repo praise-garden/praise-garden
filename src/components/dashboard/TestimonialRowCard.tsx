@@ -81,28 +81,52 @@ const VideoPreview = ({ url, poster }: { url: string; poster?: string }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
+    const isCloudflare = !url.startsWith('http') && !url.startsWith('blob:');
+
     const handlePlay = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent row selection
-        if (videoRef.current) {
-            videoRef.current.play();
+        if (isCloudflare) {
             setIsPlaying(true);
+        } else {
+            if (videoRef.current) {
+                videoRef.current.play();
+                setIsPlaying(true);
+            }
         }
     };
 
     return (
         <div className="rounded-xl overflow-hidden border border-zinc-800 bg-black/40 w-[140px] aspect-video relative group/video flex-shrink-0">
-            <video
-                ref={videoRef}
-                src={url}
-                poster={poster}
-                className="w-full h-full object-cover"
-                controls={isPlaying}
-                playsInline
-                preload="metadata"
-                onPause={() => setIsPlaying(false)}
-                onEnded={() => setIsPlaying(false)}
-                onClick={(e) => e.stopPropagation()}
-            />
+            {isCloudflare ? (
+                isPlaying ? (
+                    <iframe
+                        src={`https://iframe.videodelivery.net/${url}?autoplay=true${poster ? `&poster=${encodeURIComponent(poster)}` : ''}`}
+                        className="w-full h-full"
+                        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                        allowFullScreen
+                    ></iframe>
+                ) : (
+                    <img
+                        src={poster || `https://videodelivery.net/${url}/thumbnails/thumbnail.jpg?height=600`}
+                        className="w-full h-full object-cover"
+                        alt="Video Thumbnail"
+                    />
+                )
+            ) : (
+                <video
+                    ref={videoRef}
+                    src={url}
+                    poster={poster}
+                    className="w-full h-full object-cover"
+                    controls={isPlaying}
+                    playsInline
+                    preload="metadata"
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
+                    onClick={(e) => e.stopPropagation()}
+                />
+            )}
+
             {!isPlaying && (
                 <div
                     onClick={handlePlay}
