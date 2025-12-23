@@ -4,6 +4,7 @@ import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { QuestionBlockConfig } from '@/types/form-config';
+import VideoTestimonialScreen from './VideoTestimonialScreen';
 import { DEFAULT_TESTIMONIAL_TIPS } from '@/lib/default-form-config';
 
 const VideoIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -47,7 +48,9 @@ const QuestionCard = ({
     const initialMode = (enableVideo && enableText) ? 'options' :
         (enableText && !enableVideo) ? 'text' : 'options';
 
-    const [mode, setMode] = useState<'options' | 'text'>(initialMode);
+    const [mode, setMode] = useState<'options' | 'text' | 'video'>(initialMode);
+    const [showVideoScreen, setShowVideoScreen] = useState(false);
+    const [lightMode, setLightMode] = useState(false);
 
     const handleFieldClick = (fieldPath: string) => {
         onFieldFocus?.(config.id, fieldPath);
@@ -63,8 +66,14 @@ const QuestionCard = ({
         transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
     };
 
-    // Handle video button click - if only video is enabled, go to next page
+    // Handle video button click - opens VideoTestimonialScreen
     const handleVideoClick = () => {
+        setShowVideoScreen(true);
+    };
+
+    const handleVideoComplete = (blob: Blob) => {
+        console.log('Video recorded:', blob);
+        // Here you would typically upload the video
         cardProps.onNext();
     };
 
@@ -78,12 +87,27 @@ const QuestionCard = ({
             {...cardProps}
             theme={theme}
         >
+            {/* Full-screen Video Testimonial Screen Overlay */}
+            {showVideoScreen && (
+                <VideoTestimonialScreen
+                    config={config}
+                    theme={theme}
+                    onComplete={(blob) => {
+                        console.log('Video recorded:', blob);
+                        setShowVideoScreen(false);
+                        cardProps.onNext();
+                    }}
+                    onCancel={() => setShowVideoScreen(false)}
+                    logoUrl={theme?.logoUrl}
+                />
+            )}
+
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
                 {/* Left Panel: The "Ask" - Animate width */}
                 <motion.div
-                    animate={{ width: mode === 'text' ? '33.3333%' : '50%' }}
+                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '33.3333%' : '50%') }}
                     transition={panelMotionProps}
-                    className="w-full md:w-1/2 bg-gradient-to-br from-[#1A1A1A] via-[#242424] to-[#1A1A1A] flex flex-col overflow-hidden"
+                    className={`w-full md:w-1/2 flex flex-col overflow-hidden transition-colors duration-500 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#1A1A1A] via-[#242424] to-[#1A1A1A]'}`}
                 >
                     <div className="flex-shrink-0">
                         <AppBar
@@ -104,16 +128,16 @@ const QuestionCard = ({
                             {/* Question Section */}
                             <div className="mb-8 space-y-3">
                                 <h1
-                                    className="text-xl md:text-2xl font-semibold text-white break-words leading-tight tracking-tight"
-                                    style={{ color: config.props.questionColor }}
+                                    className={`text-xl md:text-2xl font-semibold break-words leading-tight tracking-tight transition-colors duration-500 ${lightMode ? 'text-gray-900' : 'text-white'}`}
+                                    style={{ color: lightMode ? undefined : config.props.questionColor }}
                                     onClick={() => handleFieldClick('props.question')}
                                     data-field="props.question"
                                 >
                                     {config.props.question}
                                 </h1>
                                 <p
-                                    className="text-xs md:text-sm text-gray-400 break-words leading-relaxed"
-                                    style={{ color: config.props.descriptionColor }}
+                                    className={`text-xs md:text-sm break-words leading-relaxed transition-colors duration-500 ${lightMode ? 'text-gray-600' : 'text-gray-400'}`}
+                                    style={{ color: lightMode ? undefined : config.props.descriptionColor }}
                                     onClick={() => handleFieldClick('props.description')}
                                     data-field="props.description"
                                 >
@@ -124,8 +148,7 @@ const QuestionCard = ({
                             {/* Guidance Section - Only show if there are tips */}
                             {tips.length > 0 && (
                                 <div className="space-y-3">
-                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tips for great testimonials:</h3>
-
+                                    <h3 className={`text-xs font-semibold uppercase tracking-wider transition-colors duration-500 ${lightMode ? 'text-gray-500' : 'text-gray-500'}`}>Tips for great testimonials:</h3>
                                     <motion.div
                                         className="space-y-2.5"
                                         initial={{ opacity: 0 }}
@@ -138,8 +161,8 @@ const QuestionCard = ({
                                                     <CheckCircleIcon className="text-emerald-500 w-4 h-4 flex-shrink-0" />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-xs text-gray-300 leading-relaxed">
-                                                        <span className="font-medium text-white">{tip}</span>
+                                                    <p className={`text-xs leading-relaxed transition-colors duration-500 ${lightMode ? 'text-gray-600' : 'text-gray-300'}`}>
+                                                        <span className={`font-medium transition-colors duration-500 ${lightMode ? 'text-gray-800' : 'text-white'}`}>{tip}</span>
                                                     </p>
                                                 </div>
                                             </div>
@@ -148,9 +171,8 @@ const QuestionCard = ({
                                 </div>
                             )}
 
-                            {/* Optional: Add a subtle decorative element */}
                             <div className="mt-6 flex justify-center">
-                                <div className="h-px w-20 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+                                <div className={`h-px w-20 bg-gradient-to-r from-transparent to-transparent transition-colors duration-500 ${lightMode ? 'via-gray-300' : 'via-gray-600'}`}></div>
                             </div>
                         </motion.div>
                     </div>
@@ -158,12 +180,14 @@ const QuestionCard = ({
 
                 {/* Right Panel: The "Answer" - Animate width */}
                 <motion.div
-                    animate={{ width: mode === 'text' ? '66.6667%' : '50%' }}
+                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '66.6667%' : '50%') }}
                     transition={panelMotionProps}
                     className="w-full md:w-1/2 bg-gradient-to-br from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F] flex flex-col justify-center items-center relative overflow-hidden"
                 >
                     {/* Subtle background pattern */}
-                    <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px]"></div>
+                    {mode !== 'video' && (
+                        <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px]"></div>
+                    )}
 
                     <AnimatePresence mode="wait">
                         {mode === 'options' && (
