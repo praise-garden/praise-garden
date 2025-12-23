@@ -4,11 +4,12 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { X, Search, Check, Star } from "lucide-react"
+import { X, Search, Check, Star, Video, Image } from "lucide-react"
 
 // ===================== TESTIMONIAL TYPE ===================== //
 export interface Testimonial {
     id: string;
+    type?: 'text' | 'video';
     authorName: string;
     authorTitle: string;
     authorAvatarUrl?: string;
@@ -16,6 +17,9 @@ export interface Testimonial {
     content: string;
     source: string;
     date: string;
+    videoUrl?: string | null;
+    videoThumbnail?: string | null;
+    attachments?: { type: 'image' | 'video', url: string }[];
 }
 
 // ===================== COMPONENT PROPS ===================== //
@@ -53,8 +57,8 @@ export function SelectTestimonialsModal({
         return testimonials.filter(t => {
             // Search filter
             const matchesSearch = searchQuery === "" ||
-                t.authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                t.content.toLowerCase().includes(searchQuery.toLowerCase())
+                (t.authorName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                (t.content?.toLowerCase() || '').includes(searchQuery.toLowerCase())
 
             // Category filter
             let matchesFilter = true
@@ -92,7 +96,7 @@ export function SelectTestimonialsModal({
             />
 
             {/* Modal */}
-            <div className="relative bg-[#1a1a1f] rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[80vh] flex flex-col border border-zinc-800">
+            <div className="relative bg-[#1a1a1f] rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] min-h-[400px] md:min-h-[600px] flex flex-col border border-zinc-800">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-zinc-800">
                     <h2 className="text-lg font-semibold text-white">Select Testimonials</h2>
@@ -170,7 +174,7 @@ export function SelectTestimonialsModal({
                                     key={t.id}
                                     onClick={() => toggleSelection(t.id)}
                                     className={cn(
-                                        "w-full text-left p-4 rounded-xl border transition-all flex gap-3",
+                                        "w-full text-left p-5 rounded-xl border transition-all flex items-start gap-4 min-h-[120px]",
                                         isSelected
                                             ? "bg-indigo-500/10 border-indigo-500/50"
                                             : "bg-zinc-900/30 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
@@ -179,7 +183,7 @@ export function SelectTestimonialsModal({
                                     {/* Checkbox */}
                                     <div
                                         className={cn(
-                                            "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
+                                            "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-2 transition-all",
                                             isSelected
                                                 ? "bg-indigo-500 border-indigo-500"
                                                 : "border-zinc-600 bg-transparent"
@@ -188,28 +192,115 @@ export function SelectTestimonialsModal({
                                         {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
                                     </div>
 
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            {/* Avatar */}
+                                    {/* User Info - Left Column */}
+                                    <div className="w-[140px] shrink-0 flex items-start gap-3">
+                                        {/* Avatar */}
+                                        {t.authorAvatarUrl ? (
+                                            <img
+                                                src={t.authorAvatarUrl}
+                                                alt={t.authorName || 'Avatar'}
+                                                className="w-11 h-11 rounded-full object-cover shrink-0"
+                                            />
+                                        ) : (
                                             <div
-                                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium bg-indigo-600 text-white shrink-0"
+                                                className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-semibold bg-indigo-600 text-white shrink-0"
                                             >
-                                                {t.authorName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                                {(t.authorName || 'Anonymous').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-white text-sm truncate">{t.authorName}</p>
-                                            </div>
-                                            {/* Star Rating */}
-                                            <div className="flex items-center gap-0.5 text-amber-400">
-                                                {Array.from({ length: t.rating }).map((_, i) => (
-                                                    <Star key={i} className="h-3 w-3 fill-current" />
-                                                ))}
-                                            </div>
+                                        )}
+                                        <div className="min-w-0 pt-0.5">
+                                            <p className="font-semibold text-white text-sm truncate">{t.authorName || 'Anonymous'}</p>
+                                            <p className="text-xs text-zinc-500 truncate">{t.authorTitle || t.source}</p>
                                         </div>
-                                        <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
-                                            {t.content}
-                                        </p>
+                                    </div>
+
+                                    {/* Content - Right Column */}
+                                    <div className="flex-1 min-w-0">
+                                        {/* Star Rating */}
+                                        <div className="flex items-center gap-0.5 text-amber-400 mb-2">
+                                            {Array.from({ length: t.rating || 0 }).map((_, i) => (
+                                                <Star key={i} className="h-4 w-4 fill-current" />
+                                            ))}
+                                        </div>
+
+                                        {/* Video Thumbnail or Text Content */}
+                                        {t.type === 'video' ? (
+                                            <div className="flex items-start gap-4">
+                                                {/* Video Thumbnail */}
+                                                {t.videoThumbnail ? (
+                                                    <div className="relative w-[160px] h-[90px] rounded-lg overflow-hidden bg-zinc-800 shrink-0">
+                                                        <img
+                                                            src={t.videoThumbnail}
+                                                            alt="Video thumbnail"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        {/* Play icon overlay */}
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                            <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                                                <Video className="w-4 h-4 text-zinc-800" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-[160px] h-[90px] rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
+                                                        <Video className="w-8 h-8 text-zinc-600" />
+                                                    </div>
+                                                )}
+                                                {/* Text content and attachments beside video */}
+                                                <div className="flex-1 min-w-0">
+                                                    {t.content && (
+                                                        <p className="text-sm text-zinc-400 leading-relaxed line-clamp-3">
+                                                            {t.content}
+                                                        </p>
+                                                    )}
+                                                    {/* Show non-thumbnail attachments (like company logo) */}
+                                                    {t.attachments && t.attachments.filter(a => a.url !== t.videoThumbnail).length > 0 && (
+                                                        <div className="flex gap-2 mt-2">
+                                                            {t.attachments.filter(a => a.url !== t.videoThumbnail).slice(0, 3).map((attachment, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="w-10 h-10 rounded-md overflow-hidden bg-zinc-800 flex items-center justify-center"
+                                                                >
+                                                                    <img
+                                                                        src={attachment.url}
+                                                                        alt="Attachment"
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-start gap-3">
+                                                {/* Text content */}
+                                                <p className="text-sm text-zinc-400 leading-relaxed line-clamp-3 flex-1">
+                                                    {t.content}
+                                                </p>
+                                                {/* Attachments (small thumbnails) */}
+                                                {t.attachments && t.attachments.length > 0 && (
+                                                    <div className="flex gap-2 shrink-0">
+                                                        {t.attachments.slice(0, 2).map((attachment, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 flex items-center justify-center"
+                                                            >
+                                                                {attachment.type === 'image' ? (
+                                                                    <img
+                                                                        src={attachment.url}
+                                                                        alt="Attachment"
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <Image className="w-4 h-4 text-zinc-600" />
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </button>
                             )

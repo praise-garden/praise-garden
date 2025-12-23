@@ -86,10 +86,10 @@ export function SocialCard({
                         "h-12 w-12 flex items-center justify-center text-white text-sm font-medium tracking-wide shrink-0",
                         config.cardStyle === 'brutal' ? "bg-[#111113] border-2 border-black rounded-[4px]" : "rounded-full bg-[#111113]"
                     )}>
-                        {testimonial.authorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                        {(testimonial.authorName || 'A').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-white font-bold text-[16px] leading-tight">{testimonial.authorName}</span>
+                        <span className="text-white font-bold text-[16px] leading-tight">{testimonial.authorName || 'Anonymous'}</span>
                         <span className="text-white/80 text-[13px] font-normal">{testimonial.authorTitle}</span>
                     </div>
                 </div>

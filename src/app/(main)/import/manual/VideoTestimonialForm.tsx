@@ -127,6 +127,11 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
     };
 
     const handleSubmit = () => {
+        if (!videoUrl) {
+            alert("Please upload a video. Video is required for video testimonials.");
+            return;
+        }
+
         if (!name) {
             alert("Please enter a customer name.");
             return;
@@ -249,66 +254,70 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
             {/* Video Upload Zone */}
-            <input
-                type="file"
-                ref={videoInputRef}
-                className="hidden"
-                accept="video/*"
-                onChange={(e) => handleFileUpload(e, 'video')}
-            />
-            <div
-                onClick={() => videoInputRef.current?.click()}
-                className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden"
-            >
-                {isUploadingVideo ? (
-                    <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="w-8 h-8 text-[#F5426C] animate-spin" />
-                        <span className="text-zinc-400 text-sm">Uploading video...</span>
-                    </div>
-                ) : (localVideoPreview || videoUrl) ? (
-                    <div className="relative w-full h-full bg-black flex items-center justify-center">
-                        {
-                            // Priority 1: Local Preview (Instant playback after upload)
-                            localVideoPreview ? (
-                                <video src={localVideoPreview} className="max-h-full max-w-full" controls playsInline />
-                            ) :
-                                // Priority 2: Standard URL (Supabase or other direct link)
-                                (videoUrl.startsWith('http') || videoUrl.startsWith('blob:')) ? (
-                                    <video src={videoUrl} className="max-h-full max-w-full" controls playsInline />
-                                ) : (
-                                    // Priority 3: Cloudflare UID (Iframe)
-                                    <iframe
-                                        src={`https://iframe.videodelivery.net/${videoUrl}`}
-                                        className="w-full h-full"
-                                        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                                        allowFullScreen
-                                    ></iframe>
-                                )
-                        }
-                        <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full cursor-pointer hover:bg-black/80" onClick={(e) => { e.stopPropagation(); videoInputRef.current?.click(); }}>
-                            <Upload className="w-4 h-4 text-white" />
+            <div className="space-y-2">
+                <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Video <span className="text-[#F5426C]">*</span></Label>
+                <input
+                    type="file"
+                    ref={videoInputRef}
+                    className="hidden"
+                    accept="video/*"
+                    onChange={(e) => handleFileUpload(e, 'video')}
+                />
+                <div
+                    onClick={() => videoInputRef.current?.click()}
+                    className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden"
+                >
+                    {isUploadingVideo ? (
+                        <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-8 h-8 text-[#F5426C] animate-spin" />
+                            <span className="text-zinc-400 text-sm">Uploading video...</span>
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="w-16 h-16 mb-4 relative">
-                            <div className="absolute inset-0 bg-[#F5426C]/10 rounded-xl transform rotate-6"></div>
-                            <div className="absolute inset-0 bg-[#F5426C]/20 rounded-xl transform -rotate-6"></div>
-                            <div className="relative z-10 w-full h-full bg-zinc-900 border border-[#F5426C] rounded-xl flex items-center justify-center shadow-lg shadow-[#F5426C]/10">
-                                <Video className="w-8 h-8 text-[#F5426C]" />
-                                <div className="absolute -bottom-2 -right-2 bg-[#F5426C] rounded-full p-1 border-4 border-zinc-950">
-                                    <Upload className="w-3 h-3 text-white" />
-                                </div>
+                    ) : (localVideoPreview || videoUrl) ? (
+                        <div className="relative w-full h-full bg-black flex items-center justify-center">
+                            {
+                                // Priority 1: Local Preview (Instant playback after upload)
+                                localVideoPreview ? (
+                                    <video src={localVideoPreview} className="max-h-full max-w-full" controls playsInline />
+                                ) :
+                                    // Priority 2: Standard URL (Supabase or other direct link)
+                                    (videoUrl.startsWith('http') || videoUrl.startsWith('blob:')) ? (
+                                        <video src={videoUrl} className="max-h-full max-w-full" controls playsInline />
+                                    ) : (
+                                        // Priority 3: Cloudflare UID (Iframe)
+                                        <iframe
+                                            src={`https://iframe.videodelivery.net/${videoUrl}`}
+                                            className="w-full h-full"
+                                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                                            allowFullScreen
+                                        ></iframe>
+                                    )
+                            }
+                            <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full cursor-pointer hover:bg-black/80" onClick={(e) => { e.stopPropagation(); videoInputRef.current?.click(); }}>
+                                <Upload className="w-4 h-4 text-white" />
                             </div>
                         </div>
-                        <p className="text-zinc-400 text-sm font-medium">Drag and drop video here or <span className="text-white underline decoration-[#F5426C] decoration-2 underline-offset-4">Choose file</span></p>
-                        <div className="flex justify-between w-full px-4 mt-6 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">
-                            <span>Supported formats: MP4, MOV, AVI, ...</span>
-                            <span>Maximum size: 50MB</span>
-                        </div>
-                    </>
-                )}
+                    ) : (
+                        <>
+                            <div className="w-16 h-16 mb-4 relative">
+                                <div className="absolute inset-0 bg-[#F5426C]/10 rounded-xl transform rotate-6"></div>
+                                <div className="absolute inset-0 bg-[#F5426C]/20 rounded-xl transform -rotate-6"></div>
+                                <div className="relative z-10 w-full h-full bg-zinc-900 border border-[#F5426C] rounded-xl flex items-center justify-center shadow-lg shadow-[#F5426C]/10">
+                                    <Video className="w-8 h-8 text-[#F5426C]" />
+                                    <div className="absolute -bottom-2 -right-2 bg-[#F5426C] rounded-full p-1 border-4 border-zinc-950">
+                                        <Upload className="w-3 h-3 text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-zinc-400 text-sm font-medium">Drag and drop video here or <span className="text-white underline decoration-[#F5426C] decoration-2 underline-offset-4">Choose file</span></p>
+                            <div className="flex justify-between w-full px-4 mt-6 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">
+                                <span>Supported formats: MP4, MOV, AVI, ...</span>
+                                <span>Maximum size: 50MB</span>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Form Fields */}

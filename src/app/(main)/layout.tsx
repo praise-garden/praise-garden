@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import { Toaster } from "sonner";
 
 import Sidebar from "@/components/Sidebar";
 import { getUserProfileWithProjects } from "@/lib/auth/server-auth";
@@ -26,6 +27,7 @@ const MainLayout = async ({ children }: DashboardLayoutProps) => {
         <Sidebar profile={result.profile} projects={result.projects} user={result.user} />
         <main className="flex-1 min-w-0 overflow-y-auto scrollbar-hide">{children}</main>
       </div>
+      <Toaster position="bottom-right" theme="dark" richColors />
     </div>
   );
 };

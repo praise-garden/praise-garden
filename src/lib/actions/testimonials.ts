@@ -24,8 +24,49 @@ export async function getTestimonials() {
         return { data: null, error: error.message };
     }
 
-    return { data, error: null };
+    // Transform raw DB data to the Testimonial interface expected by the app
+    // DB structure: { id, type, data: { customer_name, rating, message, ... }, created_at, ... }
+    // App structure: { id, author_name, rating, content, type, videoUrl, videoThumbnail, attachments, ... }
+    const transformedData = data.map(t => {
+        // Build attachments array from available image sources
+        const attachments: { type: 'image' | 'video', url: string }[] = [];
+
+        // Add company logo if available
+        if (t.data?.company?.logo_url) {
+            attachments.push({ type: 'image', url: t.data.company.logo_url });
+        } else if (t.data?.company_logo_url) {
+            attachments.push({ type: 'image', url: t.data.company_logo_url });
+        }
+
+        // For video testimonials, add thumbnail as an attachment too
+        if (t.type === 'video') {
+            const thumbnail = t.data?.thumbnails?.[t.data?.selected_thumbnail_index || 0];
+            if (thumbnail) {
+                attachments.push({ type: 'image', url: thumbnail });
+            }
+        }
+
+        return {
+            id: t.id,
+            user_id: t.user_id,
+            type: t.type || 'text', // 'text' or 'video'
+            author_name: t.data?.customer_name || 'Anonymous',
+            author_title: t.data?.profession || t.data?.customer_headline || t.data?.company?.job_title || '',
+            author_avatar_url: t.data?.customer_avatar_url || t.data?.media?.avatar_url || null,
+            rating: t.data?.rating ?? 5,
+            content: t.data?.message || '',
+            source: t.data?.source || 'MANUAL',
+            video_url: t.data?.media?.video_url || null,
+            video_thumbnail: t.data?.thumbnails?.[t.data?.selected_thumbnail_index || 0] || null,
+            attachments,
+            created_at: t.created_at,
+            updated_at: t.updated_at || t.created_at,
+        };
+    });
+
+    return { data: transformedData, error: null };
 }
+
 
 export async function createTestimonial(formData: any) {
     const supabase = await createClient();
@@ -200,13 +241,17 @@ export async function deleteTestimonial(id: string | number) {
 
     if (!user) throw new Error("Unauthorized");
 
-    // 1. Fetch data to identify files
+    // 1. Fetch data to identify files and customer email
     const { data: record } = await supabase
         .from('testimonials')
-        .select('data')
+        .select('data, project_id')
         .eq('id', id)
         .eq('user_id', user.id)
         .single();
+
+    // Store customer email and project_id for cleanup later
+    const customerEmail = record?.data?.customer_email;
+    const projectId = record?.project_id;
 
     if (record?.data) {
         const pathsToDelete: string[] = [];
@@ -279,6 +324,7 @@ export async function deleteTestimonial(id: string | number) {
         }
     }
 
+    // 2. Delete the testimonial
     const { error } = await supabase
         .from('testimonials')
         .delete()
@@ -288,6 +334,41 @@ export async function deleteTestimonial(id: string | number) {
     if (error) {
         console.error("Delete error:", error);
         throw new Error("Failed to delete testimonial: " + error.message);
+    }
+
+    // 3. Cleanup orphaned customer record
+    if (customerEmail && projectId) {
+        try {
+            // Count remaining testimonials with this email in this project
+            const { count, error: countError } = await supabase
+                .from('testimonials')
+                .select('id', { count: 'exact', head: true })
+                .eq('project_id', projectId)
+                .eq('user_id', user.id)
+                .filter('data->>customer_email', 'eq', customerEmail);
+
+            if (countError) {
+                console.error("Error counting testimonials for customer cleanup:", countError);
+            } else if (count === 0) {
+                // No other testimonials with this email - delete the customer record
+                const { error: deleteCustomerError } = await supabase
+                    .from('customers')
+                    .delete()
+                    .eq('project_id', projectId)
+                    .eq('email', customerEmail);
+
+                if (deleteCustomerError) {
+                    console.error("Failed to delete orphaned customer:", deleteCustomerError);
+                } else {
+                    console.log(`Deleted orphaned customer record for email: ${customerEmail}`);
+                }
+            } else {
+                console.log(`Customer ${customerEmail} has ${count} remaining testimonials, keeping customer record.`);
+            }
+        } catch (customerCleanupError) {
+            // Don't block deletion success just because customer cleanup failed
+            console.error("Customer cleanup failed:", customerCleanupError);
+        }
     }
 
     revalidatePath("/dashboard");
@@ -306,25 +387,52 @@ export async function updateTestimonialContent(id: string | number, data: any) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    // Fetch existing
+    // Fetch existing testimonial with project_id
     const { data: existing, error: fetchError } = await supabase
         .from('testimonials')
-        .select('data')
+        .select('data, project_id')
         .eq('id', id)
         .eq('user_id', user.id)
         .single();
 
     if (fetchError || !existing) throw new Error("Testimonial not found");
 
+    const projectId = existing.project_id;
+    const originalEmail = existing.data?.customer_email;
+    const newEmail = data.customer_email;
 
+    // If email is being changed, check if it already exists in customers table
+    if (newEmail && newEmail !== originalEmail) {
+        const { count, error: checkError } = await supabase
+            .from('customers')
+            .select('*', { count: 'exact', head: true })
+            .eq('project_id', projectId)
+            .eq('email', newEmail);
 
+        if (checkError) {
+            console.error("Error checking customer email:", checkError);
+        }
+
+        if (count && count > 0) {
+            return { success: false, error: "This email already exists" };
+        }
+    }
+
+    // Merge incoming updates with existing data
     const newData = {
         ...existing.data,
         ...data // Merge incoming updates
     };
 
+    // If company data is being updated, merge it properly
+    if (data.company && existing.data?.company) {
+        newData.company = {
+            ...existing.data.company,
+            ...data.company
+        };
+    }
 
-
+    // Update the testimonial
     const { error } = await supabase
         .from('testimonials')
         .update({ data: newData })
@@ -334,6 +442,63 @@ export async function updateTestimonialContent(id: string | number, data: any) {
     if (error) {
         console.error("Update content error:", error);
         throw new Error("Failed to update content: " + error.message);
+    }
+
+    // Sync customer record if email was changed
+    if (newEmail && newEmail !== originalEmail && projectId) {
+        try {
+            if (originalEmail) {
+                // Update existing customer record's email
+                const { error: updateCustomerError } = await supabase
+                    .from('customers')
+                    .update({
+                        email: newEmail,
+                        full_name: data.customer_name || newData.customer_name,
+                        headline: data.customer_headline || newData.customer_headline,
+                    })
+                    .eq('project_id', projectId)
+                    .eq('email', originalEmail);
+
+                if (updateCustomerError) {
+                    console.error("Failed to update customer email:", updateCustomerError);
+                } else {
+                    console.log(`Updated customer email from ${originalEmail} to ${newEmail}`);
+                }
+            } else {
+                // No original email - insert new customer
+                await supabase.from('customers').insert({
+                    project_id: projectId,
+                    email: newEmail,
+                    full_name: data.customer_name || newData.customer_name || 'Anonymous',
+                    headline: data.customer_headline || newData.customer_headline,
+                    company_details: newData.company || {},
+                    social_profiles: {}
+                });
+                console.log(`Created new customer record for ${newEmail}`);
+            }
+        } catch (customerSyncError) {
+            console.error("Customer sync failed:", customerSyncError);
+            // Don't fail the main update
+        }
+    } else if (originalEmail && projectId) {
+        // Email not changed but other customer details might have changed - update customer record
+        try {
+            const { error: updateCustomerError } = await supabase
+                .from('customers')
+                .update({
+                    full_name: data.customer_name || newData.customer_name,
+                    headline: data.customer_headline || newData.customer_headline,
+                    company_details: newData.company || existing.data?.company || {}
+                })
+                .eq('project_id', projectId)
+                .eq('email', originalEmail);
+
+            if (updateCustomerError) {
+                console.error("Failed to sync customer details:", updateCustomerError);
+            }
+        } catch (customerSyncError) {
+            console.error("Customer details sync failed:", customerSyncError);
+        }
     }
 
     revalidatePath("/dashboard");

@@ -50,7 +50,7 @@ export function PraiseTestimonialCard({
       role="article"
       aria-label={`Testimonial by ${testimonial.authorName}`}
       className={cn(
-        "h-full",
+        "h-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800",
         compact ? "p-4" : "p-6",
         className
       )}

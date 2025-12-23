@@ -25,7 +25,6 @@ import { ModernFontPicker } from "@/components/ui/modern-font-picker"
 import { ShareWidgetPanel } from "@/components/widgets/ShareWidgetPanel"
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
 import { useUserData } from "@/contexts/UserDataContext"
-import { Testimonial as DBTestimonial } from "@/types/database"
 
 // Re-export the Testimonial type for use elsewhere
 export type WidgetTestimonial = Testimonial;
@@ -141,6 +140,7 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
     }
     return dbTestimonials.map(t => ({
       id: t.id,
+      type: (t as any).type || 'text',
       authorName: t.author_name,
       authorTitle: t.author_title || '',
       authorAvatarUrl: t.author_avatar_url,
@@ -148,6 +148,9 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
       content: t.content,
       source: t.source,
       date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      videoUrl: (t as any).video_url || null,
+      videoThumbnail: (t as any).video_thumbnail || null,
+      attachments: (t as any).attachments || [],
     }))
   }, [dbTestimonials])
 

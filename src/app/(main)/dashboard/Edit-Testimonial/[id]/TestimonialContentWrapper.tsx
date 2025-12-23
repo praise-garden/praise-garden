@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
     Star,
@@ -9,7 +9,10 @@ import {
     Twitter,
     Linkedin,
     ChevronLeft,
-    Download
+    Download,
+    Pencil,
+    Check,
+    X
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -18,6 +21,7 @@ import { EditVideoTestimonialForm } from "./EditVideoTestimonialForm";
 import { updateTestimonialContent } from "@/lib/actions/testimonials";
 import { TestimonialToolbar } from "@/components/dashboard/TestimonialToolbar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -34,9 +38,69 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
     const [isTrimOpen, setIsTrimOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'testimonials' | 'invites' | 'feedback' | 'user-details'>('testimonials');
 
+    // User Details Edit State
+    const [isEditingUserDetails, setIsEditingUserDetails] = useState(false);
+    const [editName, setEditName] = useState(testimonial.reviewer || "");
+    const [editEmail, setEditEmail] = useState(testimonial.email || "");
+    const [editHeadline, setEditHeadline] = useState(testimonial.profession || "");
+    const [editCompanyName, setEditCompanyName] = useState(testimonial.raw?.data?.company?.name || "");
+    const [editCompanyWebsite, setEditCompanyWebsite] = useState(testimonial.raw?.data?.company?.website || "");
+    const [isSavingUserDetails, setIsSavingUserDetails] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const emailInputRef = useRef<HTMLInputElement>(null);
+
     const isVideo = testimonial.type === 'video' || testimonial.attachments?.some((a: any) => a.type === 'video');
     const videoUrl = testimonial.attachments?.find((a: any) => a.type === 'video')?.url;
     const companyLogo = testimonial.attachments?.find((a: any) => a.type === 'image')?.url;
+
+    // Handle Save User Details
+    const handleSaveUserDetails = async () => {
+        setIsSavingUserDetails(true);
+        setEmailError(null); // Clear previous error
+
+        try {
+            const result = await updateTestimonialContent(testimonial.id, {
+                customer_name: editName,
+                customer_email: editEmail,
+                customer_headline: editHeadline,
+                company: {
+                    ...testimonial.raw?.data?.company,
+                    name: editCompanyName,
+                    website: editCompanyWebsite
+                }
+            });
+
+            if (result && !result.success && result.error) {
+                // Check if it's an email error
+                if (result.error.toLowerCase().includes('email')) {
+                    setEmailError(result.error);
+                    emailInputRef.current?.focus();
+                } else {
+                    toast.error(result.error);
+                }
+                return;
+            }
+
+            toast.success("User details updated!");
+            setIsEditingUserDetails(false);
+            router.refresh();
+        } catch (err: any) {
+            toast.error("Failed to save: " + (err.message || "Unknown error"));
+        } finally {
+            setIsSavingUserDetails(false);
+        }
+    };
+
+    const handleCancelUserDetailsEdit = () => {
+        // Reset to original values
+        setEditName(testimonial.reviewer || "");
+        setEditEmail(testimonial.email || "");
+        setEditHeadline(testimonial.profession || "");
+        setEditCompanyName(testimonial.raw?.data?.company?.name || "");
+        setEditCompanyWebsite(testimonial.raw?.data?.company?.website || "");
+        setEmailError(null);
+        setIsEditingUserDetails(false);
+    };
 
     const handleSaveTrim = async (start: number, end: number) => {
         setIsTrimOpen(false); // Close first for visual feedback
@@ -200,7 +264,36 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                 {activeTab === 'user-details' && (
                     <div className="max-w-2xl mx-auto space-y-6">
                         <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 space-y-6">
-                            <h3 className="text-lg font-medium text-white">User Information</h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-medium text-white">User Information</h3>
+                                {!isEditingUserDetails ? (
+                                    <button
+                                        onClick={() => setIsEditingUserDetails(true)}
+                                        className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                        title="Edit user details"
+                                    >
+                                        <Pencil className="size-4" />
+                                    </button>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleCancelUserDetailsEdit}
+                                            className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                            title="Cancel"
+                                        >
+                                            <X className="size-4" />
+                                        </button>
+                                        <button
+                                            onClick={handleSaveUserDetails}
+                                            disabled={isSavingUserDetails}
+                                            className="p-2 rounded-lg bg-green-600 hover:bg-green-500 text-white transition-colors disabled:opacity-50"
+                                            title="Save changes"
+                                        >
+                                            <Check className="size-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
 
                             <div className="flex items-center gap-6 pb-2">
                                 <Avatar className="size-20 bg-zinc-800 ring-2 ring-zinc-700">
@@ -218,39 +311,112 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                             <div className="grid gap-6 md:grid-cols-2 border-t border-zinc-800/50 pt-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-500">Full Name</label>
-                                    <div className="text-zinc-200 font-medium">{testimonial.reviewer}</div>
+                                    {isEditingUserDetails ? (
+                                        <Input
+                                            value={editName}
+                                            onChange={(e) => setEditName(e.target.value)}
+                                            className="bg-zinc-900 border-zinc-700 text-zinc-200"
+                                            placeholder="Enter full name"
+                                        />
+                                    ) : (
+                                        <div className="text-zinc-200 font-medium">{testimonial.reviewer}</div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-500">Email</label>
-                                    <div className="text-zinc-200">{testimonial.email || "N/A"}</div>
+                                    {isEditingUserDetails ? (
+                                        <div className="space-y-1">
+                                            <Input
+                                                ref={emailInputRef}
+                                                value={editEmail}
+                                                onChange={(e) => {
+                                                    setEditEmail(e.target.value);
+                                                    if (emailError) setEmailError(null); // Clear error on change
+                                                }}
+                                                className={cn(
+                                                    "bg-zinc-900 border-zinc-700 text-zinc-200",
+                                                    emailError && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                                )}
+                                                placeholder="Enter email"
+                                                type="email"
+                                            />
+                                            {emailError && (
+                                                <p className="text-xs text-red-400 flex items-center gap-1">
+                                                    <span className="inline-block size-1 rounded-full bg-red-400"></span>
+                                                    {emailError}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-zinc-200">{testimonial.email || "N/A"}</div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-500">Headline / Job Title</label>
-                                    <div className="text-zinc-200">{testimonial.profession || "N/A"}</div>
+                                    {isEditingUserDetails ? (
+                                        <Input
+                                            value={editHeadline}
+                                            onChange={(e) => setEditHeadline(e.target.value)}
+                                            className="bg-zinc-900 border-zinc-700 text-zinc-200"
+                                            placeholder="Enter headline or job title"
+                                        />
+                                    ) : (
+                                        <div className="text-zinc-200">{testimonial.profession || "N/A"}</div>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 space-y-6">
-                            <h3 className="text-lg font-medium text-white">Company Information</h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-medium text-white">Company Information</h3>
+                                {!isEditingUserDetails && (
+                                    <button
+                                        onClick={() => setIsEditingUserDetails(true)}
+                                        className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                        title="Edit company details"
+                                    >
+                                        <Pencil className="size-4" />
+                                    </button>
+                                )}
+                            </div>
                             <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-500">Company Name</label>
-                                    <div className="flex items-center gap-2">
-                                        {companyLogo && (
-                                            <div className="size-6 rounded bg-zinc-800 overflow-hidden flex items-center justify-center">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img src={companyLogo} alt="Company Logo" className="w-full h-full object-cover" />
-                                            </div>
-                                        )}
-                                        <div className="text-zinc-200">{testimonial.raw.data.company?.name || "N/A"}</div>
-                                    </div>
+                                    {isEditingUserDetails ? (
+                                        <Input
+                                            value={editCompanyName}
+                                            onChange={(e) => setEditCompanyName(e.target.value)}
+                                            className="bg-zinc-900 border-zinc-700 text-zinc-200"
+                                            placeholder="Enter company name"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            {companyLogo && (
+                                                <div className="size-6 rounded bg-zinc-800 overflow-hidden flex items-center justify-center">
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img src={companyLogo} alt="Company Logo" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
+                                            <div className="text-zinc-200">{testimonial.raw?.data?.company?.name || "N/A"}</div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-500">Website</label>
-                                    <a href={testimonial.raw.data.company?.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline block truncate transition-colors">
-                                        {testimonial.raw.data.company?.website || "N/A"}
-                                    </a>
+                                    {isEditingUserDetails ? (
+                                        <Input
+                                            value={editCompanyWebsite}
+                                            onChange={(e) => setEditCompanyWebsite(e.target.value)}
+                                            className="bg-zinc-900 border-zinc-700 text-zinc-200"
+                                            placeholder="https://example.com"
+                                            type="url"
+                                        />
+                                    ) : (
+                                        <a href={testimonial.raw?.data?.company?.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline block truncate transition-colors">
+                                            {testimonial.raw?.data?.company?.website || "N/A"}
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         </div>
