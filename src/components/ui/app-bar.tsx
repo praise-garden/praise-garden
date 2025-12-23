@@ -1,21 +1,32 @@
 import React from 'react';
-import Logo from '@/components/ui/Logo';
 
 interface AppBarProps {
   onBack?: () => void;
   showBackButton?: boolean;
   maxWidthClass?: string;
   paddingXClass?: string;
+  logoUrl?: string;
 }
 
-const AppBar = ({ onBack, showBackButton = true, maxWidthClass = 'max-w-3xl', paddingXClass = 'px-6 sm:px-12' }: AppBarProps) => {
+const AppBar = ({
+  onBack,
+  showBackButton = true,
+  maxWidthClass = 'max-w-3xl',
+  paddingXClass = 'px-6 sm:px-12',
+  logoUrl,
+}: AppBarProps) => {
   return (
     <div className="w-full">
       <div className={`mx-auto flex w-full items-center justify-between pt-8 ${maxWidthClass} ${paddingXClass}`}>
         {/* Logo */}
         <div className="flex items-center gap-4">
-          <Logo size={32} className="h-8 sm:h-10" />
-          <span className="text-white text-xl font-bold hidden sm:block">Trustimonials</span>
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt="Brand Logo"
+              className="h-8 sm:h-10 w-auto object-contain"
+            />
+          )}
         </div>
 
         {/* Back Button */}

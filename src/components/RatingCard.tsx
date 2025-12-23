@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Logo from '@/components/ui/Logo';
 import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,7 +23,7 @@ const StarIcon = ({ filled, className }: { filled: boolean; className?: string }
   </svg>
 );
 
-const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props }) => {
+const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,22 +53,27 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, ...props 
   };
 
   return (
-    <FormCard {...props}>
+    <FormCard {...props} theme={theme}>
       <div className="flex-grow flex flex-col items-center justify-center px-8 sm:px-16 py-10 text-center overflow-hidden relative">
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-radial from-purple-500/5 via-transparent to-transparent blur-3xl"></div>
 
         <div className="relative z-10 w-full max-w-3xl mx-auto space-y-8">
           {/* Brand Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex justify-center items-center gap-2.5"
-          >
-            <Logo size={32} className="object-contain" />
-            <span className="text-white text-xl font-bold">Trustimonials</span>
-          </motion.div>
+          {theme?.logoUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="flex justify-center items-center"
+            >
+              <img
+                src={theme.logoUrl}
+                alt="Brand Logo"
+                className="h-10 w-auto object-contain"
+              />
+            </motion.div>
+          )}
 
           {/* Main Heading */}
           <motion.div

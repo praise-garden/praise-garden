@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentBlockConfig } from '@/types/form-config';
-import Logo from '@/components/ui/Logo';
 
 interface ConsentCardProps extends Omit<FormCardProps, 'config'> {
     config: ConsentBlockConfig;
@@ -119,7 +118,7 @@ const UsageOption: React.FC<UsageOptionProps> = ({
     );
 };
 
-const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...props }) => {
+const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
     const [selectedMode, setSelectedMode] = useState<UsageMode>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -142,22 +141,27 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, ...prop
     };
 
     return (
-        <FormCard {...props}>
+        <FormCard {...props} theme={theme}>
             <div className="flex-grow flex flex-col items-center justify-center px-8 sm:px-16 py-10 text-center overflow-hidden relative">
                 {/* Subtle background gradient - very neutral */}
                 <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent blur-3xl opacity-50"></div>
 
                 <div className="relative z-10 w-full max-w-xl mx-auto space-y-6">
                     {/* Brand Logo */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="flex justify-center items-center gap-2.5"
-                    >
-                        <Logo size={28} className="object-contain" />
-                        <span className="text-white text-lg font-bold">Trustimonials</span>
-                    </motion.div>
+                    {theme?.logoUrl && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="flex justify-center items-center"
+                        >
+                            <img
+                                src={theme.logoUrl}
+                                alt="Brand Logo"
+                                className="h-10 w-auto object-contain"
+                            />
+                        </motion.div>
+                    )}
 
                     {/* Main Heading */}
                     <motion.div

@@ -165,7 +165,7 @@ const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...props }) => {
+const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
     const [showConfetti, setShowConfetti] = useState(true);
 
     const handleFieldClick = (fieldPath: string) => {
@@ -179,7 +179,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
     }, []);
 
     return (
-        <FormCard {...props}>
+        <FormCard {...props} theme={theme}>
             <div className="flex-grow flex overflow-hidden relative bg-black">
 
                 {/* Confetti (only for a few seconds, when animations enabled) */}
@@ -193,7 +193,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, ...pr
                 {/* Main content area */}
                 <div className={`flex-grow flex flex-col items-center overflow-hidden relative z-10 ${config.props.showSocials ? '' : 'justify-center'}`}>
                     {config.props.showSocials && (
-                        <AppBar showBackButton={false} maxWidthClass="max-w-3xl" paddingXClass="px-8" />
+                        <AppBar showBackButton={false} maxWidthClass="max-w-3xl" paddingXClass="px-8" logoUrl={theme?.logoUrl} />
                     )}
 
                     <div className={`w-full px-8 ${config.props.showSocials ? 'pt-8 pb-6' : 'py-8'}`}>

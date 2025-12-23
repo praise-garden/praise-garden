@@ -12,16 +12,16 @@ interface PrivateFeedbackCardProps extends FormCardProps {
   onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
-const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFieldFocus, ...props }) => {
+const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
 
   const handleFieldClick = (fieldPath: string) => {
     onFieldFocus(config.id, fieldPath);
   };
 
   return (
-    <FormCard {...props}>
+    <FormCard {...props} theme={theme}>
       <div className="flex-grow flex flex-col items-center justify-center overflow-y-auto">
-        <AppBar onBack={props.onPrevious} />
+        <AppBar onBack={props.onPrevious} logoUrl={theme?.logoUrl} />
         <ContentContainer className="pb-10 pt-10">
           <h1
             className="text-lg sm:text-xl font-bold leading-normal text-white"

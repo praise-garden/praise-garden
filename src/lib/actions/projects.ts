@@ -97,9 +97,16 @@ export async function updateProjectBrand(projectId: string, brandSettings: any) 
 
     if (count === 0) throw new Error("Unauthorized");
 
+    const updateData: any = { brand_settings: brandSettings };
+
+    // Sync brand name to project name if present
+    if (brandSettings.brandName && typeof brandSettings.brandName === 'string' && brandSettings.brandName.trim().length > 0) {
+        updateData.name = brandSettings.brandName.trim();
+    }
+
     const { error } = await supabase
         .from('projects')
-        .update({ brand_settings: brandSettings })
+        .update(updateData)
         .eq('id', projectId);
 
     if (error) {

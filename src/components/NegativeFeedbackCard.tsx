@@ -17,14 +17,14 @@ interface NegativeFeedbackCardProps extends FormCardProps {
     onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
-const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onFieldFocus, ...props }) => {
+const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
 
     const handleFieldClick = (fieldPath: string) => {
         onFieldFocus(config.id, fieldPath);
     };
 
     return (
-        <FormCard {...props}>
+        <FormCard {...props} theme={theme}>
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
                 {/* Left Side: Compassionate Message */}
                 <div className="w-full md:w-2/5 bg-[#2a2a2a] flex flex-col overflow-hidden">
@@ -34,6 +34,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             showBackButton={Boolean(props.onPrevious)}
                             maxWidthClass="max-w-sm"
                             paddingXClass="px-8"
+                            logoUrl={theme?.logoUrl}
                         />
                     </div>
                     <div className="flex-grow flex items-center justify-center px-8 pb-10">

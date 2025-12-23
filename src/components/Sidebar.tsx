@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
@@ -25,7 +25,7 @@ const navSections = [
     items: [
       { label: "Form Builder", icon: "form", href: "/forms" },
       { label: "Design", icon: "widget", href: "/design" },
-      { label: "Brand", icon: "palette", href: "/brand" },
+      { label: "Brand", icon: "sparkles", href: "/brand" },
     ],
   },
 ];
@@ -39,6 +39,14 @@ const Icon = ({ name, className }: { name: string; className?: string }) => {
         <circle cx="12" cy="7.5" r=".5" fill="currentColor" />
         <circle cx="16.5" cy="10.5" r=".5" fill="currentColor" />
         <circle cx="12" cy="15" r=".5" fill="currentColor" />
+      </svg>
+    )
+  }
+  if (name === "sparkles") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 24" className={className}>
+        <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" fill="none" stroke="none" />
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     )
   }
@@ -110,6 +118,7 @@ type ProfileSummary = {
 type ProjectSummary = {
   id: string;
   name: string | null;
+  brand_settings?: any;
 };
 
 type SidebarProps = {
@@ -194,9 +203,146 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
 
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   return (
     <>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800/50 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Logo size={28} />
+          <span className="font-bold text-white text-lg">Trustimonials</span>
+        </div>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+          aria-label="Toggle menu"
+        >
+          {isMobileMenuOpen ? (
+            <svg className="size-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="size-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar Drawer */}
+      <aside
+        aria-label="Mobile navigation"
+        className={`lg:hidden fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50 transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+      >
+        <div className="flex h-full flex-col pt-16">
+          {/* Close button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            aria-label="Close menu"
+          >
+            <svg className="size-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Navigation */}
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            {/* Project Selector */}
+            <button
+              onClick={() => {
+                setIsProjectModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-between rounded-xl p-3 mb-6 bg-zinc-900/60 border border-zinc-800/60 hover:bg-zinc-800 hover:border-zinc-700 transition-all group shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                {activeProject?.brand_settings?.logoUrl ? (
+                  <div className="size-8 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+                    <img
+                      src={activeProject.brand_settings.logoUrl}
+                      alt={formatProjectName(activeProject)}
+                      className="w-full h-full object-contain p-1"
+                    />
+                  </div>
+                ) : (
+                  <div className="size-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+                    {projectInitials}
+                  </div>
+                )}
+                <span className="text-white font-medium truncate max-w-[140px]">{formatProjectName(activeProject)}</span>
+              </div>
+              <ChevronsUpDown className="size-4 text-gray-500" />
+            </button>
+
+            {/* Nav Sections */}
+            {navSections.map((section) => (
+              <div key={section.title} className="mb-6">
+                <span className="block px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                  {section.title}
+                </span>
+                <nav className="space-y-1">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive
+                          ? "bg-gradient-to-r from-violet-600/20 to-indigo-600/20 text-white border-l-2 border-violet-500"
+                          : "text-gray-400 hover:text-white hover:bg-gray-800/50"
+                          }`}
+                      >
+                        <Icon name={item.icon} className="size-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+            ))}
+          </div>
+
+          {/* User Profile */}
+          <div className="flex-shrink-0 p-4 border-t border-gray-800/50">
+            <button
+              onClick={() => {
+                setIsProfileModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+            >
+              <Avatar className="size-9 border-2 border-gray-700">
+                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                <AvatarFallback className="bg-gray-800 text-white text-sm font-bold">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Desktop Sidebar */}
       <aside
         aria-label="Primary navigation"
         className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-900/95 border-r border-gray-800/50"
@@ -221,22 +367,32 @@ const Sidebar = ({ user, profile, projects }: SidebarProps) => {
             <div className="mb-8">
               <button
                 onClick={() => setIsProjectModalOpen(true)}
-                className="group w-full flex items-center justify-between p-3 rounded-2xl bg-gray-800/60 hover:bg-gray-800/80 transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 cursor-pointer"
+                className="w-full flex items-center justify-between rounded-xl p-3 mb-6 bg-zinc-900/60 border border-zinc-800/60 hover:bg-zinc-800 hover:border-zinc-700 transition-all group shadow-sm"
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shadow-md group-hover:shadow-lg transition-shadow">
-                    {projectInitials || "PG"}
-                  </div>
-                  <div className="min-w-0 flex-1 text-left">
-                    <p
-                      className="truncate text-sm font-semibold text-gray-50 group-hover:text-white transition-colors"
-                      title={formatProjectName(activeProject)}
-                    >
+                <div className="flex items-center gap-3 min-w-0">
+                  {activeProject?.brand_settings?.logoUrl ? (
+                    <div className="size-8 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+                      <img
+                        src={activeProject.brand_settings.logoUrl}
+                        alt={formatProjectName(activeProject)}
+                        className="w-full h-full object-contain p-1"
+                      />
+                    </div>
+                  ) : (
+                    <div className="size-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-violet-500/20 shrink-0">
+                      {projectInitials}
+                    </div>
+                  )}
+                  <div className="flex flex-col items-start min-w-0">
+                    <span className="text-sm font-semibold text-white truncate w-full text-left">
                       {formatProjectName(activeProject)}
-                    </p>
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-medium">
+                      {planLabel} Plan
+                    </span>
                   </div>
                 </div>
-                <ChevronsUpDown className="size-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
+                <ChevronsUpDown className="size-4 text-gray-500 group-hover:text-gray-300 transition-colors shrink-0" />
               </button>
             </div>
 

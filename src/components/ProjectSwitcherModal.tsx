@@ -12,6 +12,7 @@ import { createProject, switchProject } from "@/lib/actions/projects";
 type ProjectSummary = {
     id: string;
     name: string | null;
+    brand_settings?: any;
 };
 
 type ProjectSwitcherModalProps = {
@@ -112,12 +113,20 @@ export default function ProjectSwitcherModal({
                                         )}
                                     >
                                         <div className={cn(
-                                            "flex-shrink-0 size-10 rounded-lg flex items-center justify-center font-bold text-sm transition-colors",
+                                            "flex-shrink-0 size-10 rounded-lg flex items-center justify-center font-bold text-sm transition-all overflow-hidden border",
                                             selectedId === project.id
-                                                ? "bg-violet-600 text-white"
-                                                : "bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 group-hover:text-zinc-200"
+                                                ? "bg-violet-600 text-white border-violet-500"
+                                                : "bg-zinc-800 text-zinc-400 border-zinc-700 group-hover:bg-zinc-700 group-hover:text-zinc-200"
                                         )}>
-                                            {project.name?.slice(0, 2).toUpperCase() || "P"}
+                                            {project.brand_settings?.logoUrl ? (
+                                                <img
+                                                    src={project.brand_settings.logoUrl}
+                                                    alt={project.name || "Project Logo"}
+                                                    className="w-full h-full object-contain p-1"
+                                                />
+                                            ) : (
+                                                <span>{project.name?.slice(0, 2).toUpperCase() || "P"}</span>
+                                            )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className={cn(

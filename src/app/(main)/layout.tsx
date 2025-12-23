@@ -24,7 +24,7 @@ const MainLayout = async ({ children }: DashboardLayoutProps) => {
     <div className="h-screen bg-gray-950 text-gray-50 font-sans overflow-hidden">
       <div className="grid h-full grid-cols-1 lg:grid-cols-[16rem_1fr]">
         <Sidebar profile={result.profile} projects={result.projects} user={result.user} />
-        <main className="flex-1 min-w-0 overflow-y-auto scrollbar-hide p-6 lg:p-8">{children}</main>
+        <main className="flex-1 min-w-0 overflow-y-auto scrollbar-hide p-6 lg:p-8 pt-16 lg:pt-8">{children}</main>
       </div>
     </div>
   );

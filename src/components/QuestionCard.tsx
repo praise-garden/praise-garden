@@ -34,6 +34,7 @@ interface QuestionCardProps extends FormCardProps {
 const QuestionCard = ({
     config,
     onFieldFocus,
+    theme,
     ...cardProps
 }: QuestionCardProps) => {
 
@@ -75,6 +76,7 @@ const QuestionCard = ({
     return (
         <FormCard
             {...cardProps}
+            theme={theme}
         >
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
                 {/* Left Panel: The "Ask" - Animate width */}
@@ -89,6 +91,7 @@ const QuestionCard = ({
                             showBackButton={Boolean(cardProps.onPrevious)}
                             maxWidthClass="max-w-lg"
                             paddingXClass="px-8 md:px-14"
+                            logoUrl={theme?.logoUrl}
                         />
                     </div>
                     <div className="flex-grow overflow-y-auto px-8 md:px-14 pb-10">
@@ -248,7 +251,7 @@ const QuestionCard = ({
                                 exit="exit"
                                 className="w-full h-full flex flex-col"
                             >
-                                <AppBar onBack={enableVideo ? () => setMode('options') : undefined} showBackButton={enableVideo} />
+                                <AppBar onBack={enableVideo ? () => setMode('options') : undefined} showBackButton={enableVideo} logoUrl={theme?.logoUrl} />
                                 <div className="flex-grow flex flex-col px-8 md:px-14 py-8 justify-center">
                                     <textarea
                                         placeholder="Share your experience..."

@@ -23,13 +23,13 @@ interface WelcomeCardProps extends Omit<FormCardProps, 'config' | 'onFieldFocus'
     onFieldFocus?: (blockId: string, fieldPath: string) => void;
 }
 
-const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...props }) => {
+const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
     const handleFieldClick = (fieldPath: string) => {
         onFieldFocus?.(config.id, fieldPath);
     };
 
     return (
-        <FormCard {...props}>
+        <FormCard {...props} theme={theme}>
             <div className="relative flex-grow flex flex-col items-center justify-center px-16 py-12 text-center overflow-hidden">
                 {/* Background Glow Effect */}
                 <div className="absolute -inset-24 bg-lime-400/10 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)] blur-3xl opacity-60"></div>
@@ -41,17 +41,15 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, ...prop
                     className="relative z-10 w-full max-w-3xl space-y-8"
                 >
                     {/* Company Branding */}
-                    <div className="flex justify-center items-center mb-6">
-                        {config.props.logoUrl && (
+                    {theme?.logoUrl && (
+                        <div className="flex justify-center items-center mb-6">
                             <img
                                 className="h-12 w-auto object-contain transition-all duration-300"
-                                src={config.props.logoUrl}
-                                alt="Company Logo"
-                                onClick={() => handleFieldClick('props.logoUrl')}
-                                data-field="props.logoUrl"
+                                src={theme.logoUrl}
+                                alt="Brand Logo"
                             />
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Main Content */}
                     <div className="space-y-4">

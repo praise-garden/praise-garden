@@ -212,7 +212,7 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: bool
     </motion.div>
 );
 
-const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus, ...props }) => {
+const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
     // Mock data - in real app, this would come from form state
@@ -236,14 +236,14 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
     };
 
     return (
-        <FormCard {...props}>
+        <FormCard {...props} theme={theme}>
             <div className="flex-grow flex flex-col overflow-hidden relative">
                 {/* Floating decorative elements */}
                 <FloatingSparkles />
 
                 {/* App bar */}
                 <div className="flex-shrink-0">
-                    <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" />
+                    <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" logoUrl={theme?.logoUrl} />
                 </div>
 
                 {/* Main scrollable content - scrollbar hidden */}

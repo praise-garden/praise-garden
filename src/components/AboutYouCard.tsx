@@ -12,16 +12,16 @@ interface AboutYouCardProps extends Omit<FormCardProps, 'config' | 'onFieldFocus
   onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
-const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, ...props }) => {
+const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
 
   const handleFieldClick = (fieldPath: string) => {
     onFieldFocus(config.id, fieldPath);
   };
 
   return (
-    <FormCard {...props}>
+    <FormCard {...props} theme={theme}>
       <div className="flex-grow flex flex-col items-center justify-start overflow-y-auto">
-        <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" />
+        <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" logoUrl={theme?.logoUrl} />
         <div className="w-full px-8 sm:px-14 pb-8 pt-8 sm:pt-10">
           <div className="mx-auto flex w-full max-w-2xl flex-col items-stretch">
             <motion.div

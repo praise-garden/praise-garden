@@ -50,8 +50,7 @@ export interface WelcomeBlockConfig extends BaseBlockConfig {
     buttonText: string;
     timingMessage: string;
     consentMessage: string;
-    logoUrl?: string;
-    // brandName removed
+    // logoUrl moved to theme level (FormTheme.logoUrl)
     titleColor: string;
     descriptionColor: string;
     buttonBgColor: string;

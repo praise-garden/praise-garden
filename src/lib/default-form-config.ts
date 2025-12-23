@@ -54,8 +54,6 @@ export const createDefaultFormConfig = ({
                     buttonText: 'Continue',
                     timingMessage: 'Takes less than 3 minutes',
                     consentMessage: "You control what's shared",
-                    brandName: 'Trustimonials',
-                    logoUrl: '/logo.svg',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
                     buttonBgColor: '#89fe65',
