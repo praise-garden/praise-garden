@@ -32,12 +32,12 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                         <AppBar
                             onBack={props.onPrevious}
                             showBackButton={Boolean(props.onPrevious)}
-                            maxWidthClass="max-w-sm"
-                            paddingXClass="px-8"
+                            maxWidthClass="max-w-lg"
+                            paddingXClass="px-8 md:px-14"
                             logoUrl={theme?.logoUrl}
                         />
                     </div>
-                    <div className="flex-grow flex items-center justify-center px-8 pb-10">
+                    <div className="flex-grow flex items-center justify-center px-8 md:px-14 pb-10">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
