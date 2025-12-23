@@ -25,6 +25,9 @@ export interface Testimonial {
     date: string;
     avatar: string;
     attachments?: { type: 'image' | 'video', url: string }[];
+    videoThumbnail?: string;
+    trimStart?: number;
+    trimEnd?: number;
     raw?: any;
 }
 

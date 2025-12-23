@@ -34,6 +34,8 @@ export async function getTestimonialsForProject(projectId: string) {
             t.data.media?.video_url ? { type: 'video', url: t.data.media.video_url } : null
         ].filter(Boolean) as { type: 'image' | 'video', url: string }[],
         videoThumbnail: t.data.thumbnails?.[t.data.selected_thumbnail_index || 0] || "",
+        trimStart: t.data.trim_start,
+        trimEnd: t.data.trim_end,
         // Keep original data handy if needed
         raw: t
     }));

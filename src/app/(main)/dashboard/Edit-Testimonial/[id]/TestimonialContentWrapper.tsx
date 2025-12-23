@@ -11,30 +11,52 @@ import {
     ChevronLeft,
     Download
 } from "lucide-react";
+
+import { useRouter } from "next/navigation";
 import { TranscriptEditor } from "./TranscriptEditor";
 import { EditVideoTestimonialForm } from "./EditVideoTestimonialForm";
+import { updateTestimonialContent } from "@/lib/actions/testimonials";
 import { TestimonialToolbar } from "@/components/dashboard/TestimonialToolbar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { TrimVideoModal } from "@/components/dashboard/TrimVideoModal";
 
 interface TestimonialContentWrapperProps {
     testimonial: any;
 }
 
 export function TestimonialContentWrapper({ testimonial }: TestimonialContentWrapperProps) {
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
+    const [isTrimOpen, setIsTrimOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'testimonials' | 'invites' | 'feedback' | 'user-details'>('testimonials');
 
     const isVideo = testimonial.type === 'video' || testimonial.attachments?.some((a: any) => a.type === 'video');
     const videoUrl = testimonial.attachments?.find((a: any) => a.type === 'video')?.url;
     const companyLogo = testimonial.attachments?.find((a: any) => a.type === 'image')?.url;
 
-
+    const handleSaveTrim = async (start: number, end: number) => {
+        setIsTrimOpen(false); // Close first for visual feedback
+        toast.loading("Saving trim...");
+        try {
+            await updateTestimonialContent(testimonial.id, {
+                trim_start: start,
+                trim_end: end
+            });
+            toast.dismiss();
+            toast.success("Trim saved successfully!");
+            router.refresh();
+        } catch (err: any) {
+            toast.dismiss();
+            toast.error("Failed to save trim: " + err.message);
+        }
+    };
 
     return (
-        <div className="h-screen flex flex-col bg-[#09090b] text-zinc-50 font-sans overflow-hidden">
+        <div className="relative h-screen flex flex-col bg-[#09090b] text-zinc-50 font-sans overflow-hidden">
             {/* Top Bar / Header */}
             <div className="flex-shrink-0 border-b border-zinc-800 px-6 py-4 flex flex-col gap-6 bg-[#09090b]">
                 {/* User Info Row */}
@@ -133,16 +155,15 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                             {/* Video Player */}
                             {isVideo && videoUrl ? (
                                 <div className="w-full md:w-[50%] rounded-lg overflow-hidden bg-black aspect-video relative group shadow-lg ring-1 ring-zinc-800">
-                                    {videoUrl.startsWith('http') || videoUrl.startsWith('blob:') ? (
-                                        <video src={videoUrl} poster={testimonial.videoThumbnail} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" controls playsInline />
-                                    ) : (
-                                        <iframe
-                                            src={`https://iframe.videodelivery.net/${videoUrl}${testimonial.videoThumbnail ? `?poster=${encodeURIComponent(testimonial.videoThumbnail)}` : ''}`}
-                                            className="w-full h-full"
-                                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                                            allowFullScreen
-                                        ></iframe>
-                                    )}
+                                    <TrimVideoModal
+                                        videoUrl={videoUrl}
+                                        poster={testimonial.videoThumbnail}
+                                        isOpen={isTrimOpen}
+                                        onClose={() => setIsTrimOpen(false)}
+                                        onSave={handleSaveTrim}
+                                        startTime={testimonial.raw?.data?.trim_start}
+                                        endTime={testimonial.raw?.data?.trim_end}
+                                    />
                                 </div>
                             ) : (
                                 <div className="w-full md:w-[50%] aspect-video bg-zinc-900/50 border border-zinc-800 rounded-lg flex items-center justify-center text-zinc-600">
@@ -171,6 +192,7 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                             testimonialId={testimonial.id}
                             isVideo={isVideo}
                             onEdit={() => setIsEditing(true)}
+                            onTrim={() => setIsTrimOpen(true)}
                         />
                     </div>
                 )}
@@ -235,6 +257,8 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                     </div>
                 )}
             </div>
+
+
         </div>
     );
 }

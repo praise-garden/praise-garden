@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Copy, Edit2, Mail, Trash2, Video, MessageSquare, Twitter, Linkedin, Star, Play } from "lucide-react";
+import { Copy, Edit2, Mail, Trash2, Video, MessageSquare, Twitter, Linkedin, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TestimonialRowCardProps {
@@ -23,6 +21,8 @@ interface TestimonialRowCardProps {
         avatar: string;
         attachments?: { type: 'image' | 'video', url: string }[];
         videoThumbnail?: string;
+        trimStart?: number;
+        trimEnd?: number;
     };
     onStatusChange: (id: string | number) => void;
     onDelete: (id: string | number) => void;
@@ -77,67 +77,22 @@ const getSourceStyles = (source: string): string => {
     return "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800 hover:border-zinc-700";
 };
 
-const VideoPreview = ({ url, poster }: { url: string; poster?: string }) => {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const videoRef = useRef<HTMLVideoElement>(null);
+// Use the reusable VideoPlayer component
+import { VideoPlayer } from "@/components/ui/VideoPlayer";
 
-    const isCloudflare = !url.startsWith('http') && !url.startsWith('blob:');
-
-    const handlePlay = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent row selection
-        if (isCloudflare) {
-            setIsPlaying(true);
-        } else {
-            if (videoRef.current) {
-                videoRef.current.play();
-                setIsPlaying(true);
-            }
-        }
-    };
-
+const VideoPreview = ({ url, poster, trimStart, trimEnd }: { url: string; poster?: string; trimStart?: number; trimEnd?: number }) => {
     return (
-        <div className="rounded-xl overflow-hidden border border-zinc-800 bg-black/40 w-[140px] aspect-video relative group/video flex-shrink-0">
-            {isCloudflare ? (
-                isPlaying ? (
-                    <iframe
-                        src={`https://iframe.videodelivery.net/${url}?autoplay=true${poster ? `&poster=${encodeURIComponent(poster)}` : ''}`}
-                        className="w-full h-full"
-                        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                        allowFullScreen
-                    ></iframe>
-                ) : (
-                    <img
-                        src={poster || `https://videodelivery.net/${url}/thumbnails/thumbnail.jpg?height=600`}
-                        className="w-full h-full object-cover"
-                        alt="Video Thumbnail"
-                    />
-                )
-            ) : (
-                <video
-                    ref={videoRef}
-                    src={url}
-                    poster={poster}
-                    className="w-full h-full object-cover"
-                    controls={isPlaying}
-                    playsInline
-                    preload="metadata"
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
-                    onClick={(e) => e.stopPropagation()}
-                />
-            )}
-
-            {!isPlaying && (
-                <div
-                    onClick={handlePlay}
-                    className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/video:bg-black/40 transition-colors cursor-pointer z-10"
-                >
-                    <div className="size-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg group-hover/video:scale-110 transition-transform">
-                        <Play className="size-4 text-white fill-white ml-0.5" />
-                    </div>
-                </div>
-            )}
-        </div>
+        <VideoPlayer
+            url={url}
+            poster={poster}
+            trimStart={trimStart}
+            trimEnd={trimEnd}
+            showControls={false}
+            showPlayPauseButton={true}
+            overlayOnHoverOnly={true}
+            showDurationBadge={true}
+            className="rounded-xl border border-zinc-800 bg-black/40 w-[140px] aspect-video flex-shrink-0"
+        />
     );
 };
 
@@ -237,7 +192,7 @@ export function TestimonialRowCard({ testimonial, onStatusChange, onDelete, onEd
                             (() => {
                                 const vid = testimonial.attachments?.find(a => a.type === 'video');
                                 if (vid) {
-                                    return <VideoPreview url={vid.url} poster={testimonial.videoThumbnail} />;
+                                    return <VideoPreview url={vid.url} poster={testimonial.videoThumbnail} trimStart={testimonial.trimStart} trimEnd={testimonial.trimEnd} />;
                                 }
                                 return null;
                             })()

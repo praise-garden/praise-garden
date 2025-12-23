@@ -18,9 +18,10 @@ interface TestimonialToolbarProps {
     testimonialId: string | number;
     isVideo: boolean;
     onEdit?: () => void;
+    onTrim?: () => void;
 }
 
-export function TestimonialToolbar({ testimonialId, isVideo, onEdit }: TestimonialToolbarProps) {
+export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: TestimonialToolbarProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -66,7 +67,10 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit }: Testimoni
                     {isVideo && (
                         <Button
                             variant="ghost"
-                            onClick={() => router.push(`/dashboard/Trim-Video/${testimonialId}`)}
+                            onClick={() => {
+                                if (onTrim) onTrim();
+                                else router.push(`/dashboard/Trim-Video/${testimonialId}`);
+                            }}
                             className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                         >
                             <Scissors className="size-4" />

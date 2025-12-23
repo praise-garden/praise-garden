@@ -12,6 +12,7 @@ import { uploadImageToStorage, deleteImageFromStorage } from "@/lib/storage";
 import { updateTestimonialContent } from "@/lib/actions/testimonials";
 import { generateVideoThumbnail } from "@/lib/supabase/thumbnail-generator";
 import { cn } from "@/lib/utils";
+import { VideoPlayer } from "@/components/ui/VideoPlayer";
 
 interface EditVideoTestimonialFormProps {
     testimonial: any;
@@ -41,17 +42,17 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
         testimonial.raw?.data?.selected_thumbnail_index || 0
     );
 
-    const videoRef = useRef<HTMLVideoElement>(null);
+    // Get trim values from testimonial data
+    const trimStart = testimonial.raw?.data?.trim_start;
+    const trimEnd = testimonial.raw?.data?.trim_end;
+
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        // Reset video to ensure poster (thumbnail) is valid/visible
-        if (videoRef.current) {
-            videoRef.current.load();
-            setIsPlaying(false);
-        }
 
+
+    useEffect(() => {
         // Auto-generate Cloudflare thumbnails if videoUrl is a UID
         // Ensure it's not a URL (http/https) and not a blob
         const isUid = videoUrl && !videoUrl.includes('/') && !videoUrl.startsWith('http') && !videoUrl.startsWith('blob:');
@@ -98,12 +99,7 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
 
 
 
-    const handlePlay = () => {
-        if (videoRef.current) {
-            videoRef.current.play();
-            setIsPlaying(true);
-        }
-    };
+
 
     const handleReplaceVideo = () => {
         fileInputRef.current?.click();
@@ -312,37 +308,24 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                         <label className="text-sm font-medium text-zinc-400">Video</label>
                         <div className="w-full aspect-video bg-black rounded-lg border border-zinc-800 relative group overflow-hidden">
                             {videoUrl ? (
-                                videoUrl.startsWith('http') || videoUrl.startsWith('blob:') ? (
-                                    <video
-                                        ref={videoRef}
-                                        src={videoUrl}
-                                        poster={thumbnails[selectedThumbnailIndex]?.url}
-                                        className="w-full h-full object-cover"
-                                        controls={isPlaying}
-                                        onPlay={() => setIsPlaying(true)}
-                                        onPause={() => setIsPlaying(false)}
-                                        onEnded={() => setIsPlaying(false)}
-                                    />
-                                ) : (
-                                    <iframe
-                                        src={`https://iframe.videodelivery.net/${videoUrl}${thumbnails[selectedThumbnailIndex]?.url ? `?poster=${encodeURIComponent(thumbnails[selectedThumbnailIndex].url)}` : ''}`}
-                                        className="w-full h-full"
-                                        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                                        allowFullScreen
-                                    ></iframe>
-                                )
+                                <VideoPlayer
+                                    key={videoUrl} // Reset player when URL changes
+                                    url={videoUrl}
+                                    poster={thumbnails[selectedThumbnailIndex]?.url}
+                                    trimStart={trimStart}
+                                    trimEnd={trimEnd}
+                                    showControls={false}
+                                    showPlayPauseButton={true}
+                                    showDurationBadge={true}
+                                    showProgressBar={true}
+                                    showVolumeControl={true}
+                                    showFullscreenButton={true}
+                                    className="w-full h-full"
+                                    onPlay={() => setIsPlaying(true)}
+                                    onPause={() => setIsPlaying(false)}
+                                />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-zinc-700">No Video</div>
-                            )}
-                            {!isPlaying && videoUrl && (videoUrl.startsWith('http') || videoUrl.startsWith('blob:')) && (
-                                <div
-                                    className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors cursor-pointer"
-                                    onClick={handlePlay}
-                                >
-                                    <div className="bg-white/10 backdrop-blur-md p-4 rounded-full group-hover:scale-110 transition-transform">
-                                        <Play className="size-8 text-white fill-white ml-1" />
-                                    </div>
-                                </div>
                             )}
                         </div>
                     </div>
