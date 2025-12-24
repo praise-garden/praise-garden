@@ -11,7 +11,8 @@ import {
     Check,
     Sun,
     RotateCcw, // Retake icon
-    ArrowRight // Continue icon
+    ArrowRight, // Continue icon
+    Upload // Upload icon
 } from 'lucide-react';
 
 interface VideoRecorderProps {
@@ -23,6 +24,7 @@ interface VideoRecorderProps {
 const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onLightModeChange }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const chunksRef = useRef<Blob[]>([]);
     const animationFrameRef = useRef<number>();
 
@@ -225,6 +227,13 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
                 videoRef.current.pause();
                 setIsPlaying(false);
             }
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setRecordedBlob(file);
         }
     };
 
@@ -573,6 +582,29 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
                     >
                         <span>Continue</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                </div>
+            )}
+
+            {/* Upload Button - Show only when not recording and not reviewing */}
+            {!recordedBlob && !isRecording && (
+                <div className="mt-6">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`group flex items-center gap-2 px-6 py-2.5 rounded-full border transition-all ${lightMode
+                            ? 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
+                            }`}
+                    >
+                        <Upload className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                        <span className="text-sm font-medium">Upload a video instead</span>
                     </button>
                 </div>
             )}

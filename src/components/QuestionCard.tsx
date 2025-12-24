@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormCardProps, FormCard } from '@/app/form-builder/page';
 import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
@@ -6,6 +6,7 @@ import BackButton from '@/components/ui/back-button';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { QuestionBlockConfig } from '@/types/form-config';
 import VideoRecorder from './VideoRecorder';
+import MobileVideoCapture from './MobileVideoCapture';
 import { DEFAULT_TESTIMONIAL_TIPS } from '@/lib/default-form-config';
 
 const VideoIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -28,7 +29,24 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-interface QuestionCardProps extends FormCardProps {
+// Helper hook for media queries
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = useState(false);
+
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        if (media.matches !== matches) {
+            setMatches(media.matches);
+        }
+        const listener = () => setMatches(media.matches);
+        media.addEventListener('change', listener);
+        return () => media.removeEventListener('change', listener);
+    }, [matches, query]);
+
+    return matches;
+}
+
+interface QuestionCardProps extends Omit<FormCardProps, 'onFieldFocus'> {
     config: QuestionBlockConfig;
     onFieldFocus?: (blockId: string, fieldPath: string) => void;
 }
@@ -51,6 +69,7 @@ const QuestionCard = ({
 
     const [mode, setMode] = useState<'options' | 'text' | 'video'>(initialMode);
     const [lightMode, setLightMode] = useState(false);
+    const isDesktop = useMediaQuery('(min-width: 1024px)');
 
     const handleFieldClick = (fieldPath: string) => {
         onFieldFocus?.(config.id, fieldPath);
@@ -92,7 +111,7 @@ const QuestionCard = ({
             theme={theme}
         >
 
-            <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+            <div className="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative custom-scrollbar">
                 {/* Back Button - behavior changes based on mode */}
                 {mode === 'video' ? (
                     <BackButton onClick={() => setMode('options')} />
@@ -104,28 +123,28 @@ const QuestionCard = ({
 
                 {/* Left Panel: The "Ask" - Animate width */}
                 <motion.div
-                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '33.3333%' : (mode === 'video' ? '33.3333%' : '50%')) }}
+                    animate={{ width: isDesktop ? (mode === 'options' ? '50%' : (mode === 'text' ? '33.3333%' : (mode === 'video' ? '33.3333%' : '50%'))) : '100%' }}
                     transition={panelMotionProps}
-                    className={`w-full md:w-1/2 flex flex-col overflow-hidden transition-colors duration-500 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#1A1A1A] via-[#242424] to-[#1A1A1A]'}`}
+                    className={`w-full lg:w-1/2 flex flex-col shrink-0 lg:overflow-hidden transition-colors duration-500 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#1A1A1A] via-[#242424] to-[#1A1A1A]'}`}
                 >
                     <div className="flex-shrink-0">
                         <AppBar
                             maxWidthClass="max-w-lg"
-                            paddingXClass="px-8 md:px-14"
+                            paddingXClass="px-8 lg:px-14"
                             logoUrl={theme?.logoUrl}
                         />
                     </div>
-                    <div className="flex-grow overflow-y-auto px-8 md:px-14 pb-10">
+                    <div className="flex-grow lg:overflow-y-auto px-8 lg:px-14 pb-10">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
-                            className="w-full max-w-lg mx-auto pt-10 md:pt-12"
+                            className="w-full max-w-lg mx-auto pt-10 lg:pt-12"
                         >
                             {/* Question Section */}
                             <div className="mb-8 space-y-3">
                                 <h1
-                                    className={`text-xl md:text-2xl font-semibold break-words leading-tight tracking-tight transition-colors duration-500 ${lightMode ? 'text-gray-900' : 'text-white'}`}
+                                    className={`text-xl lg:text-2xl font-semibold break-words leading-tight tracking-tight transition-colors duration-500 ${lightMode ? 'text-gray-900' : 'text-white'}`}
                                     style={{ color: lightMode ? undefined : config.props.questionColor }}
                                     onClick={() => handleFieldClick('props.question')}
                                     data-field="props.question"
@@ -133,7 +152,7 @@ const QuestionCard = ({
                                     {config.props.question}
                                 </h1>
                                 <p
-                                    className={`text-xs md:text-sm break-words leading-relaxed transition-colors duration-500 ${lightMode ? 'text-gray-600' : 'text-gray-400'}`}
+                                    className={`text-xs lg:text-sm break-words leading-relaxed transition-colors duration-500 ${lightMode ? 'text-gray-600' : 'text-gray-400'}`}
                                     style={{ color: lightMode ? undefined : config.props.descriptionColor }}
                                     onClick={() => handleFieldClick('props.description')}
                                     data-field="props.description"
@@ -175,11 +194,14 @@ const QuestionCard = ({
                     </div>
                 </motion.div>
 
+                {/* Visual Divider between sections on mobile */}
+                <div className="lg:hidden w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent" />
+
                 {/* Right Panel: The "Answer" - Animate width */}
                 <motion.div
-                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '66.6667%' : (mode === 'video' ? '66.6667%' : '50%')) }}
+                    animate={{ width: isDesktop ? (mode === 'options' ? '50%' : (mode === 'text' ? '66.6667%' : (mode === 'video' ? '66.6667%' : '50%'))) : '100%' }}
                     transition={panelMotionProps}
-                    className={`w-full md:w-1/2 flex flex-col justify-center items-center relative overflow-hidden transition-colors duration-500 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F]'}`}
+                    className={`w-full lg:w-1/2 flex flex-col justify-center items-center shrink-0 relative lg:overflow-hidden transition-colors duration-500 min-h-[420px] lg:min-h-0 py-8 lg:py-0 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F]'}`}
                 >
                     {/* Subtle background pattern */}
                     {mode !== 'video' && (
@@ -194,7 +216,7 @@ const QuestionCard = ({
                                 initial="hidden"
                                 animate="visible"
                                 exit="exit"
-                                className="w-full max-w-lg mx-auto space-y-3 relative z-10 px-6"
+                                className="w-full max-w-lg mx-auto space-y-4 relative z-10 px-6 pb-6 lg:pb-0"
                             >
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
@@ -273,10 +295,10 @@ const QuestionCard = ({
                                 className="w-full h-full flex flex-col"
                             >
                                 <AppBar logoUrl={theme?.logoUrl} />
-                                <div className="flex-grow flex flex-col px-8 md:px-14 py-8 justify-center">
+                                <div className="flex-grow flex flex-col px-8 lg:px-14 py-8 justify-center">
                                     <textarea
                                         placeholder="Share your experience..."
-                                        className="w-full h-48 md:h-56 bg-[#232325] rounded-lg p-4 text-white text-base placeholder-gray-500 focus:outline-none resize-none transition-all focus:ring-2 focus:ring-purple-500/50"
+                                        className="w-full h-48 lg:h-56 bg-[#232325] rounded-lg p-4 text-white text-base placeholder-gray-500 focus:outline-none resize-none transition-all focus:ring-2 focus:ring-purple-500/50"
                                     ></textarea>
                                     <div className="mt-5 flex-shrink-0">
                                         <button
@@ -299,11 +321,19 @@ const QuestionCard = ({
                                 exit="exit"
                                 className="w-full h-full flex flex-col"
                             >
-                                <VideoRecorder
-                                    onCancel={handleVideoCancel}
-                                    onComplete={handleVideoComplete}
-                                    onLightModeChange={setLightMode}
-                                />
+                                {/* Use native camera on mobile/tablet, in-browser recorder on desktop */}
+                                {isDesktop ? (
+                                    <VideoRecorder
+                                        onCancel={handleVideoCancel}
+                                        onComplete={handleVideoComplete}
+                                        onLightModeChange={setLightMode}
+                                    />
+                                ) : (
+                                    <MobileVideoCapture
+                                        onCancel={handleVideoCancel}
+                                        onComplete={handleVideoComplete}
+                                    />
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>
