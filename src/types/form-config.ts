@@ -24,6 +24,7 @@ export enum FormBlockType {
   PrivateFeedback = 'private-feedback',
   Consent = 'consent',
   AboutYou = 'about-you',
+  AboutCompany = 'about-company',
   ReadyToSend = 'ready-to-send',
   ThankYou = 'thank-you',
 }
@@ -139,9 +140,25 @@ export interface AboutYouBlockConfig extends BaseBlockConfig {
     titleColor: string;
     fields: {
       name: { enabled: boolean; required: boolean; label: string; placeholder: string };
-      title: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      email: { enabled: boolean; required: boolean; label: string; placeholder: string };
       company: { enabled: boolean; required: boolean; label: string; placeholder: string };
       avatar: { enabled: boolean; required: boolean; label: string };
+    };
+  };
+}
+
+export interface AboutCompanyBlockConfig extends BaseBlockConfig {
+  type: FormBlockType.AboutCompany;
+  props: {
+    title: string;
+    description: string;
+    buttonText: string;
+    titleColor: string;
+    fields: {
+      jobTitle: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      companyName: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      role: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      companyLogo: { enabled: boolean; required: boolean; label: string };
     };
   };
 }
@@ -181,6 +198,7 @@ export type FormBlock =
   | PrivateFeedbackBlockConfig
   | ConsentBlockConfig
   | AboutYouBlockConfig
+  | AboutCompanyBlockConfig
   | ReadyToSendBlockConfig
   | ThankYouBlockConfig;
 

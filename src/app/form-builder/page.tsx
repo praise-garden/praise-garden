@@ -9,6 +9,7 @@ import QuestionCard from '@/components/QuestionCard';
 import PrivateFeedbackCard from '@/components/PrivateFeedbackCard';
 import ConsentCard from '@/components/ConsentCard';
 import AboutYouCard from '@/components/AboutYouCard';
+import AboutCompanyCard from '@/components/AboutCompanyCard';
 import ReadyToSendCard from '@/components/ReadyToSendCard';
 import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
@@ -289,6 +290,34 @@ const FormBuilderPage = () => {
           }
         } else {
           const data = await response.json();
+
+          // Normalize blocks: convert old 'title' field to 'email' in AboutYou blocks
+          let normalizedBlocks = (data.settings?.blocks || []).map((block: any) => {
+            if (block.type === FormBlockType.AboutYou && block.props?.fields) {
+              const fields = block.props.fields;
+              // If 'title' exists but 'email' doesn't, convert title to email
+              if (fields.title && !fields.email) {
+                return {
+                  ...block,
+                  props: {
+                    ...block.props,
+                    fields: {
+                      ...fields,
+                      email: {
+                        enabled: fields.title.enabled,
+                        required: fields.title.required,
+                        label: 'Email',
+                        placeholder: 'john@example.com'
+                      },
+                      title: undefined // Remove old title field
+                    }
+                  }
+                };
+              }
+            }
+            return block;
+          });
+
           const mergedConfig = {
             ...data.settings,
             id: data.id ?? data.settings?.id ?? formId,
@@ -298,6 +327,7 @@ const FormBuilderPage = () => {
               ...defaultTheme,
               ...(data.settings?.theme ?? {}),
             },
+            blocks: normalizedBlocks,
           } as FormConfig;
           setFormConfig(mergedConfig);
         }
@@ -646,6 +676,7 @@ const FormBuilderPage = () => {
                       case FormBlockType.PrivateFeedback: return <PrivateFeedbackCard key={block.id} {...cardProps} config={block as any} />;
                       case FormBlockType.Consent: return <ConsentCard key={block.id} {...cardProps} config={block as any} />;
                       case FormBlockType.AboutYou: return <AboutYouCard key={block.id} {...cardProps} config={block as any} />;
+                      case FormBlockType.AboutCompany: return <AboutCompanyCard key={block.id} {...cardProps} config={block as any} />;
                       case FormBlockType.ReadyToSend: return <ReadyToSendCard key={block.id} {...cardProps} config={block as any} />;
                       case FormBlockType.ThankYou: return <ThankYouCard key={block.id} {...cardProps} config={block as any} />;
                       default: return null;
@@ -867,6 +898,7 @@ const FormBuilderPage = () => {
                     case FormBlockType.PrivateFeedback: return <PrivateFeedbackCard key={block.id} {...previewCardProps} config={block as any} />;
                     case FormBlockType.Consent: return <ConsentCard key={block.id} {...previewCardProps} config={block as any} />;
                     case FormBlockType.AboutYou: return <AboutYouCard key={block.id} {...previewCardProps} config={block as any} />;
+                    case FormBlockType.AboutCompany: return <AboutCompanyCard key={block.id} {...previewCardProps} config={block as any} />;
                     case FormBlockType.ReadyToSend: return <ReadyToSendCard key={block.id} {...previewCardProps} config={block as any} />;
                     case FormBlockType.ThankYou: return <ThankYouCard key={block.id} {...previewCardProps} config={block as any} />;
                     default: return null;

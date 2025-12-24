@@ -12,6 +12,7 @@ import NegativeFeedbackCard from '@/components/NegativeFeedbackCard';
 import PrivateFeedbackCard from '@/components/PrivateFeedbackCard';
 import ConsentCard from '@/components/ConsentCard';
 import AboutYouCard from '@/components/AboutYouCard';
+import AboutCompanyCard from '@/components/AboutCompanyCard';
 import ReadyToSendCard from '@/components/ReadyToSendCard';
 import ThankYouCard from '@/components/ThankYouCard';
 
@@ -110,6 +111,8 @@ const FormRenderer: React.FC<FormRendererProps> = ({
                 return <ConsentCard key={currentBlock.id} {...cardProps} config={currentBlock as any} />;
             case FormBlockType.AboutYou:
                 return <AboutYouCard key={currentBlock.id} {...cardProps} config={currentBlock as any} />;
+            case FormBlockType.AboutCompany:
+                return <AboutCompanyCard key={currentBlock.id} {...cardProps} config={currentBlock as any} />;
             case FormBlockType.ReadyToSend:
                 return <ReadyToSendCard key={currentBlock.id} {...cardProps} config={currentBlock as any} />;
             case FormBlockType.ThankYou:

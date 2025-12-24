@@ -24,8 +24,8 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
   const buttonTextInputRef = React.useRef<HTMLInputElement>(null);
   const nameLabelRef = React.useRef<HTMLInputElement>(null);
   const namePlaceholderRef = React.useRef<HTMLInputElement>(null);
-  const titleLabelRef = React.useRef<HTMLInputElement>(null);
-  const titlePlaceholderRef = React.useRef<HTMLInputElement>(null);
+  const emailLabelRef = React.useRef<HTMLInputElement>(null);
+  const emailPlaceholderRef = React.useRef<HTMLInputElement>(null);
   const companyLabelRef = React.useRef<HTMLInputElement>(null);
   const companyPlaceholderRef = React.useRef<HTMLInputElement>(null);
   const avatarLabelRef = React.useRef<HTMLInputElement>(null);
@@ -37,8 +37,8 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
     'props.buttonText': buttonTextInputRef,
     'props.fields.name.label': nameLabelRef,
     'props.fields.name.placeholder': namePlaceholderRef,
-    'props.fields.title.label': titleLabelRef,
-    'props.fields.title.placeholder': titlePlaceholderRef,
+    'props.fields.email.label': emailLabelRef,
+    'props.fields.email.placeholder': emailPlaceholderRef,
     'props.fields.company.label': companyLabelRef,
     'props.fields.company.placeholder': companyPlaceholderRef,
     'props.fields.avatar.label': avatarLabelRef,
@@ -70,7 +70,7 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
   // Field configuration for rendering
   const fieldConfigs = [
     { key: 'name', label: 'Name Field', iconColor: 'emerald', hasPlaceholder: true },
-    { key: 'title', label: 'Title/Role Field', iconColor: 'blue', hasPlaceholder: true },
+    { key: 'email', label: 'Email Field', iconColor: 'blue', hasPlaceholder: true },
     { key: 'company', label: 'Company Field', iconColor: 'violet', hasPlaceholder: true },
     { key: 'avatar', label: 'Avatar Upload', iconColor: 'pink', hasPlaceholder: false },
   ] as const;
@@ -78,12 +78,12 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
   const getFieldRef = (key: string, type: 'label' | 'placeholder') => {
     if (type === 'label') {
       if (key === 'name') return nameLabelRef;
-      if (key === 'title') return titleLabelRef;
+      if (key === 'email') return emailLabelRef;
       if (key === 'company') return companyLabelRef;
       return avatarLabelRef;
     }
     if (key === 'name') return namePlaceholderRef;
-    if (key === 'title') return titlePlaceholderRef;
+    if (key === 'email') return emailPlaceholderRef;
     return companyPlaceholderRef;
   };
 

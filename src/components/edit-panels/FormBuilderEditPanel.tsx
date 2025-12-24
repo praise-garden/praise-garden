@@ -9,6 +9,7 @@ import NegativeFeedbackEditPanel from './NegativeFeedbackEditPanel';
 import PrivateFeedbackEditPanel from './PrivateFeedbackEditPanel';
 import ConsentEditPanel from './ConsentEditPanel';
 import AboutYouEditPanel from './AboutYouEditPanel';
+import AboutCompanyEditPanel from './AboutCompanyEditPanel';
 import ReadyToSendEditPanel from './ReadyToSendEditPanel';
 import ThankYouEditPanel from './ThankYouEditPanel';
 
@@ -43,6 +44,8 @@ const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBloc
         return <ConsentEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.AboutYou:
         return <AboutYouEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
+      case FormBlockType.AboutCompany:
+        return <AboutCompanyEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} focusedField={focusedField} />;
       case FormBlockType.ReadyToSend:
         return <ReadyToSendEditPanel block={focusedBlock as any} onUpdate={onUpdateBlock} />;
       case FormBlockType.ThankYou:
@@ -61,6 +64,7 @@ const FormBuilderEditPanel: React.FC<FormBuilderEditPanelProps> = ({ focusedBloc
       [FormBlockType.PrivateFeedback]: 'Private feedback page',
       [FormBlockType.Consent]: 'Consent page',
       [FormBlockType.AboutYou]: 'About you page',
+      [FormBlockType.AboutCompany]: 'About company page',
       [FormBlockType.ReadyToSend]: 'Ready to send page',
       [FormBlockType.ThankYou]: 'Thank you page',
     };

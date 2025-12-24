@@ -13,6 +13,7 @@ const PAGE_LABELS: Record<FormBlockType, string> = {
     [FormBlockType.PrivateFeedback]: 'Private Note',
     [FormBlockType.Consent]: 'Permissions',
     [FormBlockType.AboutYou]: 'Your Details',
+    [FormBlockType.AboutCompany]: 'Company Info',
     [FormBlockType.ReadyToSend]: 'Review & Send',
     [FormBlockType.ThankYou]: 'Thank You',
 };
@@ -26,6 +27,7 @@ const PAGE_DESCRIPTIONS: Record<FormBlockType, string> = {
     [FormBlockType.PrivateFeedback]: 'Confidential feedback only you see',
     [FormBlockType.Consent]: 'Permission to use their words',
     [FormBlockType.AboutYou]: 'Name, photo & contact info',
+    [FormBlockType.AboutCompany]: 'Title, company & logo',
     [FormBlockType.ReadyToSend]: 'Final review before submitting',
     [FormBlockType.ThankYou]: 'Celebration & next steps',
 };
@@ -80,6 +82,21 @@ const PageIcon = ({ type, active = false }: { type: FormBlockType; active?: bool
                 <circle cx="12" cy="7" r="4" />
             </svg>
         ),
+        [FormBlockType.AboutCompany]: (
+            <svg className={`w-5 h-5 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                <path d="M9 22v-4h6v4" />
+                <path d="M8 6h.01" />
+                <path d="M16 6h.01" />
+                <path d="M12 6h.01" />
+                <path d="M12 10h.01" />
+                <path d="M12 14h.01" />
+                <path d="M16 10h.01" />
+                <path d="M16 14h.01" />
+                <path d="M8 10h.01" />
+                <path d="M8 14h.01" />
+            </svg>
+        ),
         [FormBlockType.ReadyToSend]: (
             <svg className={`w-5 h-5 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13" />
@@ -105,6 +122,7 @@ const PAGE_COLORS: Record<FormBlockType, { bg: string; gradient: string; ring: s
     [FormBlockType.PrivateFeedback]: { bg: 'bg-slate-500/20', gradient: 'from-slate-500 to-gray-500', ring: 'ring-slate-500/50' },
     [FormBlockType.Consent]: { bg: 'bg-blue-500/20', gradient: 'from-blue-500 to-indigo-500', ring: 'ring-blue-500/50' },
     [FormBlockType.AboutYou]: { bg: 'bg-cyan-500/20', gradient: 'from-cyan-500 to-sky-500', ring: 'ring-cyan-500/50' },
+    [FormBlockType.AboutCompany]: { bg: 'bg-indigo-500/20', gradient: 'from-indigo-500 to-purple-500', ring: 'ring-indigo-500/50' },
     [FormBlockType.ReadyToSend]: { bg: 'bg-green-500/20', gradient: 'from-green-500 to-emerald-500', ring: 'ring-green-500/50' },
     [FormBlockType.ThankYou]: { bg: 'bg-pink-500/20', gradient: 'from-pink-500 to-rose-400', ring: 'ring-pink-500/50' },
 };

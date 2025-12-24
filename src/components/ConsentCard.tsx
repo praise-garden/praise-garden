@@ -5,6 +5,7 @@ import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentBlockConfig } from '@/types/form-config';
 import BackButton from '@/components/ui/back-button';
+import AppBar from '@/components/ui/app-bar';
 
 interface ConsentCardProps extends Omit<FormCardProps, 'config'> {
     config: ConsentBlockConfig;
@@ -143,133 +144,126 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
 
     return (
         <FormCard {...props} theme={theme}>
-            <div className="flex-grow flex flex-col items-center justify-center px-8 sm:px-16 py-10 text-center overflow-hidden relative">
+            <div className="flex-grow flex flex-col overflow-hidden relative">
                 {/* Subtle background gradient - very neutral */}
                 <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent blur-3xl opacity-50"></div>
 
                 {/* Back Button */}
                 {props.onPrevious && <BackButton onClick={props.onPrevious} />}
 
-                <div className="relative z-10 w-full max-w-xl mx-auto space-y-6">
-                    {/* Brand Logo */}
-                    {theme?.logoUrl && (
+                {/* AppBar */}
+                <div className="flex-shrink-0">
+                    <AppBar maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-16" logoUrl={theme?.logoUrl} />
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 flex flex-col items-center justify-center px-8 sm:px-16 pb-10 pt-4 text-center overflow-y-auto relative z-10">
+                    <div className="w-full max-w-xl mx-auto space-y-6">
+
+                        {/* Main Heading */}
                         <motion.div
-                            initial={{ opacity: 0, y: -20 }}
+                            initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="flex justify-center items-center"
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                            className="space-y-2"
                         >
-                            <img
-                                src={theme.logoUrl}
-                                alt="Brand Logo"
-                                className="h-10 w-auto object-contain"
+                            <h2
+                                className="text-xl sm:text-2xl font-bold text-white leading-tight"
+                                style={{ color: config.props.titleColor }}
+                                onClick={() => handleFieldClick('props.title')}
+                                data-field="props.title"
+                            >
+                                {config.props.title || "How can we share your testimonial?"}
+                            </h2>
+
+                            <p
+                                className="text-gray-400 text-xs sm:text-sm max-w-md mx-auto leading-relaxed"
+                                style={{ color: config.props.descriptionColor }}
+                                onClick={() => handleFieldClick('props.description')}
+                                data-field="props.description"
+                            >
+                                {config.props.description || "Your feedback means the world to us. Please select how you'd like us to use your testimonial."}
+                            </p>
+                        </motion.div>
+
+                        {/* Usage Options */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="space-y-3"
+                        >
+                            {/* Public Option */}
+                            <UsageOption
+                                mode="public"
+                                selected={selectedMode === 'public'}
+                                onSelect={() => handleModeSelect('public')}
+                                icon={<GlobeIcon className="w-5 h-5" />}
+                                title={config.props.publicOptionTitle || "Share it publicly"}
+                                description={config.props.publicOptionDescription || "Display on our website, social media, and marketing materials."}
+                            />
+
+                            {/* Private Option */}
+                            <UsageOption
+                                mode="private"
+                                selected={selectedMode === 'private'}
+                                onSelect={() => handleModeSelect('private')}
+                                icon={<LockIcon className="w-5 h-5" />}
+                                title={config.props.privateOptionTitle || "Keep it private"}
+                                description={config.props.privateOptionDescription || "Only for internal use. We won't share it publicly."}
                             />
                         </motion.div>
-                    )}
 
-                    {/* Main Heading */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="space-y-2"
-                    >
-                        <h2
-                            className="text-xl sm:text-2xl font-bold text-white leading-tight"
-                            style={{ color: config.props.titleColor }}
-                            onClick={() => handleFieldClick('props.title')}
-                            data-field="props.title"
+                        {/* Continue Button */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
                         >
-                            {config.props.title || "How can we share your testimonial?"}
-                        </h2>
-
-                        <p
-                            className="text-gray-400 text-xs sm:text-sm max-w-md mx-auto leading-relaxed"
-                            style={{ color: config.props.descriptionColor }}
-                            onClick={() => handleFieldClick('props.description')}
-                            data-field="props.description"
-                        >
-                            {config.props.description || "Your feedback means the world to us. Please select how you'd like us to use your testimonial."}
-                        </p>
-                    </motion.div>
-
-                    {/* Usage Options */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="space-y-3"
-                    >
-                        {/* Public Option */}
-                        <UsageOption
-                            mode="public"
-                            selected={selectedMode === 'public'}
-                            onSelect={() => handleModeSelect('public')}
-                            icon={<GlobeIcon className="w-5 h-5" />}
-                            title={config.props.publicOptionTitle || "Share it publicly"}
-                            description={config.props.publicOptionDescription || "Display on our website, social media, and marketing materials."}
-                        />
-
-                        {/* Private Option */}
-                        <UsageOption
-                            mode="private"
-                            selected={selectedMode === 'private'}
-                            onSelect={() => handleModeSelect('private')}
-                            icon={<LockIcon className="w-5 h-5" />}
-                            title={config.props.privateOptionTitle || "Keep it private"}
-                            description={config.props.privateOptionDescription || "Only for internal use. We won't share it publicly."}
-                        />
-                    </motion.div>
-
-                    {/* Continue Button */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                    >
-                        <motion.button
-                            onClick={handleContinue}
-                            disabled={!selectedMode || isSubmitting}
-                            whileHover={selectedMode ? { scale: 1.02 } : {}}
-                            whileTap={selectedMode ? { scale: 0.98 } : {}}
-                            className={`w-full px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden
+                            <motion.button
+                                onClick={handleContinue}
+                                disabled={!selectedMode || isSubmitting}
+                                whileHover={selectedMode ? { scale: 1.02 } : {}}
+                                whileTap={selectedMode ? { scale: 0.98 } : {}}
+                                className={`w-full px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden
                                 ${selectedMode
-                                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/35'
-                                    : 'bg-gray-800/80 text-gray-500 cursor-not-allowed'
-                                }`}
-                            data-field="props.buttonText"
-                        >
-                            <span className="flex items-center justify-center gap-2">
-                                {config.props.buttonText || "Continue"}
-                                {selectedMode && (
-                                    <motion.svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        initial={{ x: 0 }}
-                                        animate={{ x: [0, 3, 0] }}
-                                        transition={{ duration: 1.5, repeat: Infinity }}
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </motion.svg>
-                                )}
-                            </span>
-                        </motion.button>
-                    </motion.div>
+                                        ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/35'
+                                        : 'bg-gray-800/80 text-gray-500 cursor-not-allowed'
+                                    }`}
+                                data-field="props.buttonText"
+                            >
+                                <span className="flex items-center justify-center gap-2">
+                                    {config.props.buttonText || "Continue"}
+                                    {selectedMode && (
+                                        <motion.svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            initial={{ x: 0 }}
+                                            animate={{ x: [0, 3, 0] }}
+                                            transition={{ duration: 1.5, repeat: Infinity }}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </motion.svg>
+                                    )}
+                                </span>
+                            </motion.button>
+                        </motion.div>
 
-                    {/* Trust Note */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        className="flex items-center justify-center gap-1.5"
-                        onClick={() => handleFieldClick('props.trustNote')}
-                        data-field="props.trustNote"
-                    >
-                        <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-[11px] text-gray-500">{config.props.trustNote || "Your privacy is important to us. We'll always respect your choice."}</span>
-                    </motion.div>
+                        {/* Trust Note */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            className="flex items-center justify-center gap-1.5"
+                            onClick={() => handleFieldClick('props.trustNote')}
+                            data-field="props.trustNote"
+                        >
+                            <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-[11px] text-gray-500">{config.props.trustNote || "Your privacy is important to us. We'll always respect your choice."}</span>
+                        </motion.div>
+                    </div>
                 </div>
             </div>
         </FormCard>

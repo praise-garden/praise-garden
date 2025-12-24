@@ -8,6 +8,7 @@ import {
     PrivateFeedbackBlockConfig,
     ConsentBlockConfig,
     AboutYouBlockConfig,
+    AboutCompanyBlockConfig,
     ReadyToSendBlockConfig,
     ThankYouBlockConfig,
 } from '@/types/form-config';
@@ -150,9 +151,26 @@ export const createDefaultFormConfig = ({
                     titleColor: '#FFFFFF',
                     fields: {
                         name: { enabled: true, required: true, label: 'Full Name', placeholder: 'John Doe' },
-                        title: { enabled: true, required: true, label: 'Title / Role', placeholder: 'CEO at Example.com' },
+                        email: { enabled: true, required: true, label: 'Email', placeholder: 'john@example.com' },
                         company: { enabled: false, required: false, label: 'Company', placeholder: 'Example.com' },
                         avatar: { enabled: true, required: false, label: 'Upload your photo' },
+                    },
+                },
+            },
+            {
+                id: 'about_company_1',
+                type: FormBlockType.AboutCompany,
+                enabled: true,
+                props: {
+                    title: 'Tell us about your company',
+                    description: 'Help us understand your business better.',
+                    buttonText: 'Continue',
+                    titleColor: '#FFFFFF',
+                    fields: {
+                        jobTitle: { enabled: true, required: true, label: 'Your Title', placeholder: 'CEO, Founder, Manager...' },
+                        companyName: { enabled: true, required: true, label: 'Company Name', placeholder: 'Acme Inc.' },
+                        role: { enabled: true, required: false, label: 'Your Role', placeholder: 'What do you do at the company?' },
+                        companyLogo: { enabled: true, required: false, label: 'Company Logo' },
                     },
                 },
             },
