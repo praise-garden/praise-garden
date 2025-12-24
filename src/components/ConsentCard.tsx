@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentBlockConfig } from '@/types/form-config';
+import BackButton from '@/components/ui/back-button';
 
 interface ConsentCardProps extends Omit<FormCardProps, 'config'> {
     config: ConsentBlockConfig;
@@ -146,26 +147,8 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                 {/* Subtle background gradient - very neutral */}
                 <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent blur-3xl opacity-50"></div>
 
-                {/* Back Button - positioned at top left */}
-                {props.onPrevious && (
-                    <motion.button
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3 }}
-                        onClick={props.onPrevious}
-                        className="absolute top-6 left-6 sm:left-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group z-20"
-                    >
-                        <svg
-                            className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span className="text-sm font-medium">Back</span>
-                    </motion.button>
-                )}
+                {/* Back Button */}
+                {props.onPrevious && <BackButton onClick={props.onPrevious} />}
 
                 <div className="relative z-10 w-full max-w-xl mx-auto space-y-6">
                     {/* Brand Logo */}

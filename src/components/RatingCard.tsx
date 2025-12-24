@@ -3,6 +3,7 @@ import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RatingBlockConfig } from '@/types/form-config';
+import BackButton from '@/components/ui/back-button';
 
 interface RatingCardProps extends Omit<FormCardProps, 'config'> {
   config: RatingBlockConfig;
@@ -55,6 +56,9 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
   return (
     <FormCard {...props} theme={theme}>
       <div className="flex-grow flex flex-col items-center justify-center px-8 sm:px-16 py-10 text-center overflow-hidden relative">
+        {/* Back Button */}
+        {props.onPrevious && <BackButton onClick={props.onPrevious} />}
+
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-radial from-purple-500/5 via-transparent to-transparent blur-3xl"></div>
 

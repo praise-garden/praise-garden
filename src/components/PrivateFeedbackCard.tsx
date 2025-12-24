@@ -4,6 +4,7 @@ import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
 import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
+import BackButton from '@/components/ui/back-button';
 import { PrivateFeedbackBlockConfig } from '@/types/form-config';
 
 
@@ -20,8 +21,9 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
 
   return (
     <FormCard {...props} theme={theme}>
-      <div className="flex-grow flex flex-col items-center justify-center overflow-y-auto">
-        <AppBar onBack={props.onPrevious} logoUrl={theme?.logoUrl} />
+      <div className="flex-grow flex flex-col items-center justify-center overflow-y-auto relative">
+        {props.onPrevious && <BackButton onClick={props.onPrevious} />}
+        <AppBar logoUrl={theme?.logoUrl} />
         <ContentContainer className="pb-10 pt-10">
           <h1
             className="text-lg sm:text-xl font-bold leading-normal text-white"

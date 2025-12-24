@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion } from 'framer-motion';
 import AppBar from '@/components/ui/app-bar';
+import BackButton from '@/components/ui/back-button';
 import { NegativeFeedbackBlockConfig } from '@/types/form-config';
 
 // A simple icon placeholder for an illustration.
@@ -25,13 +26,14 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
 
     return (
         <FormCard {...props} theme={theme}>
-            <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
+            <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+                {/* Back Button */}
+                {props.onPrevious && <BackButton onClick={props.onPrevious} />}
+
                 {/* Left Side: Compassionate Message */}
                 <div className="w-full md:w-2/5 bg-[#2a2a2a] flex flex-col overflow-hidden">
                     <div className="flex-shrink-0">
                         <AppBar
-                            onBack={props.onPrevious}
-                            showBackButton={Boolean(props.onPrevious)}
                             maxWidthClass="max-w-lg"
                             paddingXClass="px-8 md:px-14"
                             logoUrl={theme?.logoUrl}

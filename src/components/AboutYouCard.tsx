@@ -4,6 +4,7 @@ import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
 import { motion } from 'framer-motion';
 import AppBar from '@/components/ui/app-bar';
+import BackButton from '@/components/ui/back-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AboutYouBlockConfig } from '@/types/form-config';
 
@@ -20,8 +21,9 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
 
   return (
     <FormCard {...props} theme={theme}>
-      <div className="flex-grow flex flex-col items-center justify-start overflow-y-auto">
-        <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" logoUrl={theme?.logoUrl} />
+      <div className="flex-grow flex flex-col items-center justify-start overflow-y-auto relative">
+        {props.onPrevious && <BackButton onClick={props.onPrevious} />}
+        <AppBar maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" logoUrl={theme?.logoUrl} />
         <div className="w-full px-8 sm:px-14 pb-8 pt-8 sm:pt-10">
           <div className="mx-auto flex w-full max-w-2xl flex-col items-stretch">
             <motion.div

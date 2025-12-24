@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FormCardProps, FormCard } from '@/app/form-builder/page';
 import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
+import BackButton from '@/components/ui/back-button';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { QuestionBlockConfig } from '@/types/form-config';
 import VideoRecorder from './VideoRecorder';
@@ -91,7 +92,16 @@ const QuestionCard = ({
             theme={theme}
         >
 
-            <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
+            <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+                {/* Back Button - behavior changes based on mode */}
+                {mode === 'video' ? (
+                    <BackButton onClick={() => setMode('options')} />
+                ) : mode === 'text' && enableVideo ? (
+                    <BackButton onClick={() => setMode('options')} />
+                ) : cardProps.onPrevious ? (
+                    <BackButton onClick={cardProps.onPrevious} />
+                ) : null}
+
                 {/* Left Panel: The "Ask" - Animate width */}
                 <motion.div
                     animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '33.3333%' : (mode === 'video' ? '33.3333%' : '50%')) }}
@@ -100,8 +110,6 @@ const QuestionCard = ({
                 >
                     <div className="flex-shrink-0">
                         <AppBar
-                            onBack={cardProps.onPrevious}
-                            showBackButton={Boolean(cardProps.onPrevious)}
                             maxWidthClass="max-w-lg"
                             paddingXClass="px-8 md:px-14"
                             logoUrl={theme?.logoUrl}
@@ -264,7 +272,7 @@ const QuestionCard = ({
                                 exit="exit"
                                 className="w-full h-full flex flex-col"
                             >
-                                <AppBar onBack={enableVideo ? () => setMode('options') : undefined} showBackButton={enableVideo} logoUrl={theme?.logoUrl} />
+                                <AppBar logoUrl={theme?.logoUrl} />
                                 <div className="flex-grow flex flex-col px-8 md:px-14 py-8 justify-center">
                                     <textarea
                                         placeholder="Share your experience..."

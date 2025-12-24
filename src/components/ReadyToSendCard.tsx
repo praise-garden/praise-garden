@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FormCardProps, FormCard } from '@/app/form-builder/page';
 import AppBar from '@/components/ui/app-bar';
+import BackButton from '@/components/ui/back-button';
 import { ReadyToSendBlockConfig } from '@/types/form-config';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -238,12 +239,15 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
     return (
         <FormCard {...props} theme={theme}>
             <div className="flex-grow flex flex-col overflow-hidden relative">
+                {/* Back Button */}
+                {props.onPrevious && <BackButton onClick={props.onPrevious} />}
+
                 {/* Floating decorative elements */}
                 <FloatingSparkles />
 
                 {/* App bar */}
                 <div className="flex-shrink-0">
-                    <AppBar onBack={props.onPrevious} maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" logoUrl={theme?.logoUrl} />
+                    <AppBar maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-14" logoUrl={theme?.logoUrl} />
                 </div>
 
                 {/* Main scrollable content - scrollbar hidden */}
