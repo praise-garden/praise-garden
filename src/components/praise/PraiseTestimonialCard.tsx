@@ -4,9 +4,12 @@ import * as React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import { Play, Pause } from "lucide-react"
+import { Stream } from "@cloudflare/stream-react"
 
 export type PraiseTestimonial = {
   id: string
+  type?: 'text' | 'video'
   authorName: string
   authorTitle?: string
   authorAvatarUrl?: string
@@ -14,6 +17,8 @@ export type PraiseTestimonial = {
   content: string
   source?: string
   date?: string
+  videoUrl?: string | null
+  videoThumbnail?: string | null
 }
 
 // Color config for theming
@@ -44,20 +49,48 @@ export function PraiseTestimonialCard({
 }: Props) {
   const initials = getInitials(testimonial.authorName)
   const stars = typeof testimonial.rating === "number" ? clamp(testimonial.rating, 0, 5) : undefined
+  const isVideo = testimonial.type === 'video' && testimonial.videoUrl
+
+  // Video playback state
+  const [isPlaying, setIsPlaying] = React.useState(false)
+  const streamRef = React.useRef<any>(null)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
+  // Check if Cloudflare UID
+  const isCloudflare = testimonial.videoUrl &&
+    !testimonial.videoUrl.includes('/') &&
+    !testimonial.videoUrl.startsWith('http') &&
+    !testimonial.videoUrl.startsWith('blob:')
+
+  const togglePlayPause = () => {
+    if (isCloudflare && streamRef.current) {
+      if (isPlaying) {
+        streamRef.current.pause()
+      } else {
+        streamRef.current.play()
+      }
+    } else if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause()
+      } else {
+        videoRef.current.play()
+      }
+    }
+  }
 
   return (
     <Card
       role="article"
       aria-label={`Testimonial by ${testimonial.authorName}`}
       className={cn(
-        "h-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800",
-        compact ? "p-4" : "p-6",
+        "h-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 overflow-hidden",
+        compact ? "p-0" : "p-0",
         className
       )}
       style={colorConfig?.fontFamily ? { fontFamily: colorConfig.fontFamily } : undefined}
       {...props}
     >
-      <CardContent className={cn("grid gap-4 p-0", compact ? "gap-3" : "gap-4")}>
+      <CardContent className={cn("grid gap-4", compact ? "p-4 gap-3" : "p-6 gap-4")}>
         {showRating && stars !== undefined ? (
           <div
             className="flex items-center gap-1"
@@ -70,15 +103,63 @@ export function PraiseTestimonialCard({
           </div>
         ) : null}
 
-        <blockquote
-          className={cn("text-balance text-sm leading-6 md:text-base md:leading-7", compact && "line-clamp-6 md:line-clamp-5")}
-          aria-label="Testimonial content"
-          style={colorConfig?.textColor ? { color: colorConfig.textColor } : undefined}
-        >
-          <span className="text-muted-foreground">"</span>
-          {testimonial.content}
-          <span className="text-muted-foreground">"</span>
-        </blockquote>
+        {/* Show video player for video testimonials, text for text testimonials */}
+        {isVideo && testimonial.videoUrl ? (
+          <div
+            className="relative bg-black group overflow-hidden rounded-lg"
+            style={{ height: '30vh', width: '30vw', minHeight: '200px', minWidth: '200px' }}
+          >
+            {isCloudflare ? (
+              <Stream
+                src={testimonial.videoUrl}
+                poster={testimonial.videoThumbnail || undefined}
+                streamRef={streamRef}
+                controls={false}
+                responsive={true}
+                className="w-full h-full"
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                src={testimonial.videoUrl}
+                poster={testimonial.videoThumbnail || undefined}
+                className="w-full h-full object-cover"
+                playsInline
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+            )}
+            {/* Play/Pause button overlay */}
+            <div
+              className="absolute inset-0 flex items-center justify-center cursor-pointer transition-colors"
+              style={{ backgroundColor: isPlaying ? 'transparent' : 'rgba(0,0,0,0.2)' }}
+              onClick={togglePlayPause}
+            >
+              <div className={cn(
+                "w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg transition-all",
+                isPlaying ? "opacity-0 hover:opacity-100" : "opacity-100 hover:scale-110"
+              )}>
+                {isPlaying ? (
+                  <Pause className="w-6 h-6 text-black" fill="currentColor" />
+                ) : (
+                  <Play className="w-6 h-6 text-black ml-0.5" fill="currentColor" />
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <blockquote
+            className={cn("text-balance text-sm leading-6 md:text-base md:leading-7", compact && "line-clamp-6 md:line-clamp-5")}
+            aria-label="Testimonial content"
+            style={colorConfig?.textColor ? { color: colorConfig.textColor } : undefined}
+          >
+            <span className="text-muted-foreground">"</span>
+            {testimonial.content}
+            <span className="text-muted-foreground">"</span>
+          </blockquote>
+        )}
 
         <div className="flex items-center gap-3">
           <Avatar className={compact ? "size-8" : "size-10"}>

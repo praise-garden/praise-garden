@@ -490,7 +490,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                             <div
                                                 key={t.id}
                                                 className={cn(
-                                                    "relative break-inside-avoid rounded-xl p-5 transition-all hover:scale-[1.02]",
+                                                    "relative break-inside-avoid rounded-xl p-5 transition-transform duration-200 hover:scale-[1.02]",
                                                     cardTheme.cardBg,
                                                     cardTheme.cardBorder,
                                                     cardTheme.cardShadow

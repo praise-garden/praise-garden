@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { WIDGET_MODELS } from "@/lib/widget-models"
 import { PraiseWidget } from "@/components/praise/PraiseWidget"
 import { Button } from "@/components/ui/button"
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-import { Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Save, Pencil, ListFilter } from "lucide-react"
+import { Monitor, Smartphone, Tablet, Share2, Star, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Save, Pencil, ListFilter, Loader2, Check } from "lucide-react"
 import Link from "next/link"
 import {
   WidgetConfig,
@@ -25,6 +26,8 @@ import { ModernFontPicker } from "@/components/ui/modern-font-picker"
 import { ShareWidgetPanel } from "@/components/widgets/ShareWidgetPanel"
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
 import { useUserData } from "@/contexts/UserDataContext"
+import { saveWidget, getWidgetById } from "@/lib/actions/widgets"
+import { toast } from "sonner"
 
 // Re-export the Testimonial type for use elsewhere
 export type WidgetTestimonial = Testimonial;
@@ -154,15 +157,37 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
     }))
   }, [dbTestimonials])
 
+  // Helper to check if widgetId is a UUID (saved widget) vs widget type
+  const isUUID = (str: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    return uuidRegex.test(str)
+  }
+
+  const isSavedWidget = isUUID(widgetId)
+
   // Initialize config using the helper from widget-config.ts
-  const [config, setConfig] = React.useState<WidgetConfig>(() =>
-    createWidgetConfig(widgetId as WidgetType, {
+  // For new widgets (widget type), create default config
+  // For saved widgets (UUID), we'll load from DB in useEffect
+  const [config, setConfig] = React.useState<WidgetConfig>(() => {
+    if (isSavedWidget) {
+      // Placeholder config while loading - will be replaced by DB data
+      return createWidgetConfig('social-card' as WidgetType, {
+        id: widgetId,
+        name: "Loading...",
+        projectId: "loading"
+      })
+    }
+    return createWidgetConfig(widgetId as WidgetType, {
       id: "draft_widget",
       name: "Untitled",
       projectId: "draft"
     })
-  )
+  })
 
+  // Loading state for saved widgets
+  const [isLoadingWidget, setIsLoadingWidget] = React.useState(isSavedWidget)
+
+  const router = useRouter()
   const [device, setDevice] = React.useState<"desktop" | "tablet" | "mobile">("desktop")
   const [expandedSections, setExpandedSections] = React.useState<string[]>(["appearance"])
   const [isEditingName, setIsEditingName] = React.useState(false)
@@ -171,6 +196,56 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
   // Initialize with empty array - will be populated when testimonials load
   const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>([])
   const nameInputRef = React.useRef<HTMLInputElement>(null)
+
+  // Saving state
+  const [isSaving, setIsSaving] = React.useState(false)
+  const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [savedWidgetId, setSavedWidgetId] = React.useState<string | null>(isSavedWidget ? widgetId : null)
+
+  // Load saved widget from database
+  React.useEffect(() => {
+    if (isSavedWidget) {
+      loadSavedWidget()
+    }
+  }, [widgetId])
+
+  const loadSavedWidget = async () => {
+    setIsLoadingWidget(true)
+    try {
+      const result = await getWidgetById(widgetId)
+      if (result.data) {
+        const savedWidget = result.data
+        // Reconstruct full config from saved data
+        const fullConfig: WidgetConfig = {
+          id: savedWidget.id,
+          name: savedWidget.name,
+          type: savedWidget.type as WidgetType,
+          projectId: savedWidget.project_id,
+          createdAt: savedWidget.created_at,
+          updatedAt: savedWidget.updated_at,
+          ...savedWidget.config,
+        } as WidgetConfig
+
+        setConfig(fullConfig)
+        setSavedWidgetId(savedWidget.id)
+
+        // Load selected testimonial IDs
+        if (savedWidget.selected_testimonial_ids && savedWidget.selected_testimonial_ids.length > 0) {
+          setSelectedTestimonialIds(savedWidget.selected_testimonial_ids)
+          hasInitializedSelection.current = true
+        }
+      } else {
+        console.error('Failed to load widget:', result.error)
+        // Redirect to design page if widget not found
+        router.push('/design')
+      }
+    } catch (error) {
+      console.error('Error loading widget:', error)
+      router.push('/design')
+    } finally {
+      setIsLoadingWidget(false)
+    }
+  }
 
   // Sync selected IDs when userTestimonials loads (only on first load)
   const hasInitializedSelection = React.useRef(false)
@@ -302,6 +377,11 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
     return filteredTestimonials
   }, [filteredTestimonials])
 
+  // Count of real (non-demo) selected testimonials for display
+  const realSelectedCount = React.useMemo(() => {
+    return selectedTestimonialIds.filter(id => !id.toString().startsWith('demo-')).length
+  }, [selectedTestimonialIds])
+
   const activeTestimonial = displayTestimonials[activeCardIndex % displayTestimonials.length] || displayTestimonials[0]
 
   const handleNextCard = () => {
@@ -313,6 +393,66 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
       const len = displayTestimonials.length || 1
       return (prev - 1 + len) % len
     })
+  }
+
+  // ===================== Save Widget Handler ===================== //
+  const handleSave = async () => {
+    setIsSaving(true)
+    setSaveStatus('saving')
+
+    try {
+      // Filter out demo testimonial IDs before saving
+      const realTestimonialIds = selectedTestimonialIds.filter(
+        id => !id.toString().startsWith('demo-')
+      )
+
+      const result = await saveWidget({
+        id: savedWidgetId || undefined, // Pass existing ID if we've saved before
+        name: config.name.trim(),
+        type: config.type,
+        config: config as Record<string, any>,
+        selectedTestimonialIds: realTestimonialIds,
+        status: 'published',
+      })
+
+      if (result.success && result.data) {
+        setSavedWidgetId(result.data.id)
+        setSaveStatus('saved')
+        toast.success('Widget saved successfully!')
+
+        // Update URL to reflect the saved widget ID (without full page reload)
+        // This allows subsequent saves to update the same widget
+        if (!savedWidgetId) {
+          // First save - update the URL
+          window.history.replaceState({}, '', `/canvas/${result.data.id}`)
+        }
+
+        // Reset status after 2 seconds
+        setTimeout(() => setSaveStatus('idle'), 2000)
+      } else {
+        console.error('Save failed:', result.error)
+        toast.error(result.error || 'Failed to save widget. Please try again.')
+        setSaveStatus('error')
+        setTimeout(() => setSaveStatus('idle'), 3000)
+      }
+    } catch (error) {
+      console.error('Save error:', error)
+      toast.error('An unexpected error occurred. Please try again.')
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Show loading state while fetching saved widget
+  if (isLoadingWidget) {
+    return (
+      <div className="flex flex-col h-screen bg-[#09090b] text-white items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-500 mb-4" />
+        <p className="text-zinc-400">Loading widget...</p>
+      </div>
+    )
   }
 
   return (
@@ -350,14 +490,50 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
             className="bg-violet-600 hover:bg-violet-500 text-white gap-2 font-medium"
           >
             <ListFilter className="h-4 w-4" />
-            Select Testimonials ({selectedTestimonialIds.length})
-          </Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 font-medium">
-            <Save className="h-4 w-4" />
-            Save
+            Select Testimonials ({realSelectedCount})
           </Button>
           <Button
-            onClick={() => setIsSharePanelOpen(true)}
+            onClick={handleSave}
+            disabled={isSaving}
+            className={cn(
+              "text-white gap-2 font-medium transition-all",
+              saveStatus === 'saved'
+                ? "bg-green-600 hover:bg-green-500"
+                : saveStatus === 'error'
+                  ? "bg-red-600 hover:bg-red-500"
+                  : "bg-emerald-600 hover:bg-emerald-500"
+            )}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : saveStatus === 'saved' ? (
+              <>
+                <Check className="h-4 w-4" />
+                Saved!
+              </>
+            ) : saveStatus === 'error' ? (
+              <>
+                <Save className="h-4 w-4" />
+                Error - Retry
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={async () => {
+              if (isSaving) return;
+              if (!savedWidgetId) {
+                await handleSave();
+              }
+              setIsSharePanelOpen(true);
+            }}
             className="bg-[#6366f1] hover:bg-[#5558dd] text-white gap-2 font-medium"
           >
             <Share2 className="h-4 w-4" />
@@ -423,7 +599,7 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
         {/* CENTER - CANVAS */}
         <div className="flex-1 flex flex-col min-w-0 bg-[#09090b] relative">
           {/* Canvas Area */}
-          <div className="flex-1 overflow-auto relative flex items-center justify-center p-8 bg-[#09090b]">
+          <div className="flex-1 overflow-auto relative flex items-start justify-center p-8 pt-12 bg-[#09090b]">
             <div className="absolute inset-0 pointer-events-none"
               style={{
                 backgroundImage: `linear-gradient(#27272a 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px)`,
@@ -442,7 +618,7 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
                 fontFamily: config.fontFamily
               }}
             >
-              <div className="min-h-[400px] flex flex-col justify-center items-center relative">
+              <div className="min-h-[400px] flex flex-col justify-start items-center relative">
                 <div className={cn("w-full", isDarkMode ? "dark" : "")} style={{ fontFamily: config.fontFamily }}>
 
                   {/* RENDER BASED ON CONFIG TYPE */}
@@ -740,7 +916,7 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
       <ShareWidgetPanel
         isOpen={isSharePanelOpen}
         onClose={() => setIsSharePanelOpen(false)}
-        widgetId={widgetId}
+        widgetId={savedWidgetId || widgetId}
         widgetName={config.name}
       />
     </div>
