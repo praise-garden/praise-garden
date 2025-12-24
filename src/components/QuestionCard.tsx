@@ -4,7 +4,7 @@ import ContentContainer from '@/components/ui/content-container';
 import AppBar from '@/components/ui/app-bar';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { QuestionBlockConfig } from '@/types/form-config';
-import VideoTestimonialScreen from './VideoTestimonialScreen';
+import VideoRecorder from './VideoRecorder';
 import { DEFAULT_TESTIMONIAL_TIPS } from '@/lib/default-form-config';
 
 const VideoIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -49,7 +49,6 @@ const QuestionCard = ({
         (enableText && !enableVideo) ? 'text' : 'options';
 
     const [mode, setMode] = useState<'options' | 'text' | 'video'>(initialMode);
-    const [showVideoScreen, setShowVideoScreen] = useState(false);
     const [lightMode, setLightMode] = useState(false);
 
     const handleFieldClick = (fieldPath: string) => {
@@ -66,15 +65,19 @@ const QuestionCard = ({
         transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
     };
 
-    // Handle video button click - opens VideoTestimonialScreen
+    // Handle video button click - switches to inline video mode
     const handleVideoClick = () => {
-        setShowVideoScreen(true);
+        setMode('video');
     };
 
     const handleVideoComplete = (blob: Blob) => {
         console.log('Video recorded:', blob);
         // Here you would typically upload the video
         cardProps.onNext();
+    };
+
+    const handleVideoCancel = () => {
+        setMode('options');
     };
 
     // Handle text button click - if only text is enabled, this is already shown
@@ -87,25 +90,11 @@ const QuestionCard = ({
             {...cardProps}
             theme={theme}
         >
-            {/* Full-screen Video Testimonial Screen Overlay */}
-            {showVideoScreen && (
-                <VideoTestimonialScreen
-                    config={config}
-                    theme={theme}
-                    onComplete={(blob) => {
-                        console.log('Video recorded:', blob);
-                        setShowVideoScreen(false);
-                        cardProps.onNext();
-                    }}
-                    onCancel={() => setShowVideoScreen(false)}
-                    logoUrl={theme?.logoUrl}
-                />
-            )}
 
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
                 {/* Left Panel: The "Ask" - Animate width */}
                 <motion.div
-                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '33.3333%' : '50%') }}
+                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '33.3333%' : (mode === 'video' ? '33.3333%' : '50%')) }}
                     transition={panelMotionProps}
                     className={`w-full md:w-1/2 flex flex-col overflow-hidden transition-colors duration-500 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#1A1A1A] via-[#242424] to-[#1A1A1A]'}`}
                 >
@@ -180,9 +169,9 @@ const QuestionCard = ({
 
                 {/* Right Panel: The "Answer" - Animate width */}
                 <motion.div
-                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '66.6667%' : '50%') }}
+                    animate={{ width: mode === 'options' ? '50%' : (mode === 'text' ? '66.6667%' : (mode === 'video' ? '66.6667%' : '50%')) }}
                     transition={panelMotionProps}
-                    className="w-full md:w-1/2 bg-gradient-to-br from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F] flex flex-col justify-center items-center relative overflow-hidden"
+                    className={`w-full md:w-1/2 flex flex-col justify-center items-center relative overflow-hidden transition-colors duration-500 ${lightMode ? 'bg-white' : 'bg-gradient-to-br from-[#0F0F0F] via-[#1A1A1A] to-[#0F0F0F]'}`}
                 >
                     {/* Subtle background pattern */}
                     {mode !== 'video' && (
@@ -290,6 +279,23 @@ const QuestionCard = ({
                                         </button>
                                     </div>
                                 </div>
+                            </motion.div>
+                        )}
+
+                        {mode === 'video' && (
+                            <motion.div
+                                key="video"
+                                variants={rightPanelVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                className="w-full h-full flex flex-col"
+                            >
+                                <VideoRecorder
+                                    onCancel={handleVideoCancel}
+                                    onComplete={handleVideoComplete}
+                                    onLightModeChange={setLightMode}
+                                />
                             </motion.div>
                         )}
                     </AnimatePresence>

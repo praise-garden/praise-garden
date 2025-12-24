@@ -33,7 +33,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
 
     const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [videoUrl, setVideoUrl] = useState<string | null>(null); // For preview URL management
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
     const [isRecording, setIsRecording] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
@@ -45,6 +45,14 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
     const [showSettings, setShowSettings] = useState(false);
     const [showInitialHint, setShowInitialHint] = useState(true);
     const [lightMode, setLightMode] = useState(false);
+    const [countdown, setCountdown] = useState<number | null>(null);
+
+    // Motivational messages for countdown
+    const countdownMessages: { [key: number]: string } = {
+        3: "Get ready! 🎬",
+        2: "Smile! 😊",
+        1: "You got this! ✨"
+    };
 
     // Notify parent when light mode changes
     useEffect(() => {
@@ -112,7 +120,24 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
 
         } catch (err: any) {
             console.error("Error accessing media devices:", err);
-            setPermissionError("Please allow access to camera and microphone.");
+
+            // Try to determine which permission is missing
+            try {
+                // Test camera only
+                await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                // Camera works, so it's a microphone issue
+                setPermissionError("Please allow access to your microphone.");
+            } catch (videoErr) {
+                try {
+                    // Test microphone only
+                    await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+                    // Microphone works, so it's a camera issue
+                    setPermissionError("Please allow access to your camera.");
+                } catch (audioErr) {
+                    // Both failed
+                    setPermissionError("Please allow access to both camera and microphone.");
+                }
+            }
         }
     }, []);
 
@@ -203,7 +228,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
         }
     };
 
-    const startRecording = () => {
+    const actuallyStartRecording = () => {
         if (!stream) return;
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
@@ -221,6 +246,27 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
         mediaRecorder.start();
         setIsRecording(true);
         setIsPaused(false);
+    };
+
+    const startRecording = () => {
+        if (!stream || countdown !== null) return;
+
+        // Start countdown
+        setCountdown(3);
+        setShowInitialHint(false);
+
+        // Countdown timer
+        let count = 3;
+        const countdownInterval = setInterval(() => {
+            count -= 1;
+            if (count > 0) {
+                setCountdown(count);
+            } else {
+                clearInterval(countdownInterval);
+                setCountdown(null);
+                actuallyStartRecording();
+            }
+        }, 1000);
     };
 
     const stopRecording = () => {
@@ -251,15 +297,16 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
     return (
         <div className={`flex flex-col items-center justify-center w-full h-full p-6 md:p-10 transition-colors duration-500 ${lightMode ? 'bg-white' : ''}`}>
 
-            {/* Main Video Container - The Star of the Show */}
+            {/* Main Video Container */}
             <div className={`relative w-full max-w-2xl aspect-[4/3] rounded-[28px] overflow-hidden shadow-2xl transition-all duration-500 ${lightMode ? 'ring-4 ring-white shadow-[0_0_80px_40px_rgba(255,255,255,0.9)]' : 'bg-gradient-to-br from-zinc-900 to-black ring-1 ring-white/5'}`}>
                 <video
                     ref={videoRef}
-                    autoPlay
+                    autoPlay={!recordedBlob}
                     playsInline
-                    muted={!recordedBlob} // Mute only during recording (to prevent echo)
+                    muted={!recordedBlob}
+                    controls={!!recordedBlob}
                     onEnded={() => setIsPlaying(false)}
-                    className={`w-full h-full object-cover transform transition-transform duration-500 ${recordedBlob ? 'scale-x-[1.25] scale-y-[1.20]' : 'scale-x-[-1.25] scale-y-[1.20]'}`}
+                    className={`w-full h-full object-cover transform transition-transform duration-500 ${recordedBlob ? '' : 'scale-x-[-1.25] scale-y-[1.20]'}`}
                 />
 
                 {/* Permission Error Overlay */}
@@ -269,62 +316,105 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
                                 <X className="w-8 h-8 text-red-400" />
                             </div>
-                            <p className="text-white font-semibold text-lg mb-1">Camera Access Required</p>
+                            <p className="text-white font-semibold text-lg mb-1">
+                                {permissionError.includes('microphone') && !permissionError.includes('camera')
+                                    ? 'Microphone Access Required'
+                                    : permissionError.includes('camera') && !permissionError.includes('microphone')
+                                        ? 'Camera Access Required'
+                                        : 'Camera & Microphone Access Required'}
+                            </p>
                             <p className="text-sm text-gray-400 max-w-xs">{permissionError}</p>
                         </div>
                     </div>
                 )}
 
-                {/* Subtle Initial Hint (Fades after a few seconds) */}
+                {/* Countdown Overlay */}
                 <AnimatePresence>
-                    {showInitialHint && !isRecording && !permissionError && (
+                    {countdown !== null && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+                            className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 z-50"
                         >
-                            <p className="text-white/60 text-sm font-medium tracking-wide" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.7)' }}>
-                                Center yourself and press record when ready
-                            </p>
+                            <motion.div
+                                key={countdown}
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 1.5, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                className="text-center"
+                            >
+                                <div className="text-8xl md:text-9xl font-bold text-white drop-shadow-2xl">
+                                    {countdown}
+                                </div>
+                                <motion.p
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="text-xl md:text-2xl text-white/90 mt-4 font-medium"
+                                >
+                                    {countdownMessages[countdown]}
+                                </motion.p>
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* Notes Overlay */}
-                <AnimatePresence>
-                    {showNotes && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 z-20 bg-gradient-to-b from-black/25 via-transparent to-black/25 p-6 md:p-10 flex flex-col items-center justify-center"
+                {/* Subtle Initial Hint (Fades after a few seconds) - Only during recording mode */}
+                {!recordedBlob && (
+                    <AnimatePresence>
+                        {showInitialHint && !isRecording && !permissionError && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+                            >
+                                <p className="text-white/60 text-sm font-medium tracking-wide" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.7)' }}>
+                                    Center yourself and press record when ready
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                )}
+
+                {/* Notes Overlay - Only during recording mode */}
+                {!recordedBlob && (
+                    <AnimatePresence>
+                        {showNotes && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 z-20 bg-gradient-to-b from-black/25 via-transparent to-black/25 p-6 md:p-10 flex flex-col items-center justify-center"
+                            >
+                                <textarea
+                                    autoFocus
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    placeholder="Type your notes..."
+                                    className="w-full h-full max-w-lg bg-transparent border-none text-white text-lg md:text-xl font-medium text-center placeholder-white/30 focus:outline-none resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                                    style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                )}
+
+                {/* Top Bar: Close & Settings - Only during recording mode */}
+                {!recordedBlob && (
+                    <div className="absolute top-0 left-0 right-0 p-5 z-30 flex justify-between items-start">
+                        <button
+                            onClick={onCancel}
+                            className="p-2 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white/80 hover:text-white transition-all"
                         >
-                            <textarea
-                                autoFocus
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Type your notes..."
-                                className="w-full h-full max-w-lg bg-transparent border-none text-white text-lg md:text-xl font-medium text-center placeholder-white/30 focus:outline-none resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            <X className="w-5 h-5" />
+                        </button>
 
-                {/* Top Bar: Close & Settings */}
-                <div className="absolute top-0 left-0 right-0 p-5 z-30 flex justify-between items-start">
-                    <button
-                        onClick={onCancel}
-                        className="p-2 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white/80 hover:text-white transition-all"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                        {/* Light Mode Toggle - Only show if not reviewing (or maybe allow in review?) */}
-                        {!recordedBlob && (
+                        <div className="flex items-center gap-2">
+                            {/* Light Mode Toggle */}
                             <button
                                 onClick={() => setLightMode(!lightMode)}
                                 className={`p-2 rounded-full backdrop-blur-sm transition-all ${lightMode ? 'bg-amber-400 text-amber-900 shadow-lg shadow-amber-400/50' : 'bg-black/30 hover:bg-black/50 text-white/80 hover:text-white'}`}
@@ -332,187 +422,162 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
                             >
                                 <Sun className="w-5 h-5" />
                             </button>
-                        )}
 
-                        {/* Settings */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowSettings(!showSettings)}
-                                className="p-2 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white/80 hover:text-white transition-all"
-                            >
-                                <Settings2 className="w-5 h-5" />
-                            </button>
+                            {/* Settings */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowSettings(!showSettings)}
+                                    className="p-2 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white/80 hover:text-white transition-all"
+                                >
+                                    <Settings2 className="w-5 h-5" />
+                                </button>
 
-                            <AnimatePresence>
-                                {showSettings && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                                        className="absolute right-0 mt-2 w-56 p-3 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-40 origin-top-right text-left"
-                                    >
-                                        <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2 px-1">Sources</p>
-                                        <div className="space-y-2">
-                                            <div className="relative">
-                                                <select
-                                                    value={selectedDevices.video}
-                                                    onChange={(e) => {
-                                                        setSelectedDevices(p => ({ ...p, video: e.target.value }));
-                                                        startCamera(selectedDevices.audio, e.target.value);
-                                                    }}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-xs text-white appearance-none focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                                >
-                                                    {devices.video.map(d => (
-                                                        <option key={d.deviceId} value={d.deviceId}>{d.label || 'Camera'}</option>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown className="absolute right-2.5 top-2.5 w-3 h-3 text-gray-500 pointer-events-none" />
+                                <AnimatePresence>
+                                    {showSettings && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                            className="absolute right-0 mt-2 w-56 p-3 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-40 origin-top-right text-left"
+                                        >
+                                            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2 px-1">Sources</p>
+                                            <div className="space-y-2">
+                                                <div className="relative">
+                                                    <select
+                                                        value={selectedDevices.video}
+                                                        onChange={(e) => {
+                                                            setSelectedDevices(p => ({ ...p, video: e.target.value }));
+                                                            startCamera(selectedDevices.audio, e.target.value);
+                                                        }}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-xs text-white appearance-none focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                                                    >
+                                                        {devices.video.map(d => (
+                                                            <option key={d.deviceId} value={d.deviceId}>{d.label || 'Camera'}</option>
+                                                        ))}
+                                                    </select>
+                                                    <ChevronDown className="absolute right-2.5 top-2.5 w-3 h-3 text-gray-500 pointer-events-none" />
+                                                </div>
+                                                <div className="relative">
+                                                    <select
+                                                        value={selectedDevices.audio}
+                                                        onChange={(e) => {
+                                                            setSelectedDevices(p => ({ ...p, audio: e.target.value }));
+                                                            startCamera(e.target.value, selectedDevices.video);
+                                                        }}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-xs text-white appearance-none focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                                                    >
+                                                        {devices.audio.map(d => (
+                                                            <option key={d.deviceId} value={d.deviceId}>{d.label || 'Microphone'}</option>
+                                                        ))}
+                                                    </select>
+                                                    <ChevronDown className="absolute right-2.5 top-2.5 w-3 h-3 text-gray-500 pointer-events-none" />
+                                                </div>
                                             </div>
-                                            <div className="relative">
-                                                <select
-                                                    value={selectedDevices.audio}
-                                                    onChange={(e) => {
-                                                        setSelectedDevices(p => ({ ...p, audio: e.target.value }));
-                                                        startCamera(e.target.value, selectedDevices.video);
-                                                    }}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-xs text-white appearance-none focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                                >
-                                                    {devices.audio.map(d => (
-                                                        <option key={d.deviceId} value={d.deviceId}>{d.label || 'Microphone'}</option>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown className="absolute right-2.5 top-2.5 w-3 h-3 text-gray-500 pointer-events-none" />
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
-
-                        {/* Empty spacer if reviewing to balance the layout if needed, or hide settings logic */}
-                    </div>
-                </div>
-
-                {/* Playback Controls Overlay (Center Play/Pause when paused in review) */}
-                {recordedBlob && !isPlaying && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                        <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="bg-black/40 backdrop-blur-sm rounded-full p-6 text-white pointer-events-auto cursor-pointer hover:scale-105 transition-transform"
-                            onClick={togglePlayback}
-                        >
-                            <Play className="w-12 h-12 ml-1 fill-white" />
-                        </motion.div>
                     </div>
                 )}
 
-                {/* Bottom Controls Bar */}
-                <div className="absolute bottom-0 inset-x-0 p-5 z-30 flex items-center justify-between">
-
-                    {/* Left: Timer & Audio Visualizer OR Retake */}
-                    {recordedBlob ? (
-                        <button
-                            onClick={handleRetake}
-                            className="flex items-center gap-2 px-5 py-3 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/10 text-white font-medium transition-all hover:scale-105 shadow-lg active:scale-95"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                            <span className="text-sm">Retake</span>
-                        </button>
-                    ) : (
-                        <div className="flex items-center gap-3 min-w-[100px] px-3 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg">
-                            <div className="flex items-end gap-0.5 h-4">
-                                {[...Array(5)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        className={`w-[3px] rounded-full ${isRecording && !isPaused ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-white/70'}`}
-                                        animate={{
-                                            height: Math.max(3, Math.min(16, audioLevel * (Math.random() * 0.6 + 0.4) * 0.4))
-                                        }}
-                                        transition={{ ease: "easeOut", duration: 0.08 }}
-                                    />
-                                ))}
+                {/* Bottom Controls Bar - Only during recording mode */}
+                {!recordedBlob && (
+                    <div className="absolute bottom-0 inset-x-0 z-30">
+                        <div className="flex items-center justify-between p-5">
+                            {/* Left: Timer & Audio Visualizer */}
+                            <div className="flex items-center gap-3 min-w-[100px] px-3 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg">
+                                <div className="flex items-end gap-0.5 h-4">
+                                    {[...Array(5)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            className={`w-[3px] rounded-full ${isRecording && !isPaused ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-white/70'}`}
+                                            animate={{
+                                                height: Math.max(3, Math.min(16, audioLevel * (Math.random() * 0.6 + 0.4) * 0.4))
+                                            }}
+                                            transition={{ ease: "easeOut", duration: 0.08 }}
+                                        />
+                                    ))}
+                                </div>
+                                <span className={`font-mono text-sm font-semibold tracking-wider ${isRecording && !isPaused ? 'text-rose-500 drop-shadow-md' : 'text-white drop-shadow-md'}`}>
+                                    {formatTime(recordingTime)}
+                                </span>
                             </div>
-                            <span className={`font-mono text-sm font-semibold tracking-wider ${isRecording && !isPaused ? 'text-rose-500 drop-shadow-md' : 'text-white drop-shadow-md'}`}>
-                                {formatTime(recordingTime)}
-                            </span>
-                        </div>
-                    )}
 
-                    {/* Center: Main Record Button */}
-                    {/* Center: Main Record/Playback Controls */}
-                    <div className="flex items-center justify-center gap-4">
-                        {!recordedBlob ? (
-                            // Recording Controls
-                            !isRecording ? (
-                                <button
-                                    onClick={startRecording}
-                                    disabled={!!permissionError}
-                                    className="group relative cursor-pointer transform transition-transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    aria-label="Start Recording"
-                                >
-                                    <div className="w-[60px] h-[60px] rounded-full border-[3px] border-white flex items-center justify-center bg-black/30 backdrop-blur-sm shadow-xl group-hover:border-white transition-colors">
-                                        <div className="w-[48px] h-[48px] bg-gradient-to-tr from-rose-600 to-rose-500 rounded-full group-hover:scale-105 transition-transform shadow-md" />
-                                    </div>
-                                </button>
-                            ) : (
-                                <>
+                            {/* Center: Main Record Controls */}
+                            <div className="flex items-center justify-center gap-4">
+                                {!isRecording ? (
                                     <button
-                                        onClick={togglePause}
-                                        className={`w-11 h-11 rounded-full backdrop-blur-md flex items-center justify-center transition-all transform hover:scale-105 shadow-lg border ${isPaused ? 'bg-white text-rose-500 border-white/20' : 'bg-black/40 border-white/10 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300'}`}
-                                        aria-label={isPaused ? "Resume" : "Pause"}
+                                        onClick={startRecording}
+                                        disabled={!!permissionError}
+                                        className="group relative cursor-pointer transform transition-transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        aria-label="Start Recording"
                                     >
-                                        {isPaused ? <Play className="w-5 h-5 fill-current ml-0.5" /> : <Pause className="w-5 h-5 fill-current" />}
-                                    </button>
-
-                                    <button
-                                        onClick={stopRecording}
-                                        className="group cursor-pointer transform transition-transform active:scale-90"
-                                        aria-label="Stop Recording"
-                                    >
-                                        <div className="w-[64px] h-[64px] rounded-full border-[3px] border-white/30 flex items-center justify-center bg-black/30 backdrop-blur-md group-hover:bg-black/40 transition-colors shadow-xl">
-                                            <div className="w-7 h-7 bg-rose-500 rounded-[6px] shadow-sm group-hover:bg-rose-400 transition-colors" />
+                                        <div className="w-[60px] h-[60px] rounded-full border-[3px] border-white flex items-center justify-center bg-black/30 backdrop-blur-sm shadow-xl group-hover:border-white transition-colors">
+                                            <div className="w-[48px] h-[48px] bg-gradient-to-tr from-rose-600 to-rose-500 rounded-full group-hover:scale-105 transition-transform shadow-md" />
                                         </div>
                                     </button>
-                                </>
-                            )
-                        ) : (
-                            // Review Controls (Play/Pause)
-                            <button
-                                onClick={togglePlayback}
-                                className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition-all transform hover:scale-105 shadow-xl border ${!isPlaying ? 'bg-white text-black border-white' : 'bg-black/40 border-white/20 text-white hover:bg-black/60'}`}
-                                aria-label={isPlaying ? "Pause" : "Play"}
-                            >
-                                {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
-                            </button>
-                        )}
-                    </div>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={togglePause}
+                                            className={`w-11 h-11 rounded-full backdrop-blur-md flex items-center justify-center transition-all transform hover:scale-105 shadow-lg border ${isPaused ? 'bg-white text-rose-500 border-white/20' : 'bg-black/40 border-white/10 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300'}`}
+                                            aria-label={isPaused ? "Resume" : "Pause"}
+                                        >
+                                            {isPaused ? <Play className="w-5 h-5 fill-current ml-0.5" /> : <Pause className="w-5 h-5 fill-current" />}
+                                        </button>
 
-                    {/* Right: Notes Toggle OR Continue */}
-                    <div className="flex justify-end min-w-[100px]">
-                        {!recordedBlob ? (
-                            <button
-                                onClick={() => setShowNotes(!showNotes)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md transition-all shadow-lg border ${showNotes ? 'bg-purple-500/40 text-white border-purple-400/40' : 'bg-black/40 border-white/10 text-white/90 hover:bg-black/50 hover:text-white'}`}
-                                aria-label="Toggle Notes"
-                            >
-                                <Pencil className="w-3.5 h-3.5" />
-                                <span>Notes</span>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleContinue}
-                                className="group flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-semibold shadow-lg shadow-rose-500/20 hover:shadow-rose-500/30 transition-all hover:scale-105 active:scale-95"
-                            >
-                                <span className="text-sm">Continue</span>
-                                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                            </button>
-                        )}
+                                        <button
+                                            onClick={stopRecording}
+                                            className="group cursor-pointer transform transition-transform active:scale-90"
+                                            aria-label="Stop Recording"
+                                        >
+                                            <div className="w-[64px] h-[64px] rounded-full border-[3px] border-white/30 flex items-center justify-center bg-black/30 backdrop-blur-md group-hover:bg-black/40 transition-colors shadow-xl">
+                                                <div className="w-7 h-7 bg-rose-500 rounded-[6px] shadow-sm group-hover:bg-rose-400 transition-colors" />
+                                            </div>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Right: Notes Toggle */}
+                            <div className="flex justify-end min-w-[100px]">
+                                <button
+                                    onClick={() => setShowNotes(!showNotes)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md transition-all shadow-lg border ${showNotes ? 'bg-purple-500/40 text-white border-purple-400/40' : 'bg-black/40 border-white/10 text-white/90 hover:bg-black/50 hover:text-white'}`}
+                                    aria-label="Toggle Notes"
+                                >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                    <span>Notes</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                )}
+            </div>
+
+            {/* Action Buttons BELOW the video - Only in review mode */}
+            {recordedBlob && (
+                <div className="w-full max-w-2xl mt-6 flex items-center justify-between gap-4">
+                    <button
+                        onClick={handleRetake}
+                        className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-medium transition-all"
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                        <span>Retake</span>
+                    </button>
+
+                    <button
+                        onClick={handleContinue}
+                        className="group flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
+                    >
+                        <span>Continue</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
                 </div>
-            </div >
+            )}
 
-        </div >
+        </div>
     );
 };
 
