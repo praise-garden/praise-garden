@@ -1,4 +1,4 @@
-import { getTestimonialById } from "@/lib/data/testimonials";
+import { getTestimonialById, getTestimonialsByEmail } from "@/lib/data/testimonials";
 import { notFound } from "next/navigation";
 import { TestimonialContentWrapper } from "./TestimonialContentWrapper";
 
@@ -9,5 +9,8 @@ export default async function EditTestimonialPage({ params }: { params: { id: st
         notFound();
     }
 
-    return <TestimonialContentWrapper testimonial={testimonial} />;
+    // Fetch other testimonials from the same user (by email)
+    const relatedTestimonials = await getTestimonialsByEmail(testimonial.email, testimonial.id);
+
+    return <TestimonialContentWrapper testimonial={testimonial} relatedTestimonials={relatedTestimonials} />;
 }

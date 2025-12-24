@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Copy, Pencil, Scissors, Share2, Trash2 } from "lucide-react";
-import { deleteTestimonial } from "@/lib/actions/testimonials";
+import { deleteTestimonial, duplicateTestimonial } from "@/lib/actions/testimonials";
 import { useRouter } from "next/navigation";
 import { useTransition, useState } from "react";
 import {
@@ -24,6 +24,7 @@ interface TestimonialToolbarProps {
 export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: TestimonialToolbarProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [isDuplicating, setIsDuplicating] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const handleDelete = () => {
@@ -44,8 +45,19 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: T
         alert("Link copied to clipboard!");
     };
 
-    const handleFeatureNotReady = (feature: string) => {
-        alert(`${feature} feature coming soon!`);
+    const handleDuplicate = async () => {
+        setIsDuplicating(true);
+        try {
+            const result = await duplicateTestimonial(testimonialId);
+            if (result.success && result.newId) {
+                router.push(`/dashboard/Edit-Testimonial/${result.newId}`);
+            }
+        } catch (error) {
+            console.error("Failed to duplicate", error);
+            alert("Failed to duplicate testimonial");
+        } finally {
+            setIsDuplicating(false);
+        }
     };
 
     return (
@@ -56,7 +68,7 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: T
                         variant="ghost"
                         onClick={() => {
                             if (onEdit) onEdit();
-                            else handleFeatureNotReady("Edit Metadata");
+                            else alert("Edit Metadata feature coming soon!");
                         }}
                         className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                     >
@@ -80,11 +92,12 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: T
 
                     <Button
                         variant="ghost"
-                        onClick={() => handleFeatureNotReady("Duplicate")}
+                        onClick={handleDuplicate}
+                        disabled={isDuplicating}
                         className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                     >
                         <Copy className="size-4" />
-                        <span className="font-medium">Duplicate</span>
+                        <span className="font-medium">{isDuplicating ? "Duplicating..." : "Duplicate"}</span>
                     </Button>
 
                     <Button

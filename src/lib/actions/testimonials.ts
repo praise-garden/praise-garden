@@ -504,3 +504,51 @@ export async function updateTestimonialContent(id: string | number, data: any) {
     revalidatePath("/dashboard");
     return { success: true };
 }
+
+export async function duplicateTestimonial(id: string | number) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error("Unauthorized");
+
+    // Fetch the existing testimonial
+    const { data: existing, error: fetchError } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+
+    if (fetchError || !existing) {
+        console.error("Error fetching testimonial for duplication:", fetchError);
+        throw new Error("Testimonial not found");
+    }
+
+    // Create a copy with modified name to indicate it's a duplicate
+    const duplicatedData = {
+        ...existing.data,
+        customer_name: `${existing.data?.customer_name || 'Anonymous'} (Copy)`,
+    };
+
+    // Insert the duplicated testimonial
+    const { data: newTestimonial, error: insertError } = await supabase
+        .from('testimonials')
+        .insert({
+            type: existing.type,
+            user_id: user.id,
+            project_id: existing.project_id,
+            data: duplicatedData,
+            status: existing.status
+        })
+        .select('id')
+        .single();
+
+    if (insertError) {
+        console.error("Error duplicating testimonial:", insertError);
+        throw new Error("Failed to duplicate testimonial: " + insertError.message);
+    }
+
+    revalidatePath("/dashboard");
+
+    return { success: true, newId: newTestimonial?.id };
+}

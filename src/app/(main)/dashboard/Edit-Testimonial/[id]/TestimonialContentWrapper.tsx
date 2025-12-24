@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
-import { TranscriptEditor } from "./TranscriptEditor";
 import { EditVideoTestimonialForm } from "./EditVideoTestimonialForm";
 import { updateTestimonialContent } from "@/lib/actions/testimonials";
 import { TestimonialToolbar } from "@/components/dashboard/TestimonialToolbar";
@@ -26,13 +25,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { TrimVideoModal } from "@/components/dashboard/TrimVideoModal";
+import { VideoTestimonialComponent, TextTestimonialComponent } from "../../TestimonialComponents";
 
 interface TestimonialContentWrapperProps {
     testimonial: any;
+    relatedTestimonials?: any[];
 }
 
-export function TestimonialContentWrapper({ testimonial }: TestimonialContentWrapperProps) {
+export function TestimonialContentWrapper({ testimonial, relatedTestimonials = [] }: TestimonialContentWrapperProps) {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isTrimOpen, setIsTrimOpen] = useState(false);
@@ -126,9 +126,12 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                 {/* User Info Row */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
+                        <button
+                            onClick={() => router.back()}
+                            className="text-zinc-400 hover:text-white transition-colors"
+                        >
                             <ChevronLeft className="size-6" />
-                        </Link>
+                        </button>
                         <Avatar className="size-12 bg-zinc-800 ring-2 ring-zinc-800/50">
                             <AvatarImage src={testimonial.avatar} />
                             <AvatarFallback className="bg-zinc-800 text-zinc-400 font-bold text-lg">
@@ -165,7 +168,7 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                 {/* Tabs Row */}
                 <div className="flex items-center gap-6 text-sm font-medium pt-2 overflow-x-auto scrollbar-hide">
                     {[
-                        { id: 'testimonials', label: 'Testimonials', count: 1 },
+                        { id: 'testimonials', label: 'Testimonials', count: 1 + relatedTestimonials.length },
                         { id: 'invites', label: 'Invites' },
                         { id: 'feedback', label: 'Feedback' },
                         { id: 'user-details', label: 'User Details' }
@@ -196,69 +199,119 @@ export function TestimonialContentWrapper({ testimonial }: TestimonialContentWra
                         />
                     </div>
                 ) : activeTab === 'testimonials' && (
-                    <div className="max-w-[1400px] mx-auto bg-[#18181b] border border-zinc-800/50 shadow-xl rounded-xl overflow-hidden text-zinc-50">
-                        {/* Card Header */}
-                        <div className="p-6 pb-4 flex items-start justify-between border-b border-zinc-800/30">
-                            <div className="flex items-center gap-3">
-                                <div className="flex gap-1 text-amber-500">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <Star key={i} className={`size-5 ${i < testimonial.rating ? "fill-current" : "text-zinc-700 fill-zinc-700"}`} />
-                                    ))}
+                    <>
+                        <div className="max-w-[1400px] mx-auto bg-[#18181b] border border-zinc-800/50 shadow-xl rounded-xl overflow-hidden text-zinc-50">
+                            {/* Card Header */}
+                            <div className="p-6 pb-4 flex items-start justify-between border-b border-zinc-800/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex gap-1 text-amber-500">
+                                        {Array.from({ length: 5 }).map((_, i) => (
+                                            <Star key={i} className={`size-5 ${i < testimonial.rating ? "fill-current" : "text-zinc-700 fill-zinc-700"}`} />
+                                        ))}
+                                    </div>
+                                    {isVideo ? (
+                                        <Badge className="bg-[#2E2335] text-[#D8B4FE] hover:bg-[#3E2F46] border border-purple-500/10 font-medium px-2.5 py-0.5 rounded-full">
+                                            Video
+                                        </Badge>
+                                    ) : (
+                                        <Badge className="bg-[#1E293B] text-[#93C5FD] hover:bg-[#1E3A5F] border border-blue-500/10 font-medium px-2.5 py-0.5 rounded-full">
+                                            Text
+                                        </Badge>
+                                    )}
                                 </div>
-                                {isVideo && (
-                                    <Badge className="bg-[#2E2335] text-[#D8B4FE] hover:bg-[#3E2F46] border border-purple-500/10 font-medium px-2.5 py-0.5 rounded-full flex gap-1 items-center transition-colors">
-                                        Video Testimonial
-                                    </Badge>
+                                <span className="text-zinc-500 text-sm">Collected {testimonial.date}</span>
+                            </div>
+
+                            {/* Card Content - Conditional based on type */}
+                            <div className="px-6 py-6">
+                                {isVideo ? (
+                                    <VideoTestimonialComponent
+                                        testimonial={testimonial}
+                                        videoUrl={videoUrl}
+                                        isTrimOpen={isTrimOpen}
+                                        setIsTrimOpen={setIsTrimOpen}
+                                        handleSaveTrim={handleSaveTrim}
+                                        attachments={testimonial.attachments}
+                                    />
+                                ) : (
+                                    <TextTestimonialComponent
+                                        testimonial={testimonial}
+                                        attachments={testimonial.attachments}
+                                    />
                                 )}
                             </div>
-                            <span className="text-zinc-500 text-sm">Collected {testimonial.date}</span>
+
+                            {/* Toolbar with working buttons */}
+                            <TestimonialToolbar
+                                testimonialId={testimonial.id}
+                                isVideo={isVideo}
+                                onEdit={() => setIsEditing(true)}
+                                onTrim={() => setIsTrimOpen(true)}
+                            />
                         </div>
 
-                        {/* Card Content */}
-                        <div className="px-6 py-6 flex flex-col md:flex-row gap-8">
-                            {/* Video Player */}
-                            {isVideo && videoUrl ? (
-                                <div className="w-full md:w-[50%] rounded-lg overflow-hidden bg-black aspect-video relative group shadow-lg ring-1 ring-zinc-800">
-                                    <TrimVideoModal
-                                        videoUrl={videoUrl}
-                                        poster={testimonial.videoThumbnail}
-                                        isOpen={isTrimOpen}
-                                        onClose={() => setIsTrimOpen(false)}
-                                        onSave={handleSaveTrim}
-                                        startTime={testimonial.raw?.data?.trim_start}
-                                        endTime={testimonial.raw?.data?.trim_end}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="w-full md:w-[50%] aspect-video bg-zinc-900/50 border border-zinc-800 rounded-lg flex items-center justify-center text-zinc-600">
-                                    No Video Content
-                                </div>
-                            )}
+                        {/* Related Testimonials from Same User */}
+                        {relatedTestimonials.length > 0 && (
+                            <div className="max-w-[1400px] mx-auto mt-8">
+                                <div className="space-y-4">
+                                    {relatedTestimonials.map((related) => {
+                                        const relatedIsVideo = related.type === 'video' || related.attachments?.some((a: any) => a.type === 'video');
+                                        const relatedVideoUrl = related.attachments?.find((a: any) => a.type === 'video')?.url;
 
-                            {/* Transcript */}
-                            <div className="flex-1 space-y-3">
-                                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">TRANSCRIPT</h4>
-                                <TranscriptEditor
-                                    initialText={testimonial.text}
-                                    testimonialId={testimonial.id}
-                                />
+                                        return (
+                                            <Link
+                                                key={related.id}
+                                                href={`/dashboard/Edit-Testimonial/${related.id}`}
+                                                className="block"
+                                            >
+                                                <div className="bg-[#18181b] border border-zinc-800/50 rounded-xl overflow-hidden hover:border-zinc-700 transition-all group">
+                                                    {/* Card Header */}
+                                                    <div className="p-4 pb-3 flex items-start justify-between border-b border-zinc-800/30">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex gap-1 text-amber-500">
+                                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                                    <Star key={i} className={`size-4 ${i < related.rating ? "fill-current" : "text-zinc-700 fill-zinc-700"}`} />
+                                                                ))}
+                                                            </div>
+                                                            {relatedIsVideo ? (
+                                                                <Badge className="bg-[#2E2335] text-[#D8B4FE] border border-purple-500/10 font-medium px-2 py-0.5 rounded-full text-xs">
+                                                                    Video
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge className="bg-[#1E293B] text-[#93C5FD] border border-blue-500/10 font-medium px-2 py-0.5 rounded-full text-xs">
+                                                                    Text
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-zinc-500 text-xs">Collected {related.date}</span>
+                                                    </div>
+
+                                                    {/* Card Content - Using the components */}
+                                                    <div className="px-4 py-4">
+                                                        {relatedIsVideo ? (
+                                                            <VideoTestimonialComponent
+                                                                testimonial={related}
+                                                                videoUrl={relatedVideoUrl}
+                                                                isTrimOpen={false}
+                                                                setIsTrimOpen={() => { }}
+                                                                handleSaveTrim={async () => { }}
+                                                                attachments={related.attachments}
+                                                            />
+                                                        ) : (
+                                                            <TextTestimonialComponent
+                                                                testimonial={related}
+                                                                attachments={related.attachments}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Warning Banner */}
-                        <div className="mx-6 mb-6 bg-[#382306]/80 border border-amber-900/30 text-amber-500 rounded-lg px-4 py-3 flex items-center gap-3">
-                            <Lock className="size-4 shrink-0" />
-                            <span className="font-medium text-sm">User did not consent to public sharing</span>
-                        </div>
-
-                        {/* Toolbar */}
-                        <TestimonialToolbar
-                            testimonialId={testimonial.id}
-                            isVideo={isVideo}
-                            onEdit={() => setIsEditing(true)}
-                            onTrim={() => setIsTrimOpen(true)}
-                        />
-                    </div>
+                        )}
+                    </>
                 )}
 
                 {activeTab === 'user-details' && (
