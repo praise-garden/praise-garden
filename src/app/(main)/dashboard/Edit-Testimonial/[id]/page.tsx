@@ -2,8 +2,9 @@ import { getTestimonialById, getTestimonialsByEmail } from "@/lib/data/testimoni
 import { notFound } from "next/navigation";
 import { TestimonialContentWrapper } from "./TestimonialContentWrapper";
 
-export default async function EditTestimonialPage({ params }: { params: { id: string } }) {
-    const testimonial = await getTestimonialById(params.id);
+export default async function EditTestimonialPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const testimonial = await getTestimonialById(id);
 
     if (!testimonial) {
         notFound();

@@ -283,19 +283,39 @@ export async function deleteTestimonial(id: string | number) {
         // Check for Cloudflare video UID and delete from Cloudflare
         const videoUrl = d.media?.video_url || d.video_url;
         if (videoUrl && isCloudflareUid(videoUrl)) {
-            console.log(`Detected Cloudflare video UID: ${videoUrl}, attempting deletion...`);
-            try {
-                // Dynamically import to avoid circular dependencies
-                const { deleteCloudflareVideo } = await import('./cloudflare-stream');
-                const result = await deleteCloudflareVideo(videoUrl);
-                if (result.success) {
-                    console.log(`Successfully deleted Cloudflare video: ${videoUrl}`);
-                } else {
-                    console.error(`Failed to delete Cloudflare video: ${result.error}`);
+            console.log(`Detected Cloudflare video UID: ${videoUrl}, checking if still in use...`);
+
+            // Check if any OTHER testimonials in this project use the same video
+            const { count: otherUsageCount, error: countError } = await supabase
+                .from('testimonials')
+                .select('id', { count: 'exact', head: true })
+                .eq('project_id', projectId)
+                .eq('user_id', user.id)
+                .neq('id', id)
+                .or(`data->media->video_url.eq.${videoUrl},data->video_url.eq.${videoUrl}`);
+
+            if (countError) {
+                console.error("Error checking video usage:", countError);
+            }
+
+            // Only delete from Cloudflare if no other testimonials use this video
+            if (!countError && otherUsageCount === 0) {
+                console.log(`No other testimonials use this video. Proceeding with Cloudflare deletion...`);
+                try {
+                    // Dynamically import to avoid circular dependencies
+                    const { deleteCloudflareVideo } = await import('./cloudflare-stream');
+                    const result = await deleteCloudflareVideo(videoUrl);
+                    if (result.success) {
+                        console.log(`Successfully deleted Cloudflare video: ${videoUrl}`);
+                    } else {
+                        console.error(`Failed to delete Cloudflare video: ${result.error}`);
+                    }
+                } catch (cfError) {
+                    console.error("Error deleting Cloudflare video:", cfError);
+                    // Continue with deletion even if Cloudflare delete fails
                 }
-            } catch (cfError) {
-                console.error("Error deleting Cloudflare video:", cfError);
-                // Continue with deletion even if Cloudflare delete fails
+            } else {
+                console.log(`Skipping Cloudflare deletion: ${otherUsageCount} other testimonial(s) still use this video`);
             }
         }
 
@@ -336,7 +356,9 @@ export async function deleteTestimonial(id: string | number) {
         throw new Error("Failed to delete testimonial: " + error.message);
     }
 
-    // 3. Cleanup orphaned customer record
+    // Track if there are remaining testimonials for this email
+    let hasRemainingTestimonials = false;
+
     if (customerEmail && projectId) {
         try {
             // Count remaining testimonials with this email in this project
@@ -351,6 +373,7 @@ export async function deleteTestimonial(id: string | number) {
                 console.error("Error counting testimonials for customer cleanup:", countError);
             } else if (count === 0) {
                 // No other testimonials with this email - delete the customer record
+                hasRemainingTestimonials = false;
                 const { error: deleteCustomerError } = await supabase
                     .from('customers')
                     .delete()
@@ -363,6 +386,7 @@ export async function deleteTestimonial(id: string | number) {
                     console.log(`Deleted orphaned customer record for email: ${customerEmail}`);
                 }
             } else {
+                hasRemainingTestimonials = true;
                 console.log(`Customer ${customerEmail} has ${count} remaining testimonials, keeping customer record.`);
             }
         } catch (customerCleanupError) {
@@ -372,7 +396,7 @@ export async function deleteTestimonial(id: string | number) {
     }
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, hasRemainingTestimonials };
 }
 
 export async function updateTestimonialContent(id: string | number, data: any) {
@@ -524,10 +548,9 @@ export async function duplicateTestimonial(id: string | number) {
         throw new Error("Testimonial not found");
     }
 
-    // Create a copy with modified name to indicate it's a duplicate
+    // Create an exact copy of the data (no "(Copy)" suffix)
     const duplicatedData = {
         ...existing.data,
-        customer_name: `${existing.data?.customer_name || 'Anonymous'} (Copy)`,
     };
 
     // Insert the duplicated testimonial
@@ -540,7 +563,7 @@ export async function duplicateTestimonial(id: string | number) {
             data: duplicatedData,
             status: existing.status
         })
-        .select('id')
+        .select('*')  // Select all fields to return full data
         .single();
 
     if (insertError) {
@@ -548,7 +571,33 @@ export async function duplicateTestimonial(id: string | number) {
         throw new Error("Failed to duplicate testimonial: " + insertError.message);
     }
 
+    // Format the testimonial for UI consumption (same format as getTestimonials)
+    const formattedTestimonial = {
+        id: newTestimonial.id,
+        type: newTestimonial.type,
+        reviewer: duplicatedData.customer_name || 'Anonymous',
+        email: duplicatedData.customer_email || '',
+        profession: duplicatedData.customer_headline || '',
+        excerpt: duplicatedData.message || duplicatedData.transcript || '',
+        title: duplicatedData.title || '',
+        rating: duplicatedData.rating || 5,
+        date: new Date(newTestimonial.created_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }),
+        attachments: [
+            ...(duplicatedData.media?.video_url ? [{
+                type: 'video',
+                url: duplicatedData.media.video_url
+            }] : []),
+            ...(duplicatedData.customer_avatar_url ? [{
+                type: 'image',
+                url: duplicatedData.customer_avatar_url
+            }] : [])
+        ],
+        raw: newTestimonial
+    };
+
     revalidatePath("/dashboard");
 
-    return { success: true, newId: newTestimonial?.id };
+    return { success: true, newId: newTestimonial?.id, newTestimonial: formattedTestimonial };
 }

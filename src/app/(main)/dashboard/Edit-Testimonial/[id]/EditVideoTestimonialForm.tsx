@@ -73,7 +73,7 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                 return newThumbs;
             });
         }
-    }, [videoUrl, selectedThumbnailIndex]);
+    }, [videoUrl]); // Only depend on videoUrl, not selectedThumbnailIndex
 
     const handleThumbnailClick = () => {
         thumbnailInputRef.current?.click();
@@ -238,11 +238,11 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
     };
 
     return (
-        <div className="bg-[#09090b] border border-zinc-800 shadow-2xl rounded-xl overflow-hidden text-zinc-50 flex flex-col h-full min-h-[700px] animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-[#09090b] border border-zinc-800 shadow-2xl rounded-xl overflow-hidden text-zinc-50 flex flex-col min-h-[50vh] max-h-[85vh] md:max-h-[80vh] h-auto w-full max-w-[98vw] md:max-w-[95vw] mx-auto animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex-shrink-0 px-6 py-4 flex items-center justify-between border-b border-zinc-800/50 bg-[#09090b]">
+            <div className="flex-shrink-0 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between border-b border-zinc-800/50 bg-[#09090b]">
                 <div className="flex items-center gap-4">
-                    <h2 className="text-lg font-semibold">Edit Testimonial</h2>
+                    <h2 className="text-base md:text-lg font-semibold">Edit Testimonial</h2>
                 </div>
                 <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800">
                     <X className="size-5" />
@@ -250,34 +250,48 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
             </div>
 
             {/* Main Content Split View */}
-            <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+            <div className="flex-1 overflow-y-auto md:overflow-hidden grid grid-cols-1 lg:grid-cols-12 scrollbar-hide">
 
                 {/* Left Panel: Media (Thumbnails + Video) */}
-                <div className="lg:col-span-5 p-6 space-y-6 lg:border-r border-zinc-800/50 bg-[#0c0c0e] overflow-y-auto scrollbar-hide">
+                <div className="lg:col-span-5 p-4 md:p-6 space-y-4 md:space-y-6 lg:border-r border-zinc-800/50 bg-[#0c0c0e] lg:overflow-y-auto scrollbar-hide">
                     {/* Thumbnails */}
                     <div className="space-y-3">
                         <label className="text-sm font-medium text-zinc-400">Thumbnail</label>
                         <div className="grid grid-cols-4 gap-2">
                             {[0, 1, 2].map((i) => {
-                                const hasThumbnail = !!thumbnails[i];
+                                const thumbnail = thumbnails[i];
+                                const hasThumbnail = !!thumbnail?.url && thumbnail.url.length > 0;
                                 const isFrame3 = i === 2;
+                                const canUpload = isFrame3 && !hasThumbnail;
 
                                 return (
                                     <div
                                         key={i}
-                                        onClick={() => hasThumbnail && setSelectedThumbnailIndex(i)}
+                                        onClick={() => {
+                                            if (hasThumbnail) {
+                                                setSelectedThumbnailIndex(i);
+                                            } else if (canUpload) {
+                                                handleThumbnailClick();
+                                            }
+                                        }}
                                         className={cn(
-                                            "relative aspect-video bg-zinc-800 rounded-md border border-zinc-700/50 overflow-hidden transition-all group",
-                                            hasThumbnail ? "cursor-pointer" : "cursor-default opacity-50",
+                                            "relative aspect-video bg-zinc-800 rounded-md border overflow-hidden transition-all group",
+                                            hasThumbnail ? "cursor-pointer border-zinc-700/50" : canUpload ? "cursor-pointer border-dashed border-zinc-600 hover:border-indigo-500 hover:bg-zinc-700/50" : "cursor-default opacity-50 border-zinc-700/50",
                                             selectedThumbnailIndex === i && hasThumbnail ? 'ring-2 ring-indigo-500' : hasThumbnail ? 'hover:ring-2 hover:ring-indigo-500' : ''
                                         )}
                                     >
                                         {hasThumbnail ? (
-                                            <img src={thumbnails[i].url} alt={`Frame ${i + 1}`} className="w-full h-full object-cover rounded-md" />
+                                            <img src={thumbnail.url} alt={`Frame ${i + 1}`} className="w-full h-full object-cover rounded-md" />
                                         ) : (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 bg-zinc-900 text-[10px] p-1 text-center leading-tight">
-                                                {isFrame3 ? (
-                                                    <span>Upload<br />Image</span>
+                                            <div className={cn(
+                                                "absolute inset-0 flex flex-col items-center justify-center text-[10px] p-1 text-center leading-tight",
+                                                canUpload ? "text-zinc-400 bg-zinc-800/80" : "text-zinc-600 bg-zinc-900"
+                                            )}>
+                                                {canUpload ? (
+                                                    <>
+                                                        <Upload className="size-3 mb-1" />
+                                                        <span>Upload<br />Thumbnail</span>
+                                                    </>
                                                 ) : (
                                                     `Frame ${i + 1}`
                                                 )}
@@ -304,12 +318,12 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                     </div>
 
                     {/* Video Player */}
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                         <label className="text-sm font-medium text-zinc-400">Video</label>
                         <div className="w-full aspect-video bg-black rounded-lg border border-zinc-800 relative group overflow-hidden">
                             {videoUrl ? (
                                 <VideoPlayer
-                                    key={videoUrl} // Reset player when URL changes
+                                    key={`${videoUrl}-${selectedThumbnailIndex}`} // Reset player when URL or thumbnail changes
                                     url={videoUrl}
                                     poster={thumbnails[selectedThumbnailIndex]?.url}
                                     trimStart={trimStart}
@@ -348,8 +362,8 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                     </Button>
                 </div>
 
-                <div className="lg:col-span-7 p-6 overflow-y-auto scrollbar-hide bg-[#09090b]">
-                    <div className="space-y-6 w-full">
+                <div className="lg:col-span-7 p-4 md:p-6 lg:overflow-y-auto scrollbar-hide bg-[#09090b]">
+                    <div className="space-y-4 md:space-y-6 w-full">
 
                         {/* Title */}
                         <div className="space-y-2">

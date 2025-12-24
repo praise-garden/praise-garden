@@ -168,11 +168,22 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
   const [isEditingName, setIsEditingName] = React.useState(false)
   const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
   const [isSharePanelOpen, setIsSharePanelOpen] = React.useState(false)
-  // Initialize with all user testimonials selected by default
-  const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
-    userTestimonials.map(t => t.id)
-  )
+  // Initialize with empty array - will be populated when testimonials load
+  const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>([])
   const nameInputRef = React.useRef<HTMLInputElement>(null)
+
+  // Sync selected IDs when userTestimonials loads (only on first load)
+  const hasInitializedSelection = React.useRef(false)
+  React.useEffect(() => {
+    if (!hasInitializedSelection.current && userTestimonials.length > 0 && selectedTestimonialIds.length === 0) {
+      // Only auto-select all if using demo testimonials
+      const isDemo = userTestimonials.some(t => t.id.toString().startsWith('demo-'))
+      if (isDemo) {
+        setSelectedTestimonialIds(userTestimonials.map(t => t.id))
+      }
+      hasInitializedSelection.current = true
+    }
+  }, [userTestimonials, selectedTestimonialIds.length])
 
   React.useEffect(() => {
     if (isEditingName && nameInputRef.current) {

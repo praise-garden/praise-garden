@@ -5,6 +5,7 @@ import { Copy, Pencil, Scissors, Share2, Trash2 } from "lucide-react";
 import { deleteTestimonial, duplicateTestimonial } from "@/lib/actions/testimonials";
 import { useRouter } from "next/navigation";
 import { useTransition, useState } from "react";
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -19,9 +20,11 @@ interface TestimonialToolbarProps {
     isVideo: boolean;
     onEdit?: () => void;
     onTrim?: () => void;
+    onDuplicate?: (newTestimonial: any) => void;
+    onDelete?: (id: string | number) => void;
 }
 
-export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: TestimonialToolbarProps) {
+export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim, onDuplicate, onDelete }: TestimonialToolbarProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [isDuplicating, setIsDuplicating] = useState(false);
@@ -30,31 +33,45 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: T
     const handleDelete = () => {
         startTransition(async () => {
             try {
-                await deleteTestimonial(testimonialId);
-                router.push("/dashboard");
+                const result = await deleteTestimonial(testimonialId);
+                if (result.hasRemainingTestimonials) {
+                    // Other testimonials exist for this email - just update local state
+                    if (onDelete) {
+                        onDelete(testimonialId);
+                    } else {
+                        router.refresh();
+                    }
+                    toast.success("Testimonial deleted successfully");
+                } else {
+                    // No other testimonials for this email - navigate to dashboard
+                    router.push("/dashboard");
+                }
             } catch (error) {
                 console.error("Failed to delete", error);
-                alert("Failed to delete testimonial");
+                toast.error("Failed to delete testimonial");
             }
         });
     };
 
     const handleShare = () => {
         navigator.clipboard.writeText(window.location.href);
-        // Could replace with a toast
-        alert("Link copied to clipboard!");
+        toast.success("Link copied to clipboard!");
     };
 
     const handleDuplicate = async () => {
         setIsDuplicating(true);
         try {
             const result = await duplicateTestimonial(testimonialId);
-            if (result.success && result.newId) {
-                router.push(`/dashboard/Edit-Testimonial/${result.newId}`);
+            if (result.success && result.newTestimonial) {
+                // Add to local state instead of refetching
+                if (onDuplicate) {
+                    onDuplicate(result.newTestimonial);
+                }
+                toast.success("Testimonial duplicated successfully!");
             }
         } catch (error) {
             console.error("Failed to duplicate", error);
-            alert("Failed to duplicate testimonial");
+            toast.error("Failed to duplicate testimonial");
         } finally {
             setIsDuplicating(false);
         }
@@ -68,7 +85,7 @@ export function TestimonialToolbar({ testimonialId, isVideo, onEdit, onTrim }: T
                         variant="ghost"
                         onClick={() => {
                             if (onEdit) onEdit();
-                            else alert("Edit Metadata feature coming soon!");
+                            else router.push(`/dashboard/Edit-Testimonial/${testimonialId}`);
                         }}
                         className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                     >

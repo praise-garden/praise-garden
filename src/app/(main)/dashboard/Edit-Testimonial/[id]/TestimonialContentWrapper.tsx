@@ -32,11 +32,27 @@ interface TestimonialContentWrapperProps {
     relatedTestimonials?: any[];
 }
 
-export function TestimonialContentWrapper({ testimonial, relatedTestimonials = [] }: TestimonialContentWrapperProps) {
+export function TestimonialContentWrapper({ testimonial, relatedTestimonials: initialRelatedTestimonials = [] }: TestimonialContentWrapperProps) {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isTrimOpen, setIsTrimOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'testimonials' | 'invites' | 'feedback' | 'user-details'>('testimonials');
+
+    // Track which related testimonial is being edited (by ID)
+    const [editingRelatedId, setEditingRelatedId] = useState<string | number | null>(null);
+
+    // Local state for related testimonials (to avoid refetching on duplicate)
+    const [relatedTestimonials, setRelatedTestimonials] = useState<any[]>(initialRelatedTestimonials);
+
+    // Callback to add a new duplicate to local state
+    const handleAddDuplicate = (newTestimonial: any) => {
+        setRelatedTestimonials(prev => [...prev, newTestimonial]);
+    };
+
+    // Callback to remove a testimonial from local state
+    const handleRemoveTestimonial = (id: string | number) => {
+        setRelatedTestimonials(prev => prev.filter(t => t.id !== id));
+    };
 
     // User Details Edit State
     const [isEditingUserDetails, setIsEditingUserDetails] = useState(false);
@@ -190,12 +206,20 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials = [
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 scrollbar-hide">
                 {isEditing ? (
                     <div className="max-w-[1400px] mx-auto h-full">
                         <EditVideoTestimonialForm
                             testimonial={testimonial}
                             onClose={() => setIsEditing(false)}
+                        />
+                    </div>
+                ) : editingRelatedId !== null ? (
+                    // Editing a related testimonial - show full-screen form
+                    <div className="max-w-[1400px] mx-auto h-full">
+                        <EditVideoTestimonialForm
+                            testimonial={relatedTestimonials.find(r => r.id === editingRelatedId)}
+                            onClose={() => setEditingRelatedId(null)}
                         />
                     </div>
                 ) : activeTab === 'testimonials' && (
@@ -240,13 +264,16 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials = [
                                     />
                                 )}
                             </div>
+                        </div>
 
-                            {/* Toolbar with working buttons */}
+                        {/* Toolbar with working buttons - Outside the card */}
+                        <div className="max-w-[1400px] mx-auto mt-0 bg-[#18181b] border border-t-0 border-zinc-800/50 rounded-b-xl overflow-hidden">
                             <TestimonialToolbar
                                 testimonialId={testimonial.id}
                                 isVideo={isVideo}
                                 onEdit={() => setIsEditing(true)}
                                 onTrim={() => setIsTrimOpen(true)}
+                                onDuplicate={handleAddDuplicate}
                             />
                         </div>
 
@@ -259,14 +286,10 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials = [
                                         const relatedVideoUrl = related.attachments?.find((a: any) => a.type === 'video')?.url;
 
                                         return (
-                                            <Link
-                                                key={related.id}
-                                                href={`/dashboard/Edit-Testimonial/${related.id}`}
-                                                className="block"
-                                            >
-                                                <div className="bg-[#18181b] border border-zinc-800/50 rounded-xl overflow-hidden hover:border-zinc-700 transition-all group">
-                                                    {/* Card Header */}
-                                                    <div className="p-4 pb-3 flex items-start justify-between border-b border-zinc-800/30">
+                                            <div key={related.id} className="bg-[#18181b] border border-zinc-800/50 rounded-xl overflow-hidden">
+                                                {/* Card Header - Clickable */}
+                                                <Link href={`/dashboard/Edit-Testimonial/${related.id}`}>
+                                                    <div className="p-4 pb-3 flex items-start justify-between border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors cursor-pointer">
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex gap-1 text-amber-500">
                                                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -285,27 +308,36 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials = [
                                                         </div>
                                                         <span className="text-zinc-500 text-xs">Collected {related.date}</span>
                                                     </div>
+                                                </Link>
 
-                                                    {/* Card Content - Using the components */}
-                                                    <div className="px-4 py-4">
-                                                        {relatedIsVideo ? (
-                                                            <VideoTestimonialComponent
-                                                                testimonial={related}
-                                                                videoUrl={relatedVideoUrl}
-                                                                isTrimOpen={false}
-                                                                setIsTrimOpen={() => { }}
-                                                                handleSaveTrim={async () => { }}
-                                                                attachments={related.attachments}
-                                                            />
-                                                        ) : (
-                                                            <TextTestimonialComponent
-                                                                testimonial={related}
-                                                                attachments={related.attachments}
-                                                            />
-                                                        )}
-                                                    </div>
+                                                {/* Card Content */}
+                                                <div className="px-4 py-4">
+                                                    {relatedIsVideo ? (
+                                                        <VideoTestimonialComponent
+                                                            testimonial={related}
+                                                            videoUrl={relatedVideoUrl}
+                                                            isTrimOpen={false}
+                                                            setIsTrimOpen={() => { }}
+                                                            handleSaveTrim={async () => { }}
+                                                            attachments={related.attachments}
+                                                        />
+                                                    ) : (
+                                                        <TextTestimonialComponent
+                                                            testimonial={related}
+                                                            attachments={related.attachments}
+                                                        />
+                                                    )}
                                                 </div>
-                                            </Link>
+
+                                                {/* Toolbar for this related testimonial */}
+                                                <TestimonialToolbar
+                                                    testimonialId={related.id}
+                                                    isVideo={relatedIsVideo}
+                                                    onEdit={() => setEditingRelatedId(related.id)}
+                                                    onDuplicate={handleAddDuplicate}
+                                                    onDelete={handleRemoveTestimonial}
+                                                />
+                                            </div>
                                         );
                                     })}
                                 </div>

@@ -136,6 +136,11 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
             return;
         }
 
+        if (!email) {
+            alert("Please enter an email address.");
+            return;
+        }
+
         startTransition(async () => {
             try {
                 if (isEditing && testimonialId) {
@@ -269,13 +274,14 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-zinc-400 font-medium">Email Address</Label>
+                            <Label className="text-zinc-400 font-medium">Email Address <span className="text-[#F5426C]">*</span></Label>
                             <div className="w-1/2">
                                 <Input
                                     type="email"
                                     value={email} onChange={(e) => setEmail(e.target.value)}
                                     placeholder="sarah@example.com"
-                                    className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
+                                    className="bg-zinc-900/50 border-zinc-800 focus:border-[#F5426C] focus:ring-1 focus:ring-[#F5426C]/50 text-zinc-200 placeholder:text-zinc-600 h-10"
+                                    required
                                 />
                             </div>
                         </div>

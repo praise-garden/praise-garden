@@ -1,8 +1,5 @@
 "use client";
 
-import { Pencil, Copy, Trash2, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
 interface Attachment {
     type: string;
     url: string;
@@ -73,47 +70,6 @@ export function TextTestimonialComponent({
                     )}
                 </div>
             )}
-
-            {/* Divider Line */}
-            <div className="border-t border-zinc-800 mt-3"></div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-3">
-                <div className="flex items-center gap-1">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 px-3 gap-2"
-                    >
-                        <Pencil className="size-4" />
-                        Edit
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 px-3 gap-2"
-                    >
-                        <Copy className="size-4" />
-                        Duplicate
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 px-3 gap-2"
-                    >
-                        <Trash2 className="size-4" />
-                        Delete
-                    </Button>
-                </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 px-3 gap-2"
-                >
-                    <Share2 className="size-4" />
-                    Share
-                </Button>
-            </div>
         </div>
     );
 }
