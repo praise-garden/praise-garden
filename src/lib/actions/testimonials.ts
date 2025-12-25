@@ -54,7 +54,9 @@ export async function getTestimonials() {
             author_title: t.data?.profession || t.data?.customer_headline || t.data?.company?.job_title || '',
             author_avatar_url: t.data?.customer_avatar_url || t.data?.media?.avatar_url || null,
             rating: t.data?.rating ?? 5,
+            text: t.data?.message || '',
             content: t.data?.message || '',
+            title: t.data?.title || '',
             source: t.data?.source || 'MANUAL',
             video_url: t.data?.media?.video_url || null,
             video_thumbnail: t.data?.thumbnails?.[t.data?.selected_thumbnail_index || 0] || null,
@@ -577,21 +579,23 @@ export async function duplicateTestimonial(id: string | number) {
         type: newTestimonial.type,
         reviewer: duplicatedData.customer_name || 'Anonymous',
         email: duplicatedData.customer_email || '',
-        profession: duplicatedData.customer_headline || '',
+        profession: duplicatedData.customer_headline || duplicatedData.profession || '',
+        text: duplicatedData.message || duplicatedData.transcript || '',
+        content: duplicatedData.message || duplicatedData.transcript || '',
+        destination_url: duplicatedData.original_post_url || '',
         excerpt: duplicatedData.message || duplicatedData.transcript || '',
         title: duplicatedData.title || '',
         rating: duplicatedData.rating || 5,
+        source: duplicatedData.source || 'Manual',
         date: new Date(newTestimonial.created_at).toLocaleDateString('en-US', {
             year: 'numeric', month: '2-digit', day: '2-digit'
         }),
         attachments: [
-            ...(duplicatedData.media?.video_url ? [{
-                type: 'video',
-                url: duplicatedData.media.video_url
-            }] : []),
-            ...(duplicatedData.customer_avatar_url ? [{
+            ...(duplicatedData.company?.logo_url ? [{ type: 'image', url: duplicatedData.company.logo_url }] : []),
+            ...(Array.isArray(duplicatedData.attachments) ? duplicatedData.attachments.map((url: string) => ({ type: 'image', url })) : []),
+            ...(newTestimonial.type === 'video' && duplicatedData.thumbnails?.[duplicatedData.selected_thumbnail_index || 0] ? [{
                 type: 'image',
-                url: duplicatedData.customer_avatar_url
+                url: duplicatedData.thumbnails[duplicatedData.selected_thumbnail_index || 0]
             }] : [])
         ],
         raw: newTestimonial

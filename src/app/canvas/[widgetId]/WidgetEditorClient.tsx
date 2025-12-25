@@ -23,7 +23,7 @@ import { SocialCard } from "@/components/widgets/SocialCard"
 import { MinimalCard } from "@/components/widgets/MinimalCard"
 import { RatingBadge } from "@/components/widgets/RatingBadge"
 import { ModernFontPicker } from "@/components/ui/modern-font-picker"
-import { ShareWidgetPanel } from "@/components/widgets/ShareWidgetPanel"
+import { ShareWidgetPanel } from "@/components/widgets/Sharewidgetpanel/ShareWidgetPanel"
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
 import { useUserData } from "@/contexts/UserDataContext"
 import { saveWidget, getWidgetById } from "@/lib/actions/widgets"
@@ -622,7 +622,7 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
               }}
             >
               <div className="min-h-[400px] flex flex-col justify-start items-center relative">
-                <div className={cn("w-full", isDarkMode ? "dark" : "")} style={{ fontFamily: config.fontFamily }}>
+                <div id="widget-export-container" className={cn("w-full", isDarkMode ? "dark" : "")} style={{ fontFamily: config.fontFamily }}>
 
                   {/* RENDER BASED ON CONFIG TYPE */}
                   {config.type === "social-card" && isCardWidget(config) && (

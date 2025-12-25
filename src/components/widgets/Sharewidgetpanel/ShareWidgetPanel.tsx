@@ -4,6 +4,8 @@ import * as React from "react"
 import { ArrowLeft, Code, Link2, Image, Copy, Check, ExternalLink, Download, Sparkles, FileImage } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { downloadWidgetImage, ExportFormat } from "./export-utils"
 
 // ===================== PLATFORM ICONS ===================== //
 const WordPressIcon = () => (
@@ -58,15 +60,29 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
     const [copiedEmbed, setCopiedEmbed] = React.useState(false)
     const [copiedLink, setCopiedLink] = React.useState(false)
     const [copiedQR, setCopiedQR] = React.useState(false)
+
     const [copiedFramer, setCopiedFramer] = React.useState(false)
+    const [isExporting, setIsExporting] = React.useState(false)
+    const [exportWidth, setExportWidth] = React.useState(1200)
+
+    const handleExport = async (format: ExportFormat) => {
+        setIsExporting(true)
+        try {
+            await downloadWidgetImage(widgetId, format, exportWidth)
+            toast.success(`Exported as ${format.toUpperCase()}`)
+        } catch (e) {
+            toast.error("Failed to export image")
+        } finally {
+            setIsExporting(false)
+        }
+    }
 
     // Generate embed code based on widget ID
-    const embedCode = `<script src="https://widget.senja.io/widget/${widgetId}/platform.js"></script>
-<div class="senja-embed" data-id="${widgetId}"
-     data-mode="shadow">
-</div>`
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://trustimonials.io'
+    const embedCode = `<script src="${origin}/embed.js" async></script>
+<div class="trustimonials-widget" data-id="${widgetId}"></div>`
 
-    const widgetLink = `https://praisegarden.io/widget/${widgetId}`
+    const widgetLink = `${origin}/w/${widgetId}`
     const framerLink = `https://framer.com/m/SenjaWidget-KBJN.js`
 
     const handleCopy = async (text: string, setCopied: (v: boolean) => void) => {
@@ -222,26 +238,21 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">src</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"https://widget.senja.io/widget/{widgetId}/platform.js"</span>
+                                                <span className="text-emerald-400">"{origin}/embed.js"</span>
+                                                <span className="text-white"> </span>
+                                                <span className="text-cyan-400">async</span>
                                                 <span className="text-pink-400">&gt;&lt;/script&gt;</span>
                                                 {"\n"}
                                                 <span className="text-pink-400">&lt;div</span>
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">class</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"senja-embed"</span>
+                                                <span className="text-emerald-400">"trustimonials-widget"</span>
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">data-id</span>
                                                 <span className="text-white">=</span>
                                                 <span className="text-emerald-400">"{widgetId}"</span>
-                                                {"\n"}
-                                                <span className="text-white">     </span>
-                                                <span className="text-cyan-400">data-mode</span>
-                                                <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"shadow"</span>
-                                                <span className="text-pink-400">&gt;</span>
-                                                {"\n"}
-                                                <span className="text-pink-400">&lt;/div&gt;</span>
+                                                <span className="text-pink-400">&gt;&lt;/div&gt;</span>
                                             </code>
                                         </pre>
                                     </div>
@@ -413,7 +424,8 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                         <label className="text-xs text-zinc-400 mb-2 block">Width (px)</label>
                                         <input
                                             type="number"
-                                            defaultValue={1200}
+                                            value={exportWidth}
+                                            onChange={(e) => setExportWidth(Number(e.target.value))}
                                             min={400}
                                             max={3000}
                                             step={100}
@@ -430,17 +442,26 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                     </p>
 
                                     <div className="flex gap-3">
-                                        <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
-                                            <Download className="h-4 w-4" />
-                                            Download as PNG
+                                        <Button
+                                            onClick={() => handleExport('png')}
+                                            disabled={isExporting}
+                                            className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
+                                            {isExporting ? <Sparkles className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                            {isExporting ? 'Exporting...' : 'Download as PNG'}
                                         </Button>
-                                        <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
-                                            <Sparkles className="h-4 w-4" />
-                                            Download as SVG
+                                        <Button
+                                            onClick={() => handleExport('svg')}
+                                            disabled={isExporting}
+                                            className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
+                                            {isExporting ? <Sparkles className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                                            {isExporting ? 'Exporting...' : 'Download as SVG'}
                                         </Button>
-                                        <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
-                                            <FileImage className="h-4 w-4" />
-                                            Download as JPG
+                                        <Button
+                                            onClick={() => handleExport('jpeg')}
+                                            disabled={isExporting}
+                                            className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
+                                            {isExporting ? <Sparkles className="h-4 w-4 animate-spin" /> : <FileImage className="h-4 w-4" />}
+                                            {isExporting ? 'Exporting...' : 'Download as JPG'}
                                         </Button>
                                     </div>
                                 </div>

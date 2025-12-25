@@ -12,7 +12,7 @@ import {
     isCollectionWidget,
     isBadgeWidget
 } from "@/types/widget-config"
-import Logo from "@/components/ui/Logo"
+
 
 interface PublicWidgetClientProps {
     widget: WidgetRecord
@@ -152,16 +152,7 @@ export default function PublicWidgetClient({ widget, testimonials: initialTestim
                 )}
             </div>
 
-            {/* Powered By Footer */}
-            <div className="mt-8 flex items-center gap-2 text-sm">
-                <span className={isDarkMode ? "text-zinc-500" : "text-zinc-400"}>
-                    Powered by
-                </span>
-                <Logo size={20} />
-                <span className={isDarkMode ? "text-zinc-300" : "text-zinc-600"} style={{ fontWeight: 600 }}>
-                    Trustimonials
-                </span>
-            </div>
+
         </div>
     )
 }

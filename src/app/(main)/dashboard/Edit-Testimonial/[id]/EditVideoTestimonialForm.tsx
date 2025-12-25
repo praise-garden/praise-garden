@@ -17,9 +17,10 @@ import { VideoPlayer } from "@/components/ui/VideoPlayer";
 interface EditVideoTestimonialFormProps {
     testimonial: any;
     onClose: () => void;
+    isEmbedded?: boolean;
 }
 
-export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTestimonialFormProps) {
+export function EditVideoTestimonialForm({ testimonial, onClose, isEmbedded = false }: EditVideoTestimonialFormProps) {
     const router = useRouter();
     const [title, setTitle] = useState(testimonial.title || "");
     const [rating, setRating] = useState(testimonial.rating || 5);
@@ -41,6 +42,18 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
     const [selectedThumbnailIndex, setSelectedThumbnailIndex] = useState<number>(
         testimonial.raw?.data?.selected_thumbnail_index || 0
     );
+
+    // New Fields State
+    const [postUrl, setPostUrl] = useState(testimonial.raw?.data?.original_post_url || "");
+    const [source, setSource] = useState(testimonial.source?.toLowerCase() || testimonial.raw?.data?.source || "manual");
+
+    // Date initialization
+    const initialDate = testimonial.raw?.data?.testimonial_date
+        ? new Date(testimonial.raw.data.testimonial_date).toISOString().split('T')[0]
+        : testimonial.created_at
+            ? new Date(testimonial.created_at).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0];
+    const [date, setDate] = useState(initialDate);
 
     // Get trim values from testimonial data
     const trimStart = testimonial.raw?.data?.trim_start;
@@ -213,6 +226,9 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                 title,
                 rating,
                 message: excerpt,
+                original_post_url: postUrl,
+                source,
+                testimonial_date: date,
                 thumbnails: finalThumbnails,
                 selected_thumbnail_index: selectedThumbnailIndex,
                 media: {
@@ -238,22 +254,35 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
     };
 
     return (
-        <div className="bg-[#09090b] border border-zinc-800 shadow-2xl rounded-xl overflow-hidden text-zinc-50 flex flex-col min-h-[50vh] max-h-[85vh] md:max-h-[80vh] h-auto w-full max-w-[98vw] md:max-w-[95vw] mx-auto animate-in fade-in zoom-in-95 duration-200">
+        <div className={cn(
+            "flex flex-col h-auto w-full mx-auto animate-in fade-in zoom-in-95 duration-200 text-zinc-50 relative",
+            isEmbedded
+                ? "bg-transparent"
+                : "bg-[#09090b] border border-zinc-800 shadow-2xl rounded-xl overflow-hidden min-h-[50vh] max-h-[85vh] md:max-h-[80vh] max-w-[98vw] md:max-w-[95vw]"
+        )}>
             {/* Header */}
-            <div className="flex-shrink-0 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between border-b border-zinc-800/50 bg-[#09090b]">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-base md:text-lg font-semibold">Edit Testimonial</h2>
-                </div>
+            <div className={cn(
+                "flex-shrink-0 flex items-center justify-end",
+                isEmbedded
+                    ? "absolute top-0 right-0 z-10 p-0"
+                    : "px-4 md:px-6 py-3 md:py-4 border-b border-zinc-800/50 bg-[#09090b]"
+            )}>
                 <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800">
                     <X className="size-5" />
                 </Button>
             </div>
 
             {/* Main Content Split View */}
-            <div className="flex-1 overflow-y-auto md:overflow-hidden grid grid-cols-1 lg:grid-cols-12 scrollbar-hide">
+            <div className={cn(
+                "flex-1 overflow-y-auto md:overflow-hidden grid grid-cols-1 lg:grid-cols-12 scrollbar-hide",
+                isEmbedded ? "rounded-xl border border-zinc-800/50 overflow-hidden" : ""
+            )}>
 
                 {/* Left Panel: Media (Thumbnails + Video) */}
-                <div className="lg:col-span-5 p-4 md:p-6 space-y-4 md:space-y-6 lg:border-r border-zinc-800/50 bg-[#0c0c0e] lg:overflow-y-auto scrollbar-hide">
+                <div className={cn(
+                    "lg:col-span-5 space-y-4 md:space-y-6 lg:border-r border-zinc-800/50 bg-[#0c0c0e] lg:overflow-y-auto scrollbar-hide",
+                    isEmbedded ? "p-2" : "p-4 md:p-6"
+                )}>
                     {/* Thumbnails */}
                     <div className="space-y-3">
                         <label className="text-sm font-medium text-zinc-400">Thumbnail</label>
@@ -362,7 +391,10 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                     </Button>
                 </div>
 
-                <div className="lg:col-span-7 p-4 md:p-6 lg:overflow-y-auto scrollbar-hide bg-[#09090b]">
+                <div className={cn(
+                    "lg:col-span-7 lg:overflow-y-auto scrollbar-hide bg-[#09090b]",
+                    isEmbedded ? "p-2" : "p-4 md:p-6"
+                )}>
                     <div className="space-y-4 md:space-y-6 w-full">
 
                         {/* Title */}
@@ -419,7 +451,7 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                         <div className="grid grid-cols-12 gap-6">
                             <div className="col-span-5 space-y-2">
                                 <label className="text-sm font-medium text-zinc-400">Testimonial Source</label>
-                                <Select defaultValue="linkedin">
+                                <Select value={source} onValueChange={setSource}>
                                     <SelectTrigger className="w-full h-10 bg-zinc-900 border-zinc-800 text-zinc-300 rounded-lg">
                                         <div className="flex items-center gap-2">
                                             <span className="text-indigo-400">♥</span>
@@ -429,13 +461,19 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                                     <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-300">
                                         <SelectItem value="linkedin">LinkedIn</SelectItem>
                                         <SelectItem value="twitter">Twitter</SelectItem>
+                                        <SelectItem value="video">Video</SelectItem>
+                                        <SelectItem value="manual">Manual</SelectItem>
+                                        <SelectItem value="senja">Senja</SelectItem>
+                                        <SelectItem value="shoutout">Shoutout</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="col-span-7 space-y-2">
                                 <label className="text-sm font-medium text-zinc-400">Source URL</label>
                                 <Input
-                                    placeholder="ex. https://senja.io"
+                                    value={postUrl}
+                                    onChange={(e) => setPostUrl(e.target.value)}
+                                    placeholder="https://trustimonials.com"
                                     className="w-full bg-zinc-900 border-zinc-800 h-10 text-zinc-200 placeholder:text-zinc-600 focus:ring-zinc-700 rounded-lg"
                                 />
                             </div>
@@ -446,12 +484,11 @@ export function EditVideoTestimonialForm({ testimonial, onClose }: EditVideoTest
                             <label className="text-sm font-medium text-zinc-400">Date</label>
                             <div className="relative">
                                 <Input
-                                    defaultValue="23/09/2025"
+                                    type="date"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
                                     className="bg-zinc-900 border-zinc-800 h-10 text-zinc-200 placeholder:text-zinc-600 focus:ring-zinc-700 pl-4 rounded-lg"
                                 />
-                                <div className="absolute right-3 top-2.5 text-zinc-500 pointer-events-none">
-                                    <Calendar className="size-5" />
-                                </div>
                             </div>
                         </div>
 

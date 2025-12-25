@@ -17,6 +17,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import { EditVideoTestimonialForm } from "./EditVideoTestimonialForm";
+import { EditTextTestimonialForm } from "./EditTextTestimonialForm";
 import { updateTestimonialContent } from "@/lib/actions/testimonials";
 import { TestimonialToolbar } from "@/components/dashboard/TestimonialToolbar";
 import { Button } from "@/components/ui/button";
@@ -207,32 +208,20 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 scrollbar-hide">
-                {isEditing ? (
-                    <div className="max-w-[1400px] mx-auto h-full">
-                        <EditVideoTestimonialForm
-                            testimonial={testimonial}
-                            onClose={() => setIsEditing(false)}
-                        />
-                    </div>
-                ) : editingRelatedId !== null ? (
-                    // Editing a related testimonial - show full-screen form
-                    <div className="max-w-[1400px] mx-auto h-full">
-                        <EditVideoTestimonialForm
-                            testimonial={relatedTestimonials.find(r => r.id === editingRelatedId)}
-                            onClose={() => setEditingRelatedId(null)}
-                        />
-                    </div>
-                ) : activeTab === 'testimonials' && (
+                {activeTab === 'testimonials' && (
                     <>
+                        {/* Main Testimonial Card */}
                         <div className="max-w-[1400px] mx-auto bg-[#18181b] border border-zinc-800/50 shadow-xl rounded-xl overflow-hidden text-zinc-50">
-                            {/* Card Header */}
+                            {/* Card Header - Always visible */}
                             <div className="p-6 pb-4 flex items-start justify-between border-b border-zinc-800/30">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex gap-1 text-amber-500">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <Star key={i} className={`size-5 ${i < testimonial.rating ? "fill-current" : "text-zinc-700 fill-zinc-700"}`} />
-                                        ))}
-                                    </div>
+                                    {!isEditing && (
+                                        <div className="flex gap-1 text-amber-500">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <Star key={i} className={`size-5 ${i < testimonial.rating ? "fill-current" : "text-zinc-700 fill-zinc-700"}`} />
+                                            ))}
+                                        </div>
+                                    )}
                                     {isVideo ? (
                                         <Badge className="bg-[#2E2335] text-[#D8B4FE] hover:bg-[#3E2F46] border border-purple-500/10 font-medium px-2.5 py-0.5 rounded-full">
                                             Video
@@ -246,97 +235,138 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
                                 <span className="text-zinc-500 text-sm">Collected {testimonial.date}</span>
                             </div>
 
-                            {/* Card Content - Conditional based on type */}
+                            {/* Card Content: Display or Edit Form */}
                             <div className="px-6 py-6">
-                                {isVideo ? (
-                                    <VideoTestimonialComponent
-                                        testimonial={testimonial}
-                                        videoUrl={videoUrl}
-                                        isTrimOpen={isTrimOpen}
-                                        setIsTrimOpen={setIsTrimOpen}
-                                        handleSaveTrim={handleSaveTrim}
-                                        attachments={testimonial.attachments}
-                                    />
+                                {isEditing ? (
+                                    <div className="w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                                        {isVideo ? (
+                                            <EditVideoTestimonialForm
+                                                testimonial={testimonial}
+                                                onClose={() => setIsEditing(false)}
+                                                isEmbedded={true}
+                                            />
+                                        ) : (
+                                            <EditTextTestimonialForm
+                                                testimonial={testimonial}
+                                                onClose={() => setIsEditing(false)}
+                                                isEmbedded={true}
+                                            />
+                                        )}
+                                    </div>
                                 ) : (
-                                    <TextTestimonialComponent
-                                        testimonial={testimonial}
-                                        attachments={testimonial.attachments}
-                                    />
+                                    isVideo ? (
+                                        <VideoTestimonialComponent
+                                            testimonial={testimonial}
+                                            videoUrl={videoUrl}
+                                            isTrimOpen={isTrimOpen}
+                                            setIsTrimOpen={setIsTrimOpen}
+                                            handleSaveTrim={handleSaveTrim}
+                                            attachments={testimonial.attachments}
+                                        />
+                                    ) : (
+                                        <TextTestimonialComponent
+                                            testimonial={testimonial}
+                                            attachments={testimonial.attachments}
+                                        />
+                                    )
                                 )}
                             </div>
                         </div>
 
-                        {/* Toolbar with working buttons - Outside the card */}
-                        <div className="max-w-[1400px] mx-auto mt-0 bg-[#18181b] border border-t-0 border-zinc-800/50 rounded-b-xl overflow-hidden">
-                            <TestimonialToolbar
-                                testimonialId={testimonial.id}
-                                isVideo={isVideo}
-                                onEdit={() => setIsEditing(true)}
-                                onTrim={() => setIsTrimOpen(true)}
-                                onDuplicate={handleAddDuplicate}
-                            />
-                        </div>
+                        {/* Toolbar - Only visible when NOT editing */}
+                        {!isEditing && (
+                            <div className="max-w-[1400px] mx-auto mt-0 bg-[#18181b] border border-t-0 border-zinc-800/50 rounded-b-xl overflow-hidden mb-8">
+                                <TestimonialToolbar
+                                    testimonialId={testimonial.id}
+                                    isVideo={isVideo}
+                                    onEdit={() => setIsEditing(true)}
+                                    onTrim={() => setIsTrimOpen(true)}
+                                    onDuplicate={handleAddDuplicate}
+                                />
+                            </div>
+                        )}
 
                         {/* Related Testimonials from Same User */}
                         {relatedTestimonials.length > 0 && (
                             <div className="max-w-[1400px] mx-auto mt-8">
-                                <div className="space-y-4">
+                                <div className="space-y-8">
                                     {relatedTestimonials.map((related) => {
                                         const relatedIsVideo = related.type === 'video' || related.attachments?.some((a: any) => a.type === 'video');
                                         const relatedVideoUrl = related.attachments?.find((a: any) => a.type === 'video')?.url;
+                                        const isRelatedEditing = related.id === editingRelatedId;
 
                                         return (
                                             <div key={related.id} className="bg-[#18181b] border border-zinc-800/50 rounded-xl overflow-hidden">
-                                                {/* Card Header - Clickable */}
-                                                <Link href={`/dashboard/Edit-Testimonial/${related.id}`}>
-                                                    <div className="p-4 pb-3 flex items-start justify-between border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors cursor-pointer">
-                                                        <div className="flex items-center gap-3">
+                                                {/* Related Card Header */}
+                                                <div className="p-4 pb-3 flex items-start justify-between border-b border-zinc-800/30">
+                                                    <Link href={`/dashboard/Edit-Testimonial/${related.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                                                        {!isRelatedEditing && (
                                                             <div className="flex gap-1 text-amber-500">
                                                                 {Array.from({ length: 5 }).map((_, i) => (
                                                                     <Star key={i} className={`size-4 ${i < related.rating ? "fill-current" : "text-zinc-700 fill-zinc-700"}`} />
                                                                 ))}
                                                             </div>
+                                                        )}
+                                                        {relatedIsVideo ? (
+                                                            <Badge className="bg-[#2E2335] text-[#D8B4FE] border border-purple-500/10 font-medium px-2 py-0.5 rounded-full text-xs">
+                                                                Video
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge className="bg-[#1E293B] text-[#93C5FD] border border-blue-500/10 font-medium px-2 py-0.5 rounded-full text-xs">
+                                                                Text
+                                                            </Badge>
+                                                        )}
+                                                    </Link>
+                                                    <span className="text-zinc-500 text-xs">Collected {related.date}</span>
+                                                </div>
+
+                                                {/* Related Content: Display or Edit Form */}
+                                                <div className="px-4 py-4">
+                                                    {isRelatedEditing ? (
+                                                        <div className="w-full animate-in fade-in slide-in-from-top-2 duration-300">
                                                             {relatedIsVideo ? (
-                                                                <Badge className="bg-[#2E2335] text-[#D8B4FE] border border-purple-500/10 font-medium px-2 py-0.5 rounded-full text-xs">
-                                                                    Video
-                                                                </Badge>
+                                                                <EditVideoTestimonialForm
+                                                                    testimonial={related}
+                                                                    onClose={() => setEditingRelatedId(null)}
+                                                                    isEmbedded={true}
+                                                                />
                                                             ) : (
-                                                                <Badge className="bg-[#1E293B] text-[#93C5FD] border border-blue-500/10 font-medium px-2 py-0.5 rounded-full text-xs">
-                                                                    Text
-                                                                </Badge>
+                                                                <EditTextTestimonialForm
+                                                                    testimonial={related}
+                                                                    onClose={() => setEditingRelatedId(null)}
+                                                                    isEmbedded={true}
+                                                                />
                                                             )}
                                                         </div>
-                                                        <span className="text-zinc-500 text-xs">Collected {related.date}</span>
-                                                    </div>
-                                                </Link>
-
-                                                {/* Card Content */}
-                                                <div className="px-4 py-4">
-                                                    {relatedIsVideo ? (
-                                                        <VideoTestimonialComponent
-                                                            testimonial={related}
-                                                            videoUrl={relatedVideoUrl}
-                                                            isTrimOpen={false}
-                                                            setIsTrimOpen={() => { }}
-                                                            handleSaveTrim={async () => { }}
-                                                            attachments={related.attachments}
-                                                        />
                                                     ) : (
-                                                        <TextTestimonialComponent
-                                                            testimonial={related}
-                                                            attachments={related.attachments}
-                                                        />
+                                                        relatedIsVideo ? (
+                                                            <VideoTestimonialComponent
+                                                                testimonial={related}
+                                                                videoUrl={relatedVideoUrl}
+                                                                isTrimOpen={false}
+                                                                setIsTrimOpen={() => { }}
+                                                                handleSaveTrim={async () => { }}
+                                                                attachments={related.attachments}
+                                                            />
+                                                        ) : (
+                                                            <TextTestimonialComponent
+                                                                testimonial={related}
+                                                                attachments={related.attachments}
+                                                            />
+                                                        )
                                                     )}
                                                 </div>
 
-                                                {/* Toolbar for this related testimonial */}
-                                                <TestimonialToolbar
-                                                    testimonialId={related.id}
-                                                    isVideo={relatedIsVideo}
-                                                    onEdit={() => setEditingRelatedId(related.id)}
-                                                    onDuplicate={handleAddDuplicate}
-                                                    onDelete={handleRemoveTestimonial}
-                                                />
+                                                {/* Related Toolbar - Only if NOT editing */}
+                                                {!isRelatedEditing && (
+                                                    <TestimonialToolbar
+                                                        testimonialId={related.id}
+                                                        isVideo={relatedIsVideo}
+                                                        onEdit={() => setEditingRelatedId(related.id)}
+                                                        onDuplicate={handleAddDuplicate}
+                                                        onDelete={handleRemoveTestimonial}
+                                                    />
+                                                )}
                                             </div>
                                         );
                                     })}
