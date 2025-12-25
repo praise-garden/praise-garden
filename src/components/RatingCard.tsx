@@ -13,7 +13,7 @@ interface RatingCardProps extends Omit<FormCardProps, 'config'> {
   config: RatingBlockConfig;
 }
 
-const StarIcon = ({ filled, className }: { filled: boolean; className?: string }) => (
+const StarIcon = ({ filled, className, style }: { filled: boolean; className?: string; style?: React.CSSProperties }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -23,6 +23,7 @@ const StarIcon = ({ filled, className }: { filled: boolean; className?: string }
     strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
+    style={style}
   >
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
@@ -79,7 +80,12 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
         {props.onPrevious && <BackButton onClick={props.onPrevious} />}
 
         {/* Background glow effect */}
-        <div className="absolute inset-0 bg-gradient-radial from-purple-500/5 via-transparent to-transparent blur-3xl" />
+        <div
+          className="absolute inset-0 blur-3xl"
+          style={{
+            background: `radial-gradient(circle at center, ${theme?.primaryColor || '#A855F7'}0D 0%, transparent 70%)`
+          }}
+        />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -155,11 +161,10 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                       animate={isSelected ? { scale: [1, 1.2, 1] } : { opacity: isDimmed ? 0.3 : 1 }}
                       transition={{ duration: 0.3 }}
                       className={`relative cursor-pointer transition-all duration-300 ease-out 
-                        ${isSubmitting ? 'cursor-default' : ''} 
-                        ${isFilled ? 'text-yellow-400' : 'text-gray-600 group-hover:text-yellow-300'}`}
+                        ${isSubmitting ? 'cursor-default' : ''}`}
+                      style={{ color: isFilled ? (theme?.ratingColor || '#FBBF24') : undefined }}
                       aria-label={`Rate ${rating} stars`}
                     >
-                      {/* Glow effect for filled stars */}
                       {isFilled && (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.8 }}
@@ -168,7 +173,8 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                         >
                           <StarIcon
                             filled={true}
-                            className="w-10 h-10 sm:w-12 sm:h-12 cq-lg:w-14 cq-lg:h-14 absolute inset-0 text-yellow-400 blur-sm opacity-60"
+                            className="w-10 h-10 sm:w-12 sm:h-12 cq-lg:w-14 cq-lg:h-14 absolute inset-0 blur-sm opacity-60"
+                            style={{ color: theme?.ratingColor || '#FBBF24' }}
                           />
                         </motion.div>
                       )}
@@ -177,16 +183,19 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                       <StarIcon
                         filled={isFilled}
                         className={`w-10 h-10 sm:w-12 sm:h-12 cq-lg:w-14 cq-lg:h-14 relative z-10 transition-all duration-300 
-                          ${isFilled
-                            ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] filter brightness-110'
-                            : 'group-hover:drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]'
-                          }`}
+                          ${isFilled ? 'filter brightness-110' : ''}
+                          ${!isFilled ? 'text-gray-600 group-hover:text-gray-400' : ''}`}
+                        style={{
+                          color: isFilled ? (theme?.ratingColor || '#FBBF24') : undefined,
+                          filter: isFilled ? `drop-shadow(0 0 12px ${theme?.ratingColor || '#FBBF24'}80)` : undefined
+                        }}
                       />
 
                       {/* Hover pulse effect */}
                       {!isSubmitting && (
                         <motion.div
-                          className="absolute inset-0 rounded-full bg-yellow-400/20 scale-0 group-hover:scale-110 transition-transform duration-300"
+                          className="absolute inset-0 rounded-full scale-0 group-hover:scale-110 transition-transform duration-300"
+                          style={{ backgroundColor: `${theme?.ratingColor || '#FBBF24'}33` }}
                           initial={{ scale: 0 }}
                           whileHover={{ scale: 1.2 }}
                           transition={{ duration: 0.3 }}
@@ -211,8 +220,8 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className={`text-sm cq-lg:text-base font-medium 
-                      ${selectedRating ? 'text-yellow-400 font-semibold' : 'text-purple-400'}`}
+                    className="text-sm cq-lg:text-base font-medium"
+                    style={{ color: selectedRating ? (theme?.ratingColor || '#FBBF24') : (theme?.primaryColor || '#A855F7') }}
                   >
                     {selectedRating
                       ? `You selected ${ratingLabels[selectedRating - 1]}`

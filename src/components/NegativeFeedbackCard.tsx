@@ -8,17 +8,7 @@ import { NegativeFeedbackBlockConfig } from '@/types/form-config';
 // ICONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-const MessageCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-);
 
-const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-);
 
 const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -72,9 +62,10 @@ interface FeedbackTextInputProps {
     onNext: () => void;
     rightPanelVariants: Variants;
     onFieldFocus: (fieldPath: string) => void;
+    theme?: { primaryColor?: string };
 }
 
-const FeedbackTextInput = ({ config, onNext, rightPanelVariants, onFieldFocus }: FeedbackTextInputProps) => {
+const FeedbackTextInput = ({ config, onNext, rightPanelVariants, onFieldFocus, theme }: FeedbackTextInputProps) => {
     const [feedbackText, setFeedbackText] = useState('');
     const [isFocused, setIsFocused] = useState(false);
 
@@ -108,10 +99,15 @@ const FeedbackTextInput = ({ config, onNext, rightPanelVariants, onFieldFocus }:
                     <div
                         className={`relative flex-1 min-h-[240px] cq-lg:min-h-[320px] rounded-2xl cq-lg:rounded-3xl transition-all duration-500 
                             ${isFocused
-                                ? 'ring-2 ring-amber-500/40 bg-zinc-900/90 shadow-2xl shadow-amber-500/5'
+                                ? 'ring-2 bg-zinc-900/90 shadow-2xl'
                                 : 'bg-zinc-900/40 hover:bg-zinc-900/60'
                             } 
-                            border ${isFocused ? 'border-amber-500/20' : 'border-zinc-800/50 hover:border-zinc-700/50'}`}
+                            border ${isFocused ? '' : 'border-zinc-800/50 hover:border-zinc-700/50'}`}
+                        style={isFocused ? {
+                            '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}66`,
+                            borderColor: `${theme?.primaryColor || '#A855F7'}33`,
+                            boxShadow: `0 25px 50px -12px ${theme?.primaryColor || '#A855F7'}0D`
+                        } as React.CSSProperties : undefined}
                     >
                         <textarea
                             value={feedbackText}
@@ -122,7 +118,7 @@ const FeedbackTextInput = ({ config, onNext, rightPanelVariants, onFieldFocus }:
                             className="w-full h-full min-h-[240px] cq-lg:min-h-[320px] bg-transparent p-6 cq-lg:p-8 
                                 text-base cq-lg:text-lg text-white placeholder-zinc-600 
                                 focus:outline-none resize-none leading-relaxed tracking-wide"
-                            style={{ caretColor: '#f59e0b' }}
+                            style={{ caretColor: theme?.primaryColor || '#A855F7' }}
                             onClick={() => onFieldFocus('props.feedbackPlaceholder')}
                             data-field="props.feedbackPlaceholder"
                         />
@@ -156,9 +152,13 @@ const FeedbackTextInput = ({ config, onNext, rightPanelVariants, onFieldFocus }:
                             className={`order-1 sm:order-2 w-full sm:w-auto px-8 h-12 cq-lg:h-14 rounded-xl font-semibold text-sm cq-lg:text-base 
                                 transition-all duration-300 
                                 ${hasContent
-                                    ? 'bg-amber-500 hover:bg-amber-400 text-zinc-900 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98]'
+                                    ? 'text-white shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                                     : 'bg-zinc-800/80 text-zinc-500 cursor-not-allowed'
                                 }`}
+                            style={hasContent ? {
+                                backgroundColor: theme?.primaryColor || '#A855F7',
+                                boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                            } : undefined}
                             data-field="props.buttonText"
                         >
                             {config.props.buttonText || 'Submit Feedback'}
@@ -240,12 +240,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             transition={{ duration: 0.6, ease: "easeOut" }}
                             className="w-full max-w-md cq-lg:max-w-lg mx-auto pt-8 cq-lg:pt-10"
                         >
-                            {/* Icon Badge */}
-                            <div className="mb-4 cq-lg:mb-5">
-                                <div className="inline-flex p-3 cq-lg:p-4 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                    <HeartIcon className="text-amber-400 w-6 h-6 cq-lg:w-8 cq-lg:h-8" />
-                                </div>
-                            </div>
+
 
                             {/* 
                               Title & Description Section
@@ -341,6 +336,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             onNext={props.onNext}
                             rightPanelVariants={rightPanelVariants}
                             onFieldFocus={handleFieldClick}
+                            theme={theme}
                         />
                     </AnimatePresence>
                 </motion.div>

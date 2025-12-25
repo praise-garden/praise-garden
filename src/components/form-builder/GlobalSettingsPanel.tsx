@@ -66,7 +66,7 @@ const SettingsIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 // --- Constants & Helpers ---
 const PRIMARY_COLOR_PRESETS = ['#A855F7', '#6366F1', '#22C55E', '#F97316', '#EC4899', '#0EA5E9', '#FACC15', '#111827'];
-const SECONDARY_COLOR_PRESETS = ['#22C55E', '#14B8A6', '#F97316', '#EF4444', '#8B5CF6', '#0EA5E9', '#F59E0B', '#1F2937'];
+const RATING_COLOR_PRESETS = ['#FBBF24', '#F59E0B', '#FCD34D', '#EF4444', '#F97316', '#84CC16', '#22C55E', '#14B8A6'];
 const FONT_SIZE_PRESETS = [16, 20, 24, 32];
 
 const clampColorValue = (value: number) => Math.min(255, Math.max(0, value));
@@ -269,15 +269,15 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                     </div>
                 </div>
 
-                {/* Secondary Color */}
+                {/* Rating Color */}
                 <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
                     <div className="flex items-start justify-between mb-4">
                         <div>
-                            <label className="text-sm font-medium text-gray-300 block">Secondary Color</label>
-                            <p className="text-xs text-gray-500 mt-1">Status chips & highlights</p>
+                            <label className="text-sm font-medium text-gray-300 block">Rating Color</label>
+                            <p className="text-xs text-gray-500 mt-1">Star ratings & feedback</p>
                         </div>
                         <button
-                            onClick={() => handleCopyColor(currentTheme.secondaryColor)}
+                            onClick={() => handleCopyColor(currentTheme.ratingColor)}
                             className="p-1.5 rounded-lg border border-gray-700/60 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
                         >
                             <CopyIcon />
@@ -287,29 +287,29 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                         <label className="relative w-12 h-12 rounded-xl shadow-inner overflow-hidden">
                             <input
                                 type="color"
-                                value={currentTheme.secondaryColor}
-                                onChange={(e) => updateTheme((t) => ({ ...t, secondaryColor: e.target.value }))}
+                                value={currentTheme.ratingColor}
+                                onChange={(e) => updateTheme((t) => ({ ...t, ratingColor: e.target.value }))}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
                             <span
                                 className="absolute inset-0 rounded-xl border border-gray-700/60"
-                                style={{ background: createGradient(currentTheme.secondaryColor) }}
+                                style={{ background: createGradient(currentTheme.ratingColor) }}
                             ></span>
                         </label>
                         <input
                             type="text"
-                            value={currentTheme.secondaryColor}
-                            onChange={(e) => updateTheme((t) => ({ ...t, secondaryColor: e.target.value }))}
+                            value={currentTheme.ratingColor}
+                            onChange={(e) => updateTheme((t) => ({ ...t, ratingColor: e.target.value }))}
                             className="bg-gray-950 border border-gray-700/50 rounded-lg px-3 py-2 text-white font-mono text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
                         />
                     </div>
                     <div className="mt-3">
                         <div className="flex flex-wrap gap-1.5">
-                            {SECONDARY_COLOR_PRESETS.map((color) => (
+                            {RATING_COLOR_PRESETS.map((color) => (
                                 <button
                                     key={color}
-                                    onClick={() => updateTheme((t) => ({ ...t, secondaryColor: color }))}
-                                    className={`w-7 h-7 rounded-full border transition-all duration-200 ${currentTheme.secondaryColor === color
+                                    onClick={() => updateTheme((t) => ({ ...t, ratingColor: color }))}
+                                    className={`w-7 h-7 rounded-full border transition-all duration-200 ${currentTheme.ratingColor === color
                                         ? 'border-white ring-2 ring-purple-500/50'
                                         : 'border-transparent hover:scale-105'
                                         }`}

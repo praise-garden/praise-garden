@@ -21,15 +21,31 @@ interface ReadyToSendCardProps extends FormCardProps {
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Navigation arrow buttons - Responsive sizing
-const ArrowButton = ({ direction, onClick, disabled }: { direction: 'left' | 'right'; onClick: () => void; disabled?: boolean }) => (
+const ArrowButton = ({ direction, onClick, disabled, primaryColor }: { direction: 'left' | 'right'; onClick: () => void; disabled?: boolean; primaryColor?: string }) => (
     <button
         onClick={onClick}
         disabled={disabled}
         className={`p-2 cq-lg:p-2.5 cq-xl:p-3 rounded-full border transition-all duration-200 
             ${disabled
                 ? 'border-gray-800 bg-gray-900/30 text-gray-700 cursor-not-allowed'
-                : 'border-gray-700 bg-gray-800/50 text-gray-300 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400'
+                : 'border-gray-700 bg-gray-800/50 text-gray-300 hover:text-white'
             }`}
+        style={!disabled ? {
+            '--hover-border-color': `${primaryColor || '#A855F7'}80`,
+            '--hover-bg-color': `${primaryColor || '#A855F7'}1A`,
+        } as React.CSSProperties : undefined}
+        onMouseEnter={(e) => {
+            if (!disabled) {
+                e.currentTarget.style.borderColor = `${primaryColor || '#A855F7'}80`;
+                e.currentTarget.style.backgroundColor = `${primaryColor || '#A855F7'}1A`;
+            }
+        }}
+        onMouseLeave={(e) => {
+            if (!disabled) {
+                e.currentTarget.style.borderColor = '';
+                e.currentTarget.style.backgroundColor = '';
+            }
+        }}
         aria-label={direction === 'left' ? 'Previous testimonial' : 'Next testimonial'}
     >
         <svg className="w-5 h-5 cq-lg:w-6 cq-lg:h-6 cq-xl:w-7 cq-xl:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +59,7 @@ const ArrowButton = ({ direction, onClick, disabled }: { direction: 'left' | 'ri
 );
 
 // Decorative sparkle elements
-const FloatingSparkles = () => {
+const FloatingSparkles = ({ primaryColor }: { primaryColor?: string }) => {
     const sparkles = Array.from({ length: 6 }, (_, i) => ({
         id: i,
         x: 15 + (i * 14),
@@ -74,14 +90,9 @@ const FloatingSparkles = () => {
                     <svg width={sparkle.size} height={sparkle.size} viewBox="0 0 24 24" fill="none">
                         <path
                             d="M12 2L13.09 8.26L19 7L14.74 11.5L19 16L13.09 15.26L12 22L10.91 15.26L5 16L9.26 11.5L5 7L10.91 8.26L12 2Z"
-                            fill="url(#sparkle-gradient)"
+                            fill={primaryColor || '#A855F7'}
+                            fillOpacity="0.6"
                         />
-                        <defs>
-                            <linearGradient id="sparkle-gradient" x1="5" y1="2" x2="19" y2="22">
-                                <stop stopColor="#22c55e" />
-                                <stop offset="1" stopColor="#10b981" />
-                            </linearGradient>
-                        </defs>
                     </svg>
                 </motion.div>
             ))}
@@ -90,7 +101,7 @@ const FloatingSparkles = () => {
 };
 
 // Star rating display - Responsive sizing
-const StarRating = ({ rating = 5 }: { rating?: number }) => (
+const StarRating = ({ rating = 5, ratingColor }: { rating?: number; ratingColor?: string }) => (
     <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }, (_, i) => (
             <motion.svg
@@ -98,7 +109,8 @@ const StarRating = ({ rating = 5 }: { rating?: number }) => (
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
-                className={`w-3.5 h-3.5 cq-lg:w-4 cq-lg:h-4 cq-xl:w-5 cq-xl:h-5 ${i < rating ? 'text-amber-400' : 'text-gray-600'}`}
+                className={`w-3.5 h-3.5 cq-lg:w-4 cq-lg:h-4 cq-xl:w-5 cq-xl:h-5 ${i >= rating ? 'text-gray-600' : ''}`}
+                style={i < rating ? { color: ratingColor || '#FBBF24' } : undefined}
                 fill="currentColor"
                 viewBox="0 0 20 20"
             >
@@ -109,7 +121,7 @@ const StarRating = ({ rating = 5 }: { rating?: number }) => (
 );
 
 // Single testimonial preview card - Responsive sizing
-const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: boolean; index?: number }) => (
+const TestimonialPreviewCard = ({ isVideo = false, index = 0, primaryColor, ratingColor }: { isVideo?: boolean; index?: number; primaryColor?: string; ratingColor?: string }) => (
     <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -135,7 +147,13 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: bool
 
                     {/* Play Button - Centered, responsive sizing */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-12 h-12 cq-lg:w-14 cq-lg:h-14 cq-xl:w-16 cq-xl:h-16 rounded-full bg-emerald-500/90 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <div
+                            className="w-12 h-12 cq-lg:w-14 cq-lg:h-14 cq-xl:w-16 cq-xl:h-16 rounded-full backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
+                            style={{
+                                backgroundColor: `${primaryColor || '#A855F7'}E6`,
+                                boxShadow: `0 10px 15px -3px ${primaryColor || '#A855F7'}4D`
+                            }}
+                        >
                             <svg className="w-5 h-5 cq-lg:w-6 cq-lg:h-6 cq-xl:w-7 cq-xl:h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />
                             </svg>
@@ -144,7 +162,7 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: bool
 
                     {/* Stars Overlay - Top Right */}
                     <div className="absolute top-3 right-3 cq-lg:top-4 cq-lg:right-4 cq-xl:top-5 cq-xl:right-5 bg-black/40 backdrop-blur-sm px-2 py-1 cq-xl:px-3 cq-xl:py-1.5 rounded-full border border-white/10">
-                        <StarRating rating={5} />
+                        <StarRating rating={5} ratingColor={ratingColor} />
                     </div>
 
                     {/* Video Badge - Top Left */}
@@ -160,7 +178,10 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: bool
                 // Text Mode: Padded content
                 <div className="relative p-5 cq-lg:p-6 cq-xl:p-8 h-full flex flex-col">
                     {/* Decorative glow */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-br from-emerald-500/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity blur-xl pointer-events-none" />
+                    <div
+                        className="absolute -inset-0.5 opacity-0 group-hover:opacity-100 transition-opacity blur-xl pointer-events-none"
+                        style={{ background: `linear-gradient(to bottom right, ${primaryColor || '#A855F7'}0D, ${primaryColor || '#A855F7'}0D)` }}
+                    />
 
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -170,7 +191,10 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: bool
                     >
                         <div className="relative">
                             {/* Decorative Quote Mark */}
-                            <div className="absolute -top-1 -left-1 text-4xl cq-lg:text-5xl cq-xl:text-6xl text-emerald-500/10 font-serif leading-none select-none pointer-events-none">"</div>
+                            <div
+                                className="absolute -top-1 -left-1 text-4xl cq-lg:text-5xl cq-xl:text-6xl font-serif leading-none select-none pointer-events-none"
+                                style={{ color: `${primaryColor || '#A855F7'}1A` }}
+                            >"</div>
 
                             <p className="text-gray-200 leading-relaxed relative z-10 italic text-sm cq-lg:text-[15px] cq-xl:text-base pt-2 pl-2">
                                 "This product completely transformed how our team collaborates. The intuitive design and powerful features have made us significantly more productive."
@@ -178,7 +202,7 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0 }: { isVideo?: bool
                         </div>
 
                         <div className="flex justify-end items-center pt-3 cq-lg:pt-4">
-                            <StarRating rating={5} />
+                            <StarRating rating={5} ratingColor={ratingColor} />
                         </div>
                     </motion.div>
                 </div>
@@ -230,7 +254,7 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                 {props.onPrevious && <BackButton onClick={props.onPrevious} />}
 
                 {/* Floating decorative elements */}
-                <FloatingSparkles />
+                <FloatingSparkles primaryColor={theme?.primaryColor} />
 
                 {/* 
                   AppBar with Logo
@@ -289,6 +313,7 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                                         direction="left"
                                         onClick={handlePrevious}
                                         disabled={currentTestimonial === 0}
+                                        primaryColor={theme?.primaryColor}
                                     />
                                 </div>
                             )}
@@ -300,6 +325,8 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                                         key={currentTestimonial}
                                         isVideo={testimonials[currentTestimonial]?.isVideo}
                                         index={currentTestimonial}
+                                        primaryColor={theme?.primaryColor}
+                                        ratingColor={theme?.ratingColor}
                                     />
                                 </AnimatePresence>
                             </div>
@@ -311,6 +338,7 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                                         direction="right"
                                         onClick={handleNext}
                                         disabled={currentTestimonial === testimonials.length - 1}
+                                        primaryColor={theme?.primaryColor}
                                     />
                                 </div>
                             )}
@@ -346,12 +374,17 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                                     props.onNext();
                                 }}
                                 className="group relative w-full h-11 cq-lg:h-12 cq-xl:h-14 overflow-hidden rounded-xl 
-                                    shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 
-                                    transition-all duration-300 active:scale-[0.98]"
+                                    shadow-lg transition-all duration-300 active:scale-[0.98]"
+                                style={{
+                                    boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                                }}
                                 data-field="props.buttonText"
                             >
                                 {/* Gradient border */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-500 rounded-xl" />
+                                <div
+                                    className="absolute inset-0 rounded-xl"
+                                    style={{ backgroundColor: theme?.primaryColor || '#A855F7' }}
+                                />
 
                                 {/* Button content */}
                                 <div className="absolute inset-[1px] bg-gray-950 rounded-[10px] group-hover:bg-gray-900/90 transition-colors flex items-center justify-center gap-2">
@@ -359,7 +392,8 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                                         {config.props.buttonText}
                                     </span>
                                     <svg
-                                        className="w-4 h-4 cq-lg:w-5 cq-lg:h-5 text-emerald-400 group-hover:translate-x-1 transition-transform"
+                                        className="w-4 h-4 cq-lg:w-5 cq-lg:h-5 group-hover:translate-x-1 transition-transform"
+                                        style={{ color: theme?.primaryColor || '#A855F7' }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -377,7 +411,12 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                             transition={{ delay: 0.8 }}
                             className="flex items-center justify-center gap-1.5 cq-lg:gap-2 text-[11px] cq-lg:text-xs cq-xl:text-sm text-gray-500 pb-4"
                         >
-                            <svg className="w-3.5 h-3.5 cq-lg:w-4 cq-lg:h-4 cq-xl:w-5 cq-xl:h-5 text-emerald-500/70 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <svg
+                                className="w-3.5 h-3.5 cq-lg:w-4 cq-lg:h-4 cq-xl:w-5 cq-xl:h-5 flex-shrink-0"
+                                style={{ color: `${theme?.primaryColor || '#A855F7'}B3` }}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
                             <span>You control what's shared publicly</span>

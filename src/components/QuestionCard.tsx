@@ -57,12 +57,12 @@ function useMediaQuery(query: string) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface TextTestimonialInputProps {
-    theme?: { logoUrl?: string };
+    theme?: { logoUrl?: string; primaryColor?: string };
     onNext: () => void;
     rightPanelVariants: Variants;
 }
 
-const TextTestimonialInput = ({ onNext, rightPanelVariants }: TextTestimonialInputProps) => {
+const TextTestimonialInput = ({ theme, onNext, rightPanelVariants }: TextTestimonialInputProps) => {
     const [testimonialText, setTestimonialText] = useState('');
     const [isFocused, setIsFocused] = useState(false);
 
@@ -92,10 +92,17 @@ const TextTestimonialInput = ({ onNext, rightPanelVariants }: TextTestimonialInp
                     <div
                         className={`relative flex-1 min-h-[240px] cq-lg:min-h-[320px] rounded-2xl cq-lg:rounded-3xl transition-all duration-500 
                             ${isFocused
-                                ? 'ring-2 ring-lime-500/40 bg-zinc-900/90 shadow-2xl shadow-lime-500/5'
+                                ? 'ring-2 bg-zinc-900/90 shadow-2xl'
                                 : 'bg-zinc-900/40 hover:bg-zinc-900/60'
                             } 
-                            border ${isFocused ? 'border-lime-500/20' : 'border-zinc-800/50 hover:border-zinc-700/50'}`}
+                            border ${isFocused ? 'border-opacity-20' : 'border-zinc-800/50 hover:border-zinc-700/50'}`}
+                        style={{
+                            ...(isFocused && {
+                                '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}66`,
+                                borderColor: `${theme?.primaryColor || '#A855F7'}33`,
+                                boxShadow: `0 25px 50px -12px ${theme?.primaryColor || '#A855F7'}0D`
+                            } as React.CSSProperties)
+                        }}
                     >
                         <textarea
                             value={testimonialText}
@@ -106,7 +113,7 @@ const TextTestimonialInput = ({ onNext, rightPanelVariants }: TextTestimonialInp
                             className="w-full h-full min-h-[240px] cq-lg:min-h-[320px] bg-transparent p-6 cq-lg:p-8 
                                 text-base cq-lg:text-lg text-white placeholder-zinc-600 
                                 focus:outline-none resize-none leading-relaxed tracking-wide"
-                            style={{ caretColor: '#84cc16' }}
+                            style={{ caretColor: theme?.primaryColor || '#A855F7' }}
                         />
 
                         {/* Subtle corner decoration */}
@@ -131,9 +138,13 @@ const TextTestimonialInput = ({ onNext, rightPanelVariants }: TextTestimonialInp
                             className={`order-1 sm:order-2 w-full sm:w-auto px-8 h-12 cq-lg:h-14 rounded-xl font-semibold text-sm cq-lg:text-base 
                                 transition-all duration-300 
                                 ${hasContent
-                                    ? 'bg-lime-500 hover:bg-lime-400 text-zinc-900 shadow-lg shadow-lime-500/20 hover:shadow-lime-500/30 hover:scale-[1.02] active:scale-[0.98]'
+                                    ? 'text-white shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                                     : 'bg-zinc-800/80 text-zinc-500 cursor-not-allowed'
                                 }`}
+                            style={hasContent ? {
+                                backgroundColor: theme?.primaryColor || '#A855F7',
+                                boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                            } : undefined}
                         >
                             Continue
                         </button>
@@ -401,25 +412,49 @@ const QuestionCard = ({
                                 {/* Video Option Card */}
                                 {enableVideo && (
                                     <div
-                                        className="group relative p-5 cq-lg:p-6 bg-purple-500/[0.03] 
-                                            border border-purple-500/20 rounded-xl text-center cursor-pointer transition-all duration-300 
-                                            hover:border-purple-500/40 hover:bg-purple-500/[0.08]
-                                            hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10"
+                                        className="group relative p-5 cq-lg:p-6 rounded-xl text-center cursor-pointer transition-all duration-300 
+                                            hover:scale-[1.02] hover:shadow-2xl"
+                                        style={{
+                                            backgroundColor: `${theme?.primaryColor || '#A855F7'}08`,
+                                            border: `1px solid ${theme?.primaryColor || '#A855F7'}33`,
+                                        }}
                                         onClick={handleVideoClick}
                                         role="button"
                                         tabIndex={0}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}66`;
+                                            e.currentTarget.style.backgroundColor = `${theme?.primaryColor || '#A855F7'}14`;
+                                            e.currentTarget.style.boxShadow = `0 25px 50px -12px ${theme?.primaryColor || '#A855F7'}1A`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}33`;
+                                            e.currentTarget.style.backgroundColor = `${theme?.primaryColor || '#A855F7'}08`;
+                                            e.currentTarget.style.boxShadow = 'none';
+                                        }}
                                     >
                                         {/* Subtle Glow Effect */}
-                                        <div className="absolute -inset-2 rounded-xl bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
+                                        <div
+                                            className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur-2xl"
+                                            style={{ backgroundColor: `${theme?.primaryColor || '#A855F7'}1A` }}
+                                        />
 
                                         <div className="relative">
-                                            <div className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 bg-purple-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors border border-purple-500/10">
-                                                <VideoIcon className="text-purple-400 group-hover:text-purple-300 transition-colors w-6 h-6 cq-lg:w-7 cq-lg:h-7" />
+                                            <div
+                                                className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 rounded-full flex items-center justify-center mb-3 transition-colors"
+                                                style={{
+                                                    backgroundColor: `${theme?.primaryColor || '#A855F7'}1A`,
+                                                    border: `1px solid ${theme?.primaryColor || '#A855F7'}1A`,
+                                                }}
+                                            >
+                                                <VideoIcon
+                                                    className="transition-colors w-6 h-6 cq-lg:w-7 cq-lg:h-7"
+                                                    style={{ color: theme?.primaryColor || '#A855F7' }}
+                                                />
                                             </div>
-                                            <h3 className="text-base cq-lg:text-lg font-semibold text-white group-hover:text-purple-100 transition-colors">
+                                            <h3 className="text-base cq-lg:text-lg font-semibold text-white transition-colors">
                                                 {config.props.videoOptionTitle || 'Record a video'}
                                             </h3>
-                                            <p className="mt-1.5 text-xs cq-lg:text-sm text-gray-400 group-hover:text-purple-200/50 transition-colors">
+                                            <p className="mt-1.5 text-xs cq-lg:text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
                                                 {config.props.videoOptionDescription || '2-minute video testimonial'}
                                             </p>
                                         </div>
@@ -502,11 +537,13 @@ const QuestionCard = ({
                                         onCancel={handleVideoCancel}
                                         onComplete={handleVideoComplete}
                                         onLightModeChange={setLightMode}
+                                        theme={theme}
                                     />
                                 ) : (
                                     <MobileVideoCapture
                                         onCancel={handleVideoCancel}
                                         onComplete={handleVideoComplete}
+                                        theme={theme}
                                     />
                                 )}
                             </motion.div>

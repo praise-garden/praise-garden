@@ -118,8 +118,11 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       type="text"
                       placeholder={config.props.fields.name.placeholder}
                       className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
-                        focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 focus:outline-none 
+                        focus:ring-2 focus:outline-none 
                         transition-all w-full placeholder-gray-500"
+                      style={{
+                        '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}80`
+                      } as React.CSSProperties}
                       onClick={() => handleFieldClick('props.fields.name.placeholder')}
                       data-field="props.fields.name.placeholder"
                     />
@@ -150,8 +153,11 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       type="email"
                       placeholder={config.props.fields.email.placeholder}
                       className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
-                        focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 focus:outline-none 
+                        focus:ring-2 focus:outline-none 
                         transition-all w-full placeholder-gray-500"
+                      style={{
+                        '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}80`
+                      } as React.CSSProperties}
                       onClick={() => handleFieldClick('props.fields.email.placeholder')}
                       data-field="props.fields.email.placeholder"
                     />
@@ -183,8 +189,11 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       type="text"
                       placeholder={config.props.fields.company.placeholder}
                       className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
-                        focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 focus:outline-none 
+                        focus:ring-2 focus:outline-none 
                         transition-all w-full placeholder-gray-500"
+                      style={{
+                        '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}80`
+                      } as React.CSSProperties}
                       onClick={() => handleFieldClick('props.fields.company.placeholder')}
                       data-field="props.fields.company.placeholder"
                     />
@@ -212,7 +221,10 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       {config.props.fields.avatar.required && <span className="text-red-500 ml-0.5">*</span>}
                     </label>
                     <div className="flex items-center gap-2 cq-lg:gap-3">
-                      <Avatar className="w-10 h-10 cq-lg:w-12 cq-lg:h-12 border-2 border-purple-400/20 shadow-sm">
+                      <Avatar
+                        className="w-10 h-10 cq-lg:w-12 cq-lg:h-12 border-2 shadow-sm"
+                        style={{ borderColor: `${theme?.primaryColor || '#A855F7'}33` }}
+                      >
                         <AvatarImage src="https://ui-avatars.com/api/Tony+Stark/200/dcfce7/166534/2/0.34" alt="Profile" />
                         <AvatarFallback>TS</AvatarFallback>
                       </Avatar>
@@ -247,10 +259,13 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       handleFieldClick('props.buttonText');
                       props.onNext();
                     }}
-                    className="w-full h-10 cq-lg:h-11 rounded-xl bg-purple-600 hover:bg-purple-700 
+                    className="w-full h-10 cq-lg:h-11 rounded-xl 
                       text-sm cq-lg:text-base font-semibold text-white 
-                      shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 
-                      transition-all active:scale-[0.98]"
+                      shadow-lg transition-all active:scale-[0.98]"
+                    style={{
+                      backgroundColor: theme?.primaryColor || '#A855F7',
+                      boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                    }}
                     data-field="props.buttonText"
                   >
                     {config.props.buttonText}

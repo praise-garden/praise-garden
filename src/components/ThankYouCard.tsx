@@ -43,8 +43,8 @@ const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Animated confetti particles
-const Confetti = () => {
-    const colors = ['#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b'];
+const Confetti = ({ primaryColor }: { primaryColor?: string }) => {
+    const colors = ['#22c55e', '#10b981', '#14b8a6', '#06b6d4', primaryColor || '#A855F7', '#ec4899', '#f59e0b'];
     const particles = Array.from({ length: 50 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
@@ -203,7 +203,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
 
                 {/* Confetti (only for a few seconds, when animations enabled) */}
                 <AnimatePresence>
-                    {showConfetti && (config.props.showAnimations ?? true) && <Confetti />}
+                    {showConfetti && (config.props.showAnimations ?? true) && <Confetti primaryColor={theme?.primaryColor} />}
                 </AnimatePresence>
 
                 {/* Floating decorative elements (when animations enabled) */}
@@ -276,12 +276,26 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.7 }}
                             >
-                                <button className="group w-full h-11 cq-lg:h-12 flex items-center justify-center gap-2 
-                                    rounded-xl border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm 
-                                    text-sm cq-lg:text-base cq-xl:text-lg tracking-wider text-gray-300 font-mono 
-                                    hover:border-green-500/30 hover:bg-gray-800/70 transition-all duration-300">
-                                    <span className="text-green-400 font-semibold">THANKYOU20</span>
-                                    <CopyIcon className="w-4 h-4 cq-lg:w-5 cq-lg:h-5 cq-xl:w-6 cq-xl:h-6 text-gray-500 group-hover:text-green-400 transition-colors" />
+                                <button
+                                    className="group w-full h-11 cq-lg:h-12 flex items-center justify-center gap-2 
+                                        rounded-xl border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm 
+                                        text-sm cq-lg:text-base cq-xl:text-lg tracking-wider text-gray-300 font-mono 
+                                        hover:bg-gray-800/70 transition-all duration-300"
+                                    style={{
+                                        '--hover-border-color': `${theme?.primaryColor || '#A855F7'}4D`
+                                    } as React.CSSProperties}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}4D`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.borderColor = '';
+                                    }}
+                                >
+                                    <span style={{ color: theme?.primaryColor || '#A855F7' }} className="font-semibold">THANKYOU20</span>
+                                    <CopyIcon
+                                        className="w-4 h-4 cq-lg:w-5 cq-lg:h-5 cq-xl:w-6 cq-xl:h-6 text-gray-500 group-hover:transition-colors"
+                                        style={{ '--group-hover-color': theme?.primaryColor || '#A855F7' } as React.CSSProperties}
+                                    />
                                 </button>
                                 <p className="text-[11px] cq-lg:text-xs cq-xl:text-sm text-gray-500 mt-1.5 cq-lg:mt-2">
                                     Use this code for 20% off your next purchase
@@ -343,7 +357,8 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                                                     <img
                                                         alt=""
                                                         src="https://ui-avatars.com/api/Tony%20Stark/200/dcfce7/166534/2/0.34"
-                                                        className="h-9 w-9 cq-lg:h-10 cq-lg:w-10 cq-xl:h-12 cq-xl:w-12 rounded-full object-cover ring-2 ring-green-500/20"
+                                                        className="h-9 w-9 cq-lg:h-10 cq-lg:w-10 cq-xl:h-12 cq-xl:w-12 rounded-full object-cover ring-2"
+                                                        style={{ '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}33` } as React.CSSProperties}
                                                     />
                                                     <div>
                                                         <div className="mr-2 flex items-center gap-2 font-bold text-gray-200 text-sm">

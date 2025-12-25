@@ -97,11 +97,16 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
                 <div
                   className={`relative rounded-2xl transition-all duration-300 group
                     ${isFocused
-                      ? 'bg-zinc-900/90 ring-2 ring-blue-500/40 shadow-2xl shadow-blue-500/10'
+                      ? 'bg-zinc-900/90 ring-2 shadow-2xl'
                       : 'bg-zinc-900/40 hover:bg-zinc-900/60'
                     }
-                    border ${isFocused ? 'border-blue-500/20' : 'border-zinc-800/50 hover:border-zinc-700/50'}
+                    border ${isFocused ? '' : 'border-zinc-800/50 hover:border-zinc-700/50'}
                   `}
+                  style={isFocused ? {
+                    '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}66`,
+                    borderColor: `${theme?.primaryColor || '#A855F7'}33`,
+                    boxShadow: `0 25px 50px -12px ${theme?.primaryColor || '#A855F7'}1A`
+                  } as React.CSSProperties : undefined}
                 >
                   <textarea
                     value={feedbackText}
@@ -112,7 +117,7 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
                     className="w-full min-h-[200px] bg-transparent p-6 sm:p-8 
                       text-base text-white placeholder-zinc-600 
                       focus:outline-none resize-none leading-relaxed tracking-wide"
-                    style={{ caretColor: '#3b82f6' }}
+                    style={{ caretColor: theme?.primaryColor || '#A855F7' }}
                     onClick={() => handleFieldClick('props.placeholder')}
                     data-field="props.placeholder"
                   />
@@ -130,10 +135,14 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
                     type="button"
                     className={`px-8 h-12 rounded-xl font-semibold text-sm transition-all duration-300 
                       ${hasContent
-                        ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 hover:scale-[1.02] active:scale-[0.98]'
+                        ? 'text-white shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                         : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                       }
                     `}
+                    style={hasContent ? {
+                      backgroundColor: theme?.primaryColor || '#A855F7',
+                      boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                    } : undefined}
                     onClick={() => {
                       if (hasContent) {
                         handleFieldClick('props.buttonText');

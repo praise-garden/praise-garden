@@ -19,9 +19,10 @@ interface VideoRecorderProps {
     onCancel: () => void;
     onComplete: (videoBlob: Blob) => void;
     onLightModeChange?: (isLightMode: boolean) => void;
+    theme?: { primaryColor?: string };
 }
 
-const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onLightModeChange }) => {
+const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onLightModeChange, theme }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -578,7 +579,11 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
 
                     <button
                         onClick={handleContinue}
-                        className="group flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
+                        className="group flex items-center gap-2 px-8 py-3 rounded-xl text-white font-semibold shadow-lg transition-all"
+                        style={{
+                            backgroundColor: theme?.primaryColor || '#A855F7',
+                            boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                        }}
                     >
                         <span>Continue</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

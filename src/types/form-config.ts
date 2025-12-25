@@ -211,12 +211,9 @@ export interface FormTheme {
   backgroundColor: string;
   logoUrl?: string;
   primaryColor: string;
-  secondaryColor: string;
+  ratingColor: string; // Color for star ratings (default: yellow/amber)
   headingFont: string;
   bodyFont: string;
-  // Brand Identity
-  // brandName intentionally removed
-  // brandName intentionally removed
 }
 
 export interface FormConfig {

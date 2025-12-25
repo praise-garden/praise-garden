@@ -5,9 +5,10 @@ import { Video, Upload, RotateCcw, ArrowRight, X, Play } from 'lucide-react';
 interface MobileVideoCaptureProps {
     onCancel: () => void;
     onComplete: (videoBlob: Blob) => void;
+    theme?: { primaryColor?: string };
 }
 
-const MobileVideoCapture: React.FC<MobileVideoCaptureProps> = ({ onCancel, onComplete }) => {
+const MobileVideoCapture: React.FC<MobileVideoCaptureProps> = ({ onCancel, onComplete, theme }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -108,8 +109,14 @@ const MobileVideoCapture: React.FC<MobileVideoCaptureProps> = ({ onCancel, onCom
                         </div>
 
                         {/* Icon */}
-                        <div className="mx-auto w-24 h-24 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-full flex items-center justify-center mb-6 border border-purple-500/30">
-                            <Video className="w-12 h-12 text-purple-400" />
+                        <div
+                            className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 border"
+                            style={{
+                                background: `linear-gradient(to bottom right, ${theme?.primaryColor || '#A855F7'}33, ${theme?.primaryColor || '#A855F7'}33)`,
+                                borderColor: `${theme?.primaryColor || '#A855F7'}4D`
+                            }}
+                        >
+                            <Video className="w-12 h-12" style={{ color: theme?.primaryColor || '#A855F7' }} />
                         </div>
 
                         {/* Title & Description */}
@@ -121,7 +128,11 @@ const MobileVideoCapture: React.FC<MobileVideoCaptureProps> = ({ onCancel, onCom
                         {/* Record Button */}
                         <button
                             onClick={handleOpenCamera}
-                            className="w-full py-4 px-6 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all flex items-center justify-center gap-3"
+                            className="w-full py-4 px-6 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3"
+                            style={{
+                                backgroundColor: theme?.primaryColor || '#A855F7',
+                                boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}40`
+                            }}
                         >
                             <Video className="w-5 h-5" />
                             <span>Open Camera to Record</span>
@@ -188,7 +199,11 @@ const MobileVideoCapture: React.FC<MobileVideoCaptureProps> = ({ onCancel, onCom
 
                             <button
                                 onClick={handleContinue}
-                                className="flex-1 group flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
+                                className="flex-1 group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-semibold shadow-lg transition-all"
+                                style={{
+                                    backgroundColor: theme?.primaryColor || '#A855F7',
+                                    boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                                }}
                             >
                                 <span>Continue</span>
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

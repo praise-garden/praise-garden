@@ -112,13 +112,13 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, theme, 
                     <div className="mt-8 cq-lg:mt-10">
                         <motion.button
                             onClick={props.onNext}
-                            whileHover={{ scale: 1.03, boxShadow: `0px 0px 30px ${config.props.buttonBgColor}50` }}
+                            whileHover={{ scale: 1.03, boxShadow: `0px 0px 30px ${theme?.primaryColor || '#A855F7'}50` }}
                             whileTap={{ scale: 0.97 }}
                             className="h-11 cq-lg:h-12 px-8 cq-lg:px-10 text-sm cq-lg:text-base font-semibold rounded-xl transition-all duration-200 min-w-[160px] cq-lg:min-w-[180px]"
                             style={{
-                                backgroundColor: config.props.buttonBgColor,
-                                color: config.props.buttonTextColor,
-                                boxShadow: `0px 0px 20px ${config.props.buttonBgColor}25`
+                                backgroundColor: theme?.primaryColor || '#A855F7',
+                                color: config.props.buttonTextColor || '#FFFFFF',
+                                boxShadow: `0px 0px 20px ${theme?.primaryColor || '#A855F7'}25`
                             }}
                             onClickCapture={() => handleFieldClick('props.buttonText')}
                             data-field="props.buttonText"

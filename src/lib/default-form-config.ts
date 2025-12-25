@@ -40,7 +40,7 @@ export const createDefaultFormConfig = ({
             backgroundColor: '#0A0A0A',
             logoUrl: '/logo.svg',
             primaryColor: '#A855F7',
-            secondaryColor: '#22C55E',
+            ratingColor: '#FBBF24', // Amber-400 for star ratings
             headingFont: 'Space Grotesk',
             bodyFont: 'Inter',
         },

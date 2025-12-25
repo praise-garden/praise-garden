@@ -273,9 +273,13 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                                 whileTap={selectedMode ? { scale: 0.98 } : {}}
                                 className={`w-full h-11 cq-lg:h-12 rounded-xl font-semibold text-sm cq-lg:text-base transition-all duration-300 overflow-hidden
                                     ${selectedMode
-                                        ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/35'
+                                        ? 'text-white shadow-lg hover:shadow-xl'
                                         : 'bg-gray-800/80 text-gray-500 cursor-not-allowed'
                                     }`}
+                                style={selectedMode ? {
+                                    backgroundColor: theme?.primaryColor || '#A855F7',
+                                    boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}40`
+                                } : undefined}
                                 data-field="props.buttonText"
                             >
                                 <span className="flex items-center justify-center gap-2">
