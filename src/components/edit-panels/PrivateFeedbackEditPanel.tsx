@@ -50,9 +50,9 @@ const PrivateFeedbackEditPanel: React.FC<PrivateFeedbackEditPanelProps> = ({ blo
           icon={<MessageSquareIcon />}
           iconColorClass="cyan"
           type="textarea"
-          value={block.props.description || 'This stays between us and helps us improve.'}
+          value={block.props.description || 'Your feedback helps us improve. This stays private and will not be published.'}
           onChange={(v) => handlePropChange('description', v)}
-          placeholder="This stays between us and helps us improve..."
+          placeholder="Your feedback helps us improve. This stays private and will not be published."
           inputRef={descriptionInputRef}
         />
       </div>
@@ -68,7 +68,7 @@ const PrivateFeedbackEditPanel: React.FC<PrivateFeedbackEditPanelProps> = ({ blo
           iconColorClass="sky"
           value={block.props.placeholder || ''}
           onChange={(v) => handlePropChange('placeholder', v)}
-          placeholder="Type your private feedback here..."
+          placeholder="Type your message..."
           inputRef={placeholderInputRef}
         />
       </div>

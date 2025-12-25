@@ -98,6 +98,7 @@ export interface NegativeFeedbackBlockConfig extends BaseBlockConfig {
     buttonText: string;
     titleColor: string;
     descriptionColor: string;
+    tips: string[];
   };
 }
 

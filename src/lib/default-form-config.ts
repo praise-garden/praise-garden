@@ -102,12 +102,17 @@ export const createDefaultFormConfig = ({
                 props: {
                     title: 'What can we do better?',
                     description: 'We are sorry to hear that you had a bad experience. Please let us know what we can do to improve.',
-                    buttonText: 'Continue',
-                    feedbackQuestion: 'Could you please tell us more?',
+                    buttonText: 'Submit Feedback',
+                    feedbackQuestion: 'Your feedback',
                     feedbackPlaceholder: 'Please share as much detail as possible...',
                     feedbackHelperText: 'We value your feedback and review every submission carefully.',
                     titleColor: '#FFFFFF',
                     descriptionColor: '#9CA3AF',
+                    tips: [
+                        'Be specific about the issue you faced',
+                        'Describe what you expected to happen',
+                        'Let us know how we can improve',
+                    ],
                 },
             },
             {
@@ -115,9 +120,9 @@ export const createDefaultFormConfig = ({
                 type: FormBlockType.PrivateFeedback,
                 enabled: false,
                 props: {
-                    title: 'Would you like to send us a private feedback instead?',
-                    description: 'This stays between us and helps us improve. It will never appear on your public testimonial.',
-                    placeholder: 'Type your private feedback here...',
+                    title: 'Share private feedback',
+                    description: 'Your feedback helps us improve. This stays private and will not be published.',
+                    placeholder: 'Type your message...',
                     buttonText: 'Send Private Feedback',
                     titleColor: '#FFFFFF',
                 },
