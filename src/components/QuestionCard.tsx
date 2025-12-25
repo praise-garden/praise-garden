@@ -53,6 +53,98 @@ function useMediaQuery(query: string) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// TEXT TESTIMONIAL INPUT - Premium Apple/Figma-style text input
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface TextTestimonialInputProps {
+    theme?: { logoUrl?: string };
+    onNext: () => void;
+    rightPanelVariants: Variants;
+}
+
+const TextTestimonialInput = ({ onNext, rightPanelVariants }: TextTestimonialInputProps) => {
+    const [testimonialText, setTestimonialText] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
+
+    const characterCount = testimonialText.length;
+    const hasContent = characterCount > 0;
+
+    return (
+        <motion.div
+            key="text"
+            variants={rightPanelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="w-full h-full flex flex-col justify-center"
+        >
+            {/* Spacious centered container */}
+            <div className="flex-grow flex flex-col justify-center px-8 sm:px-12 cq-lg:px-14 py-10 cq-lg:py-12 max-w-2xl mx-auto w-full">
+
+                {/* Textarea Container - Elegant and spacious */}
+                <div className="flex-1 flex flex-col min-h-0">
+                    {/* Subtle label */}
+                    <div className="mb-3 cq-lg:mb-4">
+                        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                            Your testimonial
+                        </span>
+                    </div>
+                    <div
+                        className={`relative flex-1 min-h-[240px] cq-lg:min-h-[320px] rounded-2xl cq-lg:rounded-3xl transition-all duration-500 
+                            ${isFocused
+                                ? 'ring-2 ring-lime-500/40 bg-zinc-900/90 shadow-2xl shadow-lime-500/5'
+                                : 'bg-zinc-900/40 hover:bg-zinc-900/60'
+                            } 
+                            border ${isFocused ? 'border-lime-500/20' : 'border-zinc-800/50 hover:border-zinc-700/50'}`}
+                    >
+                        <textarea
+                            value={testimonialText}
+                            onChange={(e) => setTestimonialText(e.target.value)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            placeholder="Start writing your testimonial here..."
+                            className="w-full h-full min-h-[240px] cq-lg:min-h-[320px] bg-transparent p-6 cq-lg:p-8 
+                                text-base cq-lg:text-lg text-white placeholder-zinc-600 
+                                focus:outline-none resize-none leading-relaxed tracking-wide"
+                            style={{ caretColor: '#84cc16' }}
+                        />
+
+                        {/* Subtle corner decoration */}
+                        <div className="absolute bottom-4 right-4 pointer-events-none opacity-30">
+                            <TypeIcon className="w-5 h-5 cq-lg:w-6 cq-lg:h-6 text-zinc-600" />
+                        </div>
+                    </div>
+
+                    {/* Footer - Clean and minimal */}
+                    <div className="mt-6 cq-lg:mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        {/* Character count - Subtle */}
+                        <div className="order-2 sm:order-1">
+                            <span className={`text-xs font-mono transition-all duration-300 ${hasContent ? 'text-zinc-400' : 'text-zinc-700'}`}>
+                                {characterCount.toLocaleString()} characters
+                            </span>
+                        </div>
+
+                        {/* Submit Button - Always enabled, elegant */}
+                        <button
+                            onClick={onNext}
+                            disabled={!hasContent}
+                            className={`order-1 sm:order-2 w-full sm:w-auto px-8 h-12 cq-lg:h-14 rounded-xl font-semibold text-sm cq-lg:text-base 
+                                transition-all duration-300 
+                                ${hasContent
+                                    ? 'bg-lime-500 hover:bg-lime-400 text-zinc-900 shadow-lg shadow-lime-500/20 hover:shadow-lime-500/30 hover:scale-[1.02] active:scale-[0.98]'
+                                    : 'bg-zinc-800/80 text-zinc-500 cursor-not-allowed'
+                                }`}
+                        >
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -142,7 +234,7 @@ const QuestionCard = ({
                 <motion.div
                     animate={{
                         width: isDesktop
-                            ? (mode === 'options' ? '50%' : '33.3333%')
+                            ? (mode === 'options' ? '50%' : '40%')
                             : '100%'
                     }}
                     transition={panelMotionProps}
@@ -261,7 +353,7 @@ const QuestionCard = ({
                 <motion.div
                     animate={{
                         width: isDesktop
-                            ? (mode === 'options' ? '50%' : '66.6667%')
+                            ? (mode === 'options' ? '50%' : '60%')
                             : '100%'
                     }}
                     transition={panelMotionProps}
@@ -377,48 +469,20 @@ const QuestionCard = ({
                         )}
 
                         {/* 
-                          TEXT MODE - Textarea for written testimonial
+                          TEXT MODE - Beautiful, Apple-style text testimonial input
                           
-                          RESPONSIVE:
-                          - Textarea: h-40 lg:h-48, text-base (16px prevents iOS zoom)
-                          - Button: h-11 lg:h-12, text-sm lg:text-base
-                          - Padding: px-6 sm:px-8 lg:px-12
+                          Features:
+                          - Large, comfortable textarea with proper state
+                          - Character counter
+                          - Subtle focus states
+                          - Premium dark aesthetic
                         */}
                         {mode === 'text' && (
-                            <motion.div
-                                key="text"
-                                variants={rightPanelVariants}
-                                initial="hidden"
-                                animate="visible"
-                                exit="exit"
-                                className="w-full h-full flex flex-col"
-                            >
-                                <AppBar logoUrl={theme?.logoUrl} paddingXClass="px-6 sm:px-8 cq-lg:px-12" />
-                                <div className="flex-grow flex flex-col px-6 sm:px-8 cq-lg:px-12 py-6 cq-lg:py-8 justify-center max-w-xl cq-lg:max-w-2xl mx-auto w-full">
-                                    <textarea
-                                        placeholder="Share your experience..."
-                                        className="w-full h-40 cq-lg:h-48 bg-gray-900 border border-gray-700 rounded-lg p-4 
-                                            text-base text-white placeholder-gray-500 
-                                            focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500
-                                            resize-none transition-all"
-                                    />
-                                    {/* 
-                                      Continue Button
-                                      STANDARD HEIGHT: h-11 lg:h-12
-                                      STANDARD TEXT: text-sm lg:text-base font-semibold
-                                    */}
-                                    <div className="mt-5 cq-lg:mt-6 flex-shrink-0">
-                                        <button
-                                            onClick={cardProps.onNext}
-                                            className="w-full h-11 cq-lg:h-12 bg-purple-600 hover:bg-purple-700 
-                                                text-white text-sm cq-lg:text-base font-semibold rounded-xl 
-                                                transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
-                                        >
-                                            Continue
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
+                            <TextTestimonialInput
+                                theme={theme}
+                                onNext={cardProps.onNext}
+                                rightPanelVariants={rightPanelVariants}
+                            />
                         )}
 
                         {/* 
