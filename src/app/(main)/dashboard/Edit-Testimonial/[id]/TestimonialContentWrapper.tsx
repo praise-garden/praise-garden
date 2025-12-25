@@ -46,8 +46,18 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
     const [relatedTestimonials, setRelatedTestimonials] = useState<any[]>(initialRelatedTestimonials);
 
     // Callback to add a new duplicate to local state
-    const handleAddDuplicate = (newTestimonial: any) => {
-        setRelatedTestimonials(prev => [...prev, newTestimonial]);
+    const handleAddDuplicate = (newTestimonial: any, tempId?: number) => {
+        setRelatedTestimonials(prev => {
+            // If tempId is provided, check if we need to replace an existing item
+            if (tempId) {
+                const exists = prev.some(t => t.id === tempId);
+                if (exists) {
+                    return prev.map(t => t.id === tempId ? newTestimonial : t);
+                }
+            }
+            // Otherwise add new
+            return [...prev, newTestimonial];
+        });
     };
 
     // Callback to remove a testimonial from local state
@@ -67,7 +77,7 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
     const emailInputRef = useRef<HTMLInputElement>(null);
 
     const isVideo = testimonial.type === 'video' || testimonial.attachments?.some((a: any) => a.type === 'video');
-    const videoUrl = testimonial.attachments?.find((a: any) => a.type === 'video')?.url;
+    const videoUrl = testimonial.attachments?.find((a: any) => a.type === 'video')?.url || testimonial.video_url || testimonial.videoUrl;
     const companyLogo = testimonial.attachments?.find((a: any) => a.type === 'image')?.url;
 
     // Handle Save User Details
@@ -282,6 +292,7 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
                                     onEdit={() => setIsEditing(true)}
                                     onTrim={() => setIsTrimOpen(true)}
                                     onDuplicate={handleAddDuplicate}
+                                    testimonialData={testimonial}
                                 />
                             </div>
                         )}
@@ -292,7 +303,7 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
                                 <div className="space-y-8">
                                     {relatedTestimonials.map((related) => {
                                         const relatedIsVideo = related.type === 'video' || related.attachments?.some((a: any) => a.type === 'video');
-                                        const relatedVideoUrl = related.attachments?.find((a: any) => a.type === 'video')?.url;
+                                        const relatedVideoUrl = related.attachments?.find((a: any) => a.type === 'video')?.url || related.video_url || related.videoUrl;
                                         const isRelatedEditing = related.id === editingRelatedId;
 
                                         return (
@@ -365,6 +376,7 @@ export function TestimonialContentWrapper({ testimonial, relatedTestimonials: in
                                                         onEdit={() => setEditingRelatedId(related.id)}
                                                         onDuplicate={handleAddDuplicate}
                                                         onDelete={handleRemoveTestimonial}
+                                                        testimonialData={related}
                                                     />
                                                 )}
                                             </div>

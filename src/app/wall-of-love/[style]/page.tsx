@@ -13,6 +13,7 @@ import {
     Twitter,
     Linkedin,
     Facebook,
+    Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ShareWallOfLoveSidebar } from "@/components/ShareWallOfLoveSidebar"
@@ -305,9 +306,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const nameInputRef = React.useRef<HTMLInputElement>(null)
 
     // Testimonial selection state
-    const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
-        WALL_TESTIMONIALS.map(t => t.id)
-    )
+    const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>([])
     const [userTestimonials, setUserTestimonials] = React.useState<Testimonial[] | null>(null)
     const [isLoadingData, setIsLoadingData] = React.useState(true)
 
@@ -460,27 +459,26 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     // If user has NO data, fallback to DEMO data (WALL_TESTIMONIALS)
     // If user HAS data, use userTestimonials filtered by selection
     const displayTestimonials = React.useMemo(() => {
-        // If loading or we have user data...
-        if (userTestimonials && userTestimonials.length > 0) {
-            // If nothing selected but we have data, usually implied "all" or specific logic? 
-            // With our default "select all", it's fine.
-            // If user unselects all, show zero? Yes.
-            if (selectedTestimonialIds.length === 0) return []
-            return userTestimonials.filter(t => selectedTestimonialIds.includes(t.id))
-        }
+        // If loading, return empty (we will show spinner in UI)
+        if (isLoadingData) return []
 
-        // Fallback to Demo if user has no data (empty array or null)
+        // If user has NO data (and not loading), show Demo
         if (userTestimonials && userTestimonials.length === 0) {
-            // User has 0 testimonials -> Show Demo Preview
             return WALL_TESTIMONIALS
         }
 
-        // Initial state (loading or null) -> Show Demo Preview or specific user data?
-        // Better to show Demo until data loads? Or nothing?
-        // Let's show Demo initially to be safe/nice.
-        return WALL_TESTIMONIALS.filter(t => selectedTestimonialIds.includes(t.id))
+        // If user has data but DESELECTED all, show Demo
+        if (selectedTestimonialIds.length === 0) {
+            return WALL_TESTIMONIALS
+        }
 
-    }, [selectedTestimonialIds, userTestimonials])
+        // Otherwise filter user data
+        if (userTestimonials) {
+            return userTestimonials.filter(t => selectedTestimonialIds.includes(t.id))
+        }
+
+        return []
+    }, [selectedTestimonialIds, userTestimonials, isLoadingData])
 
     return (
         <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden">
@@ -594,102 +592,108 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
 
                             {/* Testimonials Masonry Grid */}
                             <div className="px-6 pb-8">
-                                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-                                    {displayTestimonials.map((t, index) => {
-                                        // Get dot color based on index
-                                        const dotColors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-red-500', 'bg-yellow-500']
-                                        const dotColor = dotColors[index % dotColors.length]
+                                {isLoadingData ? (
+                                    <div className="flex justify-center items-center py-20">
+                                        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                                    </div>
+                                ) : (
+                                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+                                        {displayTestimonials.map((t, index) => {
+                                            // Get dot color based on index
+                                            const dotColors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-red-500', 'bg-yellow-500']
+                                            const dotColor = dotColors[index % dotColors.length]
 
-                                        return (
-                                            <div
-                                                key={t.id}
-                                                className={cn(
-                                                    "relative break-inside-avoid rounded-xl p-5 transition-transform duration-200 hover:scale-[1.02]",
-                                                    cardTheme.cardBg,
-                                                    cardTheme.cardBorder,
-                                                    cardTheme.cardShadow
-                                                )}
-                                            >
-                                                {/* Source Icon */}
-                                                <div className="absolute top-4 right-4">
-                                                    {(() => {
-                                                        const sourceInfo = getSourceIcon(t.source)
-                                                        const IconComponent = sourceInfo.icon
-                                                        return (
-                                                            <div className={cn(
-                                                                "w-6 h-6 rounded-full flex items-center justify-center",
-                                                                sourceInfo.bg
-                                                            )}>
-                                                                {IconComponent ? (
-                                                                    <IconComponent className={cn("w-3.5 h-3.5", sourceInfo.color)} />
-                                                                ) : (
-                                                                    <span className={cn("text-xs font-bold", sourceInfo.color)}>
-                                                                        {sourceInfo.text}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    })()}
-                                                </div>
-
-                                                {/* Author */}
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    {(t as any).authorAvatarUrl ? (
-                                                        <img
-                                                            src={(t as any).authorAvatarUrl}
-                                                            alt={t.authorName}
-                                                            className="w-10 h-10 rounded-full object-cover shrink-0"
-                                                        />
-                                                    ) : (
-                                                        <div
-                                                            className={cn(
-                                                                "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0",
-                                                                (t as any).avatarBg || "bg-gradient-to-br from-indigo-500 to-purple-500"
-                                                            )}
-                                                        >
-                                                            {t.authorName.charAt(0)}
-                                                        </div>
+                                            return (
+                                                <div
+                                                    key={t.id}
+                                                    className={cn(
+                                                        "relative break-inside-avoid rounded-xl p-5 transition-transform duration-200 hover:scale-[1.02]",
+                                                        cardTheme.cardBg,
+                                                        cardTheme.cardBorder,
+                                                        cardTheme.cardShadow
                                                     )}
-                                                    <div>
-                                                        <p
-                                                            className={cn("font-semibold text-sm", cardTheme.textColor)}
-                                                            style={{ fontFamily: config.fontFamily }}
-                                                        >
-                                                            {t.authorName}
-                                                        </p>
-                                                        <p
-                                                            className={cn("text-xs", cardTheme.subtitleColor)}
-                                                            style={{ fontFamily: config.fontFamily }}
-                                                        >
-                                                            {(t as any).company || (t as any).authorTitle}
-                                                        </p>
+                                                >
+                                                    {/* Source Icon */}
+                                                    <div className="absolute top-4 right-4">
+                                                        {(() => {
+                                                            const sourceInfo = getSourceIcon(t.source)
+                                                            const IconComponent = sourceInfo.icon
+                                                            return (
+                                                                <div className={cn(
+                                                                    "w-6 h-6 rounded-full flex items-center justify-center",
+                                                                    sourceInfo.bg
+                                                                )}>
+                                                                    {IconComponent ? (
+                                                                        <IconComponent className={cn("w-3.5 h-3.5", sourceInfo.color)} />
+                                                                    ) : (
+                                                                        <span className={cn("text-xs font-bold", sourceInfo.color)}>
+                                                                            {sourceInfo.text}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        })()}
                                                     </div>
-                                                </div>
 
-                                                <div className="flex gap-0.5 mb-3">
-                                                    {Array.from({ length: 5 }).map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            className="w-4 h-4"
-                                                            style={{
-                                                                fill: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
-                                                                color: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </div>
+                                                    {/* Author */}
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        {(t as any).authorAvatarUrl ? (
+                                                            <img
+                                                                src={(t as any).authorAvatarUrl}
+                                                                alt={t.authorName}
+                                                                className="w-10 h-10 rounded-full object-cover shrink-0"
+                                                            />
+                                                        ) : (
+                                                            <div
+                                                                className={cn(
+                                                                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0",
+                                                                    (t as any).avatarBg || "bg-gradient-to-br from-indigo-500 to-purple-500"
+                                                                )}
+                                                            >
+                                                                {t.authorName.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p
+                                                                className={cn("font-semibold text-sm", cardTheme.textColor)}
+                                                                style={{ fontFamily: config.fontFamily }}
+                                                            >
+                                                                {t.authorName}
+                                                            </p>
+                                                            <p
+                                                                className={cn("text-xs", cardTheme.subtitleColor)}
+                                                                style={{ fontFamily: config.fontFamily }}
+                                                            >
+                                                                {(t as any).company || (t as any).authorTitle}
+                                                            </p>
+                                                        </div>
+                                                    </div>
 
-                                                {/* Content */}
-                                                <ExpandableContent
-                                                    content={t.content}
-                                                    fontFamily={config.fontFamily}
-                                                    textColorClass={cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700'}
-                                                    subtitleColorClass={cardTheme.subtitleColor}
-                                                />
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                                    <div className="flex gap-0.5 mb-3">
+                                                        {Array.from({ length: 5 }).map((_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                className="w-4 h-4"
+                                                                style={{
+                                                                    fill: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                                    color: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                                }}
+                                                            />
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    <ExpandableContent
+                                                        content={t.content}
+                                                        fontFamily={config.fontFamily}
+                                                        textColorClass={cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700'}
+                                                        subtitleColorClass={cardTheme.subtitleColor}
+                                                    />
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Powered By Branding - Only show when sidebar is closed */}

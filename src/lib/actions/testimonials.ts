@@ -590,6 +590,7 @@ export async function duplicateTestimonial(id: string | number) {
         date: new Date(newTestimonial.created_at).toLocaleDateString('en-US', {
             year: 'numeric', month: '2-digit', day: '2-digit'
         }),
+        video_url: duplicatedData.media?.video_url || duplicatedData.video_url || null,
         attachments: [
             ...(duplicatedData.company?.logo_url ? [{ type: 'image', url: duplicatedData.company.logo_url }] : []),
             ...(Array.isArray(duplicatedData.attachments) ? duplicatedData.attachments.map((url: string) => ({ type: 'image', url })) : []),
