@@ -597,12 +597,15 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
         </div>
 
         {/* CENTER - CANVAS */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#09090b] relative">
+        <div className={cn("flex-1 flex flex-col min-w-0 relative transition-colors duration-300", isDarkMode ? "bg-[#09090b]" : "bg-[#fafafa]")}>
           {/* Canvas Area */}
-          <div className="flex-1 overflow-auto relative flex items-start justify-center p-8 pt-12 bg-[#09090b]">
+          <div className={cn(
+            "flex-1 overflow-auto relative flex items-start justify-center p-8 pt-12 transition-colors duration-300",
+            isDarkMode ? "bg-[#09090b]" : "bg-[#fafafa]"
+          )}>
             <div className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage: `linear-gradient(#27272a 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px)`,
+                backgroundImage: `linear-gradient(${isDarkMode ? '#27272a' : '#e4e4e7'} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? '#27272a' : '#e4e4e7'} 1px, transparent 1px)`,
                 backgroundSize: '40px 40px',
                 opacity: 0.8
               }}

@@ -57,6 +57,7 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
     const [activeTab, setActiveTab] = React.useState<ShareTab>('link')
     const [copiedEmbed, setCopiedEmbed] = React.useState(false)
     const [copiedLink, setCopiedLink] = React.useState(false)
+    const [copiedQR, setCopiedQR] = React.useState(false)
     const [copiedFramer, setCopiedFramer] = React.useState(false)
 
     // Generate embed code based on widget ID
@@ -87,6 +88,24 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
         downloadLink.download = `widget-${widgetId}-qr.png`;
         downloadLink.href = pngFile;
         downloadLink.click();
+    };
+
+    const handleCopyQR = () => {
+        const canvas = document.querySelector("#qr-code-wrapper canvas") as HTMLCanvasElement;
+        if (!canvas) return;
+
+        try {
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                setCopiedQR(true);
+                setTimeout(() => setCopiedQR(false), 2000);
+            }, 'image/png');
+        } catch (err) {
+            console.error('Failed to copy QR image:', err);
+        }
     };
 
     const platforms = [
@@ -339,11 +358,20 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                     Download
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleCopy(`${typeof window !== 'undefined' ? window.location.origin : ''}/w/${widgetId}`, setCopiedLink)}
+                                                    onClick={handleCopyQR}
                                                     className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700/50 gap-2 font-medium rounded-xl px-5 py-2.5 transition-all duration-200"
                                                 >
-                                                    <Copy className="h-4 w-4" />
-                                                    Copy to Clipboard
+                                                    {copiedQR ? (
+                                                        <>
+                                                            <Check className="h-4 w-4 text-green-500" />
+                                                            Copied!
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Copy className="h-4 w-4" />
+                                                            Copy to Clipboard
+                                                        </>
+                                                    )}
                                                 </Button>
                                             </div>
                                         </div>

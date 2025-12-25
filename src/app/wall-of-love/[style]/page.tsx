@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { getTestimonials } from "@/lib/actions/testimonials"
 import {
     Star,
     ArrowLeft,
@@ -220,6 +221,62 @@ const CARD_THEMES = [
     },
 ]
 
+// ===================== HELPER COMPONENTS ===================== //
+
+const ExpandableContent = ({
+    content,
+    fontFamily,
+    textColorClass,
+    subtitleColorClass
+}: {
+    content: string
+    fontFamily?: string
+    textColorClass: string
+    subtitleColorClass: string
+}) => {
+    const [isExpanded, setIsExpanded] = React.useState(false)
+    // Limit to 200 chars as requested
+    const shouldTruncate = content.length > 200
+
+    if (!shouldTruncate) {
+        return (
+            <p
+                className={cn("text-sm leading-relaxed break-words whitespace-pre-wrap", textColorClass)}
+                style={{ fontFamily }}
+            >
+                {content}
+            </p>
+        )
+    }
+
+    return (
+        <div>
+            <p
+                className={cn(
+                    "text-sm leading-relaxed break-words whitespace-pre-wrap",
+                    textColorClass,
+                    !isExpanded && "line-clamp-6"
+                )}
+                style={{ fontFamily }}
+            >
+                {content}
+            </p>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setIsExpanded(!isExpanded)
+                }}
+                className={cn(
+                    "text-xs font-medium mt-2 hover:underline focus:outline-none flex items-center gap-1",
+                    subtitleColorClass
+                )}
+            >
+                {isExpanded ? "Read Less" : "Read More"}
+            </button>
+        </div>
+    )
+}
+
 
 interface WallOfLovePageProps {
     params: { style: string }
@@ -251,18 +308,56 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
         WALL_TESTIMONIALS.map(t => t.id)
     )
+    const [userTestimonials, setUserTestimonials] = React.useState<Testimonial[] | null>(null)
+    const [isLoadingData, setIsLoadingData] = React.useState(true)
 
+    // Fetch user testimonials
+    React.useEffect(() => {
+        const fetchUserTestimonials = async () => {
+            try {
+                const { data } = await getTestimonials()
+
+                if (data && data.length > 0) {
+                    // Map DB records to Testimonial interface
+                    const mapped: Testimonial[] = data.map((t: any) => ({
+                        id: t.id,
+                        type: t.type || 'text',
+                        authorName: t.author_name || 'Anonymous',
+                        authorTitle: t.author_title || '',
+                        authorAvatarUrl: t.author_avatar_url,
+                        rating: t.rating || 5,
+                        content: t.content || '',
+                        source: t.source || 'MANUAL',
+                        date: new Date(t.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric"
+                        }),
+                        videoUrl: t.video_url,
+                        videoThumbnail: t.video_thumbnail,
+                        attachments: t.attachments || []
+                    }))
+
+                    setUserTestimonials(mapped)
+                    // Select all user testimonials by default
+                    setSelectedTestimonialIds(mapped.map(t => t.id))
+                } else {
+                    setUserTestimonials([])
+                }
+            } catch (err) {
+                console.error("Failed to fetch testimonials:", err)
+                setUserTestimonials([])
+            } finally {
+                setIsLoadingData(false)
+            }
+        }
+
+        fetchUserTestimonials()
+    }, [])
 
     // Transform testimonials to the format expected by SelectTestimonialsModal
-    const modalTestimonials: Testimonial[] = WALL_TESTIMONIALS.map(t => ({
-        id: t.id,
-        authorName: t.authorName,
-        authorTitle: t.company,
-        rating: t.rating,
-        content: t.content,
-        source: t.source,
-        date: t.date,
-    }))
+    // Logic: ONLY show user testimonials in the modal. If none, modal list is empty.
+    const modalTestimonials: Testimonial[] = userTestimonials || []
 
     // Handle name editing
     const handleNameClick = () => {
@@ -361,12 +456,31 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     // Display testimonials based on selection
     // If no testimonials are selected, show all (initial state)
     // Otherwise, filter to show only selected testimonials
+    // Display testimonials based on selection
+    // If user has NO data, fallback to DEMO data (WALL_TESTIMONIALS)
+    // If user HAS data, use userTestimonials filtered by selection
     const displayTestimonials = React.useMemo(() => {
-        if (selectedTestimonialIds.length === 0) {
+        // If loading or we have user data...
+        if (userTestimonials && userTestimonials.length > 0) {
+            // If nothing selected but we have data, usually implied "all" or specific logic? 
+            // With our default "select all", it's fine.
+            // If user unselects all, show zero? Yes.
+            if (selectedTestimonialIds.length === 0) return []
+            return userTestimonials.filter(t => selectedTestimonialIds.includes(t.id))
+        }
+
+        // Fallback to Demo if user has no data (empty array or null)
+        if (userTestimonials && userTestimonials.length === 0) {
+            // User has 0 testimonials -> Show Demo Preview
             return WALL_TESTIMONIALS
         }
+
+        // Initial state (loading or null) -> Show Demo Preview or specific user data?
+        // Better to show Demo until data loads? Or nothing?
+        // Let's show Demo initially to be safe/nice.
         return WALL_TESTIMONIALS.filter(t => selectedTestimonialIds.includes(t.id))
-    }, [selectedTestimonialIds])
+
+    }, [selectedTestimonialIds, userTestimonials])
 
     return (
         <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden">
@@ -520,14 +634,22 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
 
                                                 {/* Author */}
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <div
-                                                        className={cn(
-                                                            "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0",
-                                                            t.avatarBg
-                                                        )}
-                                                    >
-                                                        {t.authorName.charAt(0)}
-                                                    </div>
+                                                    {(t as any).authorAvatarUrl ? (
+                                                        <img
+                                                            src={(t as any).authorAvatarUrl}
+                                                            alt={t.authorName}
+                                                            className="w-10 h-10 rounded-full object-cover shrink-0"
+                                                        />
+                                                    ) : (
+                                                        <div
+                                                            className={cn(
+                                                                "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0",
+                                                                (t as any).avatarBg || "bg-gradient-to-br from-indigo-500 to-purple-500"
+                                                            )}
+                                                        >
+                                                            {t.authorName.charAt(0)}
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <p
                                                             className={cn("font-semibold text-sm", cardTheme.textColor)}
@@ -539,7 +661,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                             className={cn("text-xs", cardTheme.subtitleColor)}
                                                             style={{ fontFamily: config.fontFamily }}
                                                         >
-                                                            {t.company}
+                                                            {(t as any).company || (t as any).authorTitle}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -558,12 +680,12 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                 </div>
 
                                                 {/* Content */}
-                                                <p
-                                                    className={cn("text-sm leading-relaxed", cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700')}
-                                                    style={{ fontFamily: config.fontFamily }}
-                                                >
-                                                    {t.content}
-                                                </p>
+                                                <ExpandableContent
+                                                    content={t.content}
+                                                    fontFamily={config.fontFamily}
+                                                    textColorClass={cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700'}
+                                                    subtitleColorClass={cardTheme.subtitleColor}
+                                                />
                                             </div>
                                         )
                                     })}
