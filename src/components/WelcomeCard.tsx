@@ -1,22 +1,29 @@
-
 import React from 'react';
 import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion } from 'framer-motion';
 import { WelcomeBlockConfig } from '@/types/form-config';
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONS - Inline with text (scales with lg: for full-screen)
+// ═══════════════════════════════════════════════════════════════════════════
+
 const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
     </svg>
 );
 
 const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
 );
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface WelcomeCardProps extends Omit<FormCardProps, 'config' | 'onFieldFocus'> {
     config: WelcomeBlockConfig;
@@ -30,31 +37,51 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, theme, 
 
     return (
         <FormCard {...props} theme={theme}>
-            <div className="relative flex-grow flex flex-col items-center justify-center px-16 py-12 text-center overflow-hidden">
+            {/* 
+              Layout: Centered content with responsive padding
+              
+              RESPONSIVE STRATEGY:
+              - Form Builder (~800-1000px container): Uses base/sm styles
+              - Preview/Public (full viewport): lg: breakpoints trigger for larger sizing
+              
+              Padding scales: px-6 → sm:px-8 → lg:px-12
+              Vertical: py-8 → lg:py-12
+            */}
+            <div className="relative flex-grow flex flex-col items-center justify-center px-6 sm:px-8 lg:px-12 py-8 lg:py-12 text-center overflow-hidden">
+
                 {/* Background Glow Effect */}
-                <div className="absolute -inset-24 bg-lime-400/10 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)] blur-3xl opacity-60"></div>
+                <div className="absolute -inset-24 bg-lime-400/10 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)] blur-3xl opacity-60" />
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="relative z-10 w-full max-w-3xl space-y-8"
+                    className="relative z-10 w-full max-w-xl lg:max-w-2xl"
                 >
-                    {/* Company Branding */}
+                    {/* 
+                      Company Branding
+                      RESPONSIVE: h-10 → sm:h-12 → lg:h-14 (40px → 48px → 56px)
+                      Spacing: mb-8 → lg:mb-10 (32px → 40px)
+                    */}
                     {theme?.logoUrl && (
-                        <div className="flex justify-center items-center mb-6">
+                        <div className="flex justify-center items-center mb-8 lg:mb-10">
                             <img
-                                className="h-12 w-auto object-contain transition-all duration-300"
+                                className="h-10 sm:h-12 lg:h-14 w-auto object-contain"
                                 src={theme.logoUrl}
                                 alt="Brand Logo"
                             />
                         </div>
                     )}
 
-                    {/* Main Content */}
-                    <div className="space-y-4">
+                    {/* 
+                      Main Content
+                      RESPONSIVE TITLE: text-2xl → sm:text-3xl → lg:text-4xl (24px → 30px → 36px)
+                      RESPONSIVE DESC: text-sm → lg:text-base (14px → 16px)
+                      Gap: space-y-3 → lg:space-y-4 (12px → 16px)
+                    */}
+                    <div className="space-y-3 lg:space-y-4">
                         <h1
-                            className="text-3xl md:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400"
+                            className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight text-white"
                             style={{ color: config.props.titleColor }}
                             onClick={() => handleFieldClick('props.title')}
                             data-field="props.title"
@@ -62,7 +89,7 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, theme, 
                             {config.props.title}
                         </h1>
                         <p
-                            className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed"
+                            className="text-sm lg:text-base text-gray-400 leading-relaxed max-w-md lg:max-w-lg mx-auto"
                             style={{ color: config.props.descriptionColor }}
                             onClick={() => handleFieldClick('props.description')}
                             data-field="props.description"
@@ -71,39 +98,53 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, theme, 
                         </p>
                     </div>
 
-                    {/* CTA Button */}
-                    <motion.button
-                        onClick={props.onNext}
-                        whileHover={{ scale: 1.05, boxShadow: `0px 0px 30px ${config.props.buttonBgColor}66` }} // 66 for 40% opacity
-                        whileTap={{ scale: 0.95 }}
-                        className="font-semibold py-2.5 px-7 rounded-full text-base transition-all duration-300"
-                        style={{
-                            backgroundColor: config.props.buttonBgColor,
-                            color: config.props.buttonTextColor,
-                            boxShadow: `0px 0px 20px ${config.props.buttonBgColor}33` // 33 for 20% opacity
-                        }}
-                        onClickCapture={() => handleFieldClick('props.buttonText')}
-                        data-field="props.buttonText"
-                    >
-                        {config.props.buttonText}
-                    </motion.button>
+                    {/* 
+                      CTA Button
+                      RESPONSIVE HEIGHT: h-11 → lg:h-12 (44px → 48px)
+                      RESPONSIVE TEXT: text-sm → lg:text-base (14px → 16px)
+                      RESPONSIVE PADDING: px-8 → lg:px-10
+                      Spacing: mt-8 → lg:mt-10 (32px → 40px)
+                    */}
+                    <div className="mt-8 lg:mt-10">
+                        <motion.button
+                            onClick={props.onNext}
+                            whileHover={{ scale: 1.03, boxShadow: `0px 0px 30px ${config.props.buttonBgColor}50` }}
+                            whileTap={{ scale: 0.97 }}
+                            className="h-11 lg:h-12 px-8 lg:px-10 text-sm lg:text-base font-semibold rounded-xl transition-all duration-200 min-w-[160px] lg:min-w-[180px]"
+                            style={{
+                                backgroundColor: config.props.buttonBgColor,
+                                color: config.props.buttonTextColor,
+                                boxShadow: `0px 0px 20px ${config.props.buttonBgColor}25`
+                            }}
+                            onClickCapture={() => handleFieldClick('props.buttonText')}
+                            data-field="props.buttonText"
+                        >
+                            {config.props.buttonText}
+                        </motion.button>
+                    </div>
 
-                    {/* Feature Highlights */}
-                    <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-5 text-xs text-gray-500">
+                    {/* 
+                      Feature Highlights
+                      RESPONSIVE TEXT: text-xs → lg:text-sm (12px → 14px)
+                      RESPONSIVE ICONS: w-4 h-4 → lg:w-5 lg:h-5 (16px → 20px)
+                      Spacing: mt-6 → lg:mt-8 (24px → 32px)
+                      Gap: gap-4 sm:gap-6 → lg:gap-8
+                    */}
+                    <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 lg:gap-8 text-xs lg:text-sm text-gray-500">
                         <div
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer hover:text-gray-400 transition-colors"
                             onClick={() => handleFieldClick('props.timingMessage')}
                             data-field="props.timingMessage"
                         >
-                            <ClockIcon className="w-4 h-4" />
+                            <ClockIcon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
                             <span>{config.props.timingMessage}</span>
                         </div>
                         <div
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer hover:text-gray-400 transition-colors"
                             onClick={() => handleFieldClick('props.consentMessage')}
                             data-field="props.consentMessage"
                         >
-                            <CheckCircleIcon className="w-4 h-4" />
+                            <CheckCircleIcon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
                             <span>{config.props.consentMessage}</span>
                         </div>
                     </div>
@@ -114,5 +155,6 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({ config, onFieldFocus, theme, 
 };
 
 export default WelcomeCard;
+
 
 

@@ -7,11 +7,10 @@ import { ConsentBlockConfig } from '@/types/form-config';
 import BackButton from '@/components/ui/back-button';
 import AppBar from '@/components/ui/app-bar';
 
-interface ConsentCardProps extends Omit<FormCardProps, 'config'> {
-    config: ConsentBlockConfig;
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONS
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Icon Components
 const GlobeIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -40,6 +39,10 @@ const CheckIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+// ═══════════════════════════════════════════════════════════════════════════
+// USAGE OPTION COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
 type UsageMode = 'public' | 'private' | null;
 
 interface UsageOptionProps {
@@ -64,14 +67,14 @@ const UsageOption: React.FC<UsageOptionProps> = ({
             onClick={onSelect}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            className={`relative w-full p-4 sm:p-5 rounded-xl border transition-all duration-300 text-left overflow-hidden group
+            className={`relative w-full p-4 lg:p-5 rounded-xl border transition-all duration-300 text-left overflow-hidden group
                 ${selected
                     ? 'bg-white/10 border-white/40 shadow-lg shadow-white/5'
                     : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
                 }`}
         >
             {/* Selection checkmark */}
-            <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300
+            <div className={`absolute top-3 right-3 w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
                 ${selected
                     ? 'bg-white border-white'
                     : 'border-white/20 bg-transparent group-hover:border-white/40'
@@ -85,16 +88,16 @@ const UsageOption: React.FC<UsageOptionProps> = ({
                             exit={{ scale: 0, opacity: 0 }}
                             transition={{ duration: 0.15 }}
                         >
-                            <CheckIcon className="w-3 h-3 text-black" />
+                            <CheckIcon className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-black" />
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
 
             {/* Content */}
-            <div className="relative z-10 flex items-start gap-4">
-                {/* Icon */}
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300
+            <div className="relative z-10 flex items-start gap-3 lg:gap-4">
+                {/* Icon - Responsive sizing */}
+                <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300
                     ${selected
                         ? 'bg-white/20 text-white'
                         : 'bg-white/5 text-gray-400 border border-white/5 group-hover:text-gray-300 group-hover:bg-white/10'
@@ -105,20 +108,31 @@ const UsageOption: React.FC<UsageOptionProps> = ({
 
                 {/* Text content */}
                 <div className="flex-1 min-w-0 pr-6">
-                    <h3 className={`text-sm sm:text-base font-semibold transition-colors duration-300 ${selected ? 'text-white' : 'text-gray-200'}`}>
+                    <h3 className={`text-sm lg:text-base font-semibold transition-colors duration-300 
+                        ${selected ? 'text-white' : 'text-gray-200'}`}>
                         {title}
                     </h3>
-                    <p className={`text-xs sm:text-sm leading-relaxed mt-0.5 transition-colors duration-300 ${selected ? 'text-white/80' : 'text-gray-400'}`}>
+                    <p className={`text-xs lg:text-sm leading-relaxed mt-0.5 lg:mt-1 transition-colors duration-300 
+                        ${selected ? 'text-white/80' : 'text-gray-400'}`}>
                         {description}
                     </p>
                 </div>
             </div>
 
             {/* Passive glass shimmer on hover/select */}
-            <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none transition-opacity duration-500 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
+            <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none transition-opacity duration-500 
+                ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
         </motion.button>
     );
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface ConsentCardProps extends Omit<FormCardProps, 'config'> {
+    config: ConsentBlockConfig;
+}
 
 const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
     const [selectedMode, setSelectedMode] = useState<UsageMode>(null);
@@ -144,40 +158,63 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
 
     return (
         <FormCard {...props} theme={theme}>
+            {/* 
+              Layout: Centered content with responsive padding
+              
+              RESPONSIVE STRATEGY:
+              - Form Builder (~800-1000px container): Uses base/sm styles
+              - Preview/Public (full viewport): lg: breakpoints trigger for larger sizing
+              
+              Padding scales: px-6 → sm:px-8 → lg:px-12
+              Vertical: py-8 → lg:py-12
+            */}
             <div className="flex-grow flex flex-col overflow-hidden relative">
-                {/* Subtle background gradient - very neutral */}
-                <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent blur-3xl opacity-50"></div>
+
+                {/* Subtle background gradient */}
+                <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent blur-3xl opacity-50" />
 
                 {/* Back Button */}
                 {props.onPrevious && <BackButton onClick={props.onPrevious} />}
 
-                {/* AppBar */}
+                {/* 
+                  AppBar with Logo
+                  RESPONSIVE PADDING: px-6 → sm:px-8 → lg:px-12
+                */}
                 <div className="flex-shrink-0">
-                    <AppBar maxWidthClass="max-w-2xl" paddingXClass="px-8 sm:px-16" logoUrl={theme?.logoUrl} />
+                    <AppBar
+                        maxWidthClass="max-w-xl lg:max-w-2xl"
+                        paddingXClass="px-6 sm:px-8 lg:px-12"
+                        logoUrl={theme?.logoUrl}
+                    />
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 flex flex-col items-center justify-center px-8 sm:px-16 pb-10 pt-4 text-center overflow-y-auto relative z-10">
-                    <div className="w-full max-w-xl mx-auto space-y-6">
+                <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8 lg:px-12 pb-8 lg:pb-12 pt-4 text-center overflow-y-auto relative z-10">
+                    <div className="w-full max-w-xl lg:max-w-2xl mx-auto space-y-6 lg:space-y-8">
 
-                        {/* Main Heading */}
+                        {/* 
+                          Main Heading Section
+                          RESPONSIVE TITLE: text-xl → sm:text-2xl → lg:text-3xl
+                          RESPONSIVE DESC: text-sm → lg:text-base
+                          Gap: space-y-2 → lg:space-y-3
+                        */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1 }}
-                            className="space-y-2"
+                            className="space-y-2 lg:space-y-3"
                         >
-                            <h2
-                                className="text-xl sm:text-2xl font-bold text-white leading-tight"
+                            <h1
+                                className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight text-white"
                                 style={{ color: config.props.titleColor }}
                                 onClick={() => handleFieldClick('props.title')}
                                 data-field="props.title"
                             >
                                 {config.props.title || "How can we share your testimonial?"}
-                            </h2>
+                            </h1>
 
                             <p
-                                className="text-gray-400 text-xs sm:text-sm max-w-md mx-auto leading-relaxed"
+                                className="text-sm lg:text-base text-gray-400 leading-relaxed max-w-md lg:max-w-lg mx-auto"
                                 style={{ color: config.props.descriptionColor }}
                                 onClick={() => handleFieldClick('props.description')}
                                 data-field="props.description"
@@ -186,19 +223,24 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                             </p>
                         </motion.div>
 
-                        {/* Usage Options */}
+                        {/* 
+                          Usage Options
+                          RESPONSIVE: Option cards have lg: padding and typography
+                          RESPONSIVE ICONS: w-5 h-5 → lg:w-6 lg:h-6
+                          Gap: space-y-3 → lg:space-y-4
+                        */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
-                            className="space-y-3"
+                            className="space-y-3 lg:space-y-4"
                         >
                             {/* Public Option */}
                             <UsageOption
                                 mode="public"
                                 selected={selectedMode === 'public'}
                                 onSelect={() => handleModeSelect('public')}
-                                icon={<GlobeIcon className="w-5 h-5" />}
+                                icon={<GlobeIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
                                 title={config.props.publicOptionTitle || "Share it publicly"}
                                 description={config.props.publicOptionDescription || "Display on our website, social media, and marketing materials."}
                             />
@@ -208,13 +250,17 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                                 mode="private"
                                 selected={selectedMode === 'private'}
                                 onSelect={() => handleModeSelect('private')}
-                                icon={<LockIcon className="w-5 h-5" />}
+                                icon={<LockIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
                                 title={config.props.privateOptionTitle || "Keep it private"}
                                 description={config.props.privateOptionDescription || "Only for internal use. We won't share it publicly."}
                             />
                         </motion.div>
 
-                        {/* Continue Button */}
+                        {/* 
+                          Continue Button
+                          STANDARD HEIGHT: h-11 → lg:h-12
+                          STANDARD TEXT: text-sm → lg:text-base font-semibold
+                        */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -225,9 +271,9 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                                 disabled={!selectedMode || isSubmitting}
                                 whileHover={selectedMode ? { scale: 1.02 } : {}}
                                 whileTap={selectedMode ? { scale: 0.98 } : {}}
-                                className={`w-full px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden
-                                ${selectedMode
-                                        ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/35'
+                                className={`w-full h-11 lg:h-12 rounded-xl font-semibold text-sm lg:text-base transition-all duration-300 overflow-hidden
+                                    ${selectedMode
+                                        ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/35'
                                         : 'bg-gray-800/80 text-gray-500 cursor-not-allowed'
                                     }`}
                                 data-field="props.buttonText"
@@ -251,17 +297,23 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                             </motion.button>
                         </motion.div>
 
-                        {/* Trust Note */}
+                        {/* 
+                          Trust Note
+                          RESPONSIVE: text-[11px] → lg:text-xs
+                          RESPONSIVE ICONS: w-3.5 h-3.5 → lg:w-4 lg:h-4
+                        */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
-                            className="flex items-center justify-center gap-1.5"
+                            className="flex items-center justify-center gap-1.5 lg:gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => handleFieldClick('props.trustNote')}
                             data-field="props.trustNote"
                         >
-                            <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="text-[11px] text-gray-500">{config.props.trustNote || "Your privacy is important to us. We'll always respect your choice."}</span>
+                            <ShieldCheckIcon className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-500 flex-shrink-0" />
+                            <span className="text-[11px] lg:text-xs text-gray-500">
+                                {config.props.trustNote || "Your privacy is important to us. We'll always respect your choice."}
+                            </span>
                         </motion.div>
                     </div>
                 </div>
@@ -271,3 +323,4 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
 };
 
 export default ConsentCard;
+

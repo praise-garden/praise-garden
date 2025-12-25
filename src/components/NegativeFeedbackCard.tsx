@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FormCard, FormCardProps } from '@/app/form-builder/page';
 import { motion } from 'framer-motion';
@@ -6,12 +5,19 @@ import AppBar from '@/components/ui/app-bar';
 import BackButton from '@/components/ui/back-button';
 import { NegativeFeedbackBlockConfig } from '@/types/form-config';
 
-// A simple icon placeholder for an illustration.
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONS
+// ═══════════════════════════════════════════════════════════════════════════
+
 const MessageCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
 );
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface NegativeFeedbackCardProps extends FormCardProps {
     config: NegativeFeedbackBlockConfig;
@@ -26,39 +32,63 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
 
     return (
         <FormCard {...props} theme={theme}>
-            <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+            {/* 
+              SPLIT LAYOUT STRUCTURE:
+              - Mobile: Stacked (full width each)
+              - Desktop (lg:): Side-by-side (40% / 60%)
+              
+              Uses lg: instead of md: to match our responsive strategy
+            */}
+            <div className="flex-grow flex flex-col lg:flex-row overflow-hidden relative">
+
                 {/* Back Button */}
                 {props.onPrevious && <BackButton onClick={props.onPrevious} />}
 
-                {/* Left Side: Compassionate Message */}
-                <div className="w-full md:w-2/5 bg-[#2a2a2a] flex flex-col overflow-hidden">
+                {/* 
+                  LEFT PANEL: Compassionate Message
+                  
+                  RESPONSIVE:
+                  - Width: 100% mobile → 40% desktop
+                  - Padding: px-6 → sm:px-8 → lg:px-12
+                  - Typography scales with lg: breakpoints
+                */}
+                <div className="w-full lg:w-2/5 bg-[#2a2a2a] flex flex-col overflow-hidden">
+
+                    {/* AppBar with Logo */}
                     <div className="flex-shrink-0">
                         <AppBar
-                            maxWidthClass="max-w-lg"
-                            paddingXClass="px-8 md:px-14"
+                            maxWidthClass="max-w-md lg:max-w-lg"
+                            paddingXClass="px-6 sm:px-8 lg:px-12"
                             logoUrl={theme?.logoUrl}
                         />
                     </div>
-                    <div className="flex-grow flex items-center justify-center px-8 md:px-14 pb-10">
+
+                    {/* Message Content */}
+                    <div className="flex-grow flex items-center justify-center px-6 sm:px-8 lg:px-12 pb-8 lg:pb-10">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="text-center"
+                            className="text-center max-w-xs lg:max-w-sm"
                         >
-                            <div className="p-3.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3.5 inline-block">
-                                <MessageCircleIcon className="text-amber-400 w-10 h-10" />
+                            {/* Icon - Responsive sizing */}
+                            <div className="p-3 lg:p-4 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 lg:mb-5 inline-block">
+                                <MessageCircleIcon className="text-amber-400 w-8 h-8 lg:w-10 lg:h-10" />
                             </div>
-                            <h2
-                                className="text-xl font-bold text-white mb-2"
+
+                            {/* Title - Responsive: text-lg → lg:text-xl → xl:text-2xl */}
+                            <h1
+                                className="text-lg lg:text-xl xl:text-2xl font-bold text-white mb-2 lg:mb-3 leading-tight"
                                 style={{ color: config.props.titleColor }}
                                 onClick={() => handleFieldClick('props.title')}
                                 data-field="props.title"
                             >
                                 {config.props.title}
-                            </h2>
+                            </h1>
+
+                            {/* Description - Responsive: text-xs → lg:text-sm */}
                             <p
-                                className="text-gray-300 text-xs max-w-xs mx-auto leading-relaxed"
+                                className="text-xs lg:text-sm text-gray-300 leading-relaxed"
                                 style={{ color: config.props.descriptionColor }}
                                 onClick={() => handleFieldClick('props.description')}
                                 data-field="props.description"
@@ -69,45 +99,75 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                     </div>
                 </div>
 
-                {/* Right Side: Feedback Form */}
-                <div className="w-full md:w-3/5 px-10 py-8 flex flex-col justify-center">
+                {/* 
+                  RIGHT PANEL: Feedback Form
+                  
+                  RESPONSIVE:
+                  - Width: 100% mobile → 60% desktop
+                  - Padding: px-6 → sm:px-8 → lg:px-12
+                  - Textarea and button follow design specs
+                */}
+                <div className="w-full lg:w-3/5 px-6 sm:px-8 lg:px-12 py-8 lg:py-0 flex flex-col justify-center">
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
-                        className="w-full max-w-lg mx-auto"
+                        className="w-full max-w-md lg:max-w-lg mx-auto"
                     >
+                        {/* 
+                          Feedback Question Label
+                          RESPONSIVE: text-sm → lg:text-base font-medium
+                        */}
                         <label
                             htmlFor="feedback-textarea"
-                            className="text-base font-medium text-white mb-2.5 block text-left"
-                            onClickCapture={() => handleFieldClick('props.feedbackQuestion')}
+                            className="text-sm lg:text-base font-medium text-white mb-2 lg:mb-3 block text-left"
+                            onClick={() => handleFieldClick('props.feedbackQuestion')}
                             data-field="props.feedbackQuestion"
                         >
                             {config.props.feedbackQuestion || 'Could you please tell us more?'}
                         </label>
+
+                        {/* 
+                          Textarea
+                          STANDARD HEIGHT: h-32 → lg:h-40
+                          STANDARD TEXT: text-base (16px prevents iOS zoom)
+                        */}
                         <textarea
                             id="feedback-textarea"
                             placeholder={config.props.feedbackPlaceholder || 'Please share as much detail as possible...'}
-                            className="w-full h-32 bg-[#1E1E1E] border border-gray-700 rounded-lg p-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all"
-                            onClickCapture={() => handleFieldClick('props.feedbackPlaceholder')}
+                            className="w-full h-32 lg:h-40 bg-gray-900 border border-gray-700 rounded-lg p-4 
+                                text-base text-white placeholder-gray-500 
+                                focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 
+                                transition-all resize-none"
+                            onClick={() => handleFieldClick('props.feedbackPlaceholder')}
                             data-field="props.feedbackPlaceholder"
-                        ></textarea>
+                        />
 
-                        {/* Simplified Promise */}
+                        {/* Helper Text - Responsive: text-[11px] → lg:text-xs */}
                         <p
-                            className="text-center text-[11px] text-gray-500 mt-3"
-                            onClickCapture={() => handleFieldClick('props.feedbackHelperText')}
+                            className="text-center text-[11px] lg:text-xs text-gray-500 mt-3 lg:mt-4"
+                            onClick={() => handleFieldClick('props.feedbackHelperText')}
                             data-field="props.feedbackHelperText"
                         >
                             {config.props.feedbackHelperText || 'We value your feedback and review every submission carefully.'}
                         </p>
 
-                        {/* CTAs */}
-                        <div className="flex items-center gap-3 mt-5">
+                        {/* 
+                          Submit Button
+                          STANDARD HEIGHT: h-11 → lg:h-12
+                          STANDARD TEXT: text-sm → lg:text-base font-semibold
+                          Note: Using amber color to match the card's theme
+                        */}
+                        <div className="mt-5 lg:mt-6">
                             <button
-                                className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2.5 px-4 rounded-lg transition-all text-sm"
-                                onClick={props.onNext}
-                                onClickCapture={() => handleFieldClick('props.buttonText')}
+                                className="w-full h-11 lg:h-12 rounded-xl bg-amber-500 hover:bg-amber-600 
+                                    text-sm lg:text-base font-semibold text-black 
+                                    shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 
+                                    transition-all active:scale-[0.98]"
+                                onClick={() => {
+                                    handleFieldClick('props.buttonText');
+                                    props.onNext();
+                                }}
                                 data-field="props.buttonText"
                             >
                                 {config.props.buttonText}
@@ -121,5 +181,3 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
 };
 
 export default NegativeFeedbackCard;
-
-
