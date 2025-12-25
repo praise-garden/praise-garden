@@ -401,25 +401,25 @@ const QuestionCard = ({
                                 {/* Video Option Card */}
                                 {enableVideo && (
                                     <div
-                                        className="group relative p-5 cq-lg:p-6 bg-gradient-to-br from-purple-600/5 via-purple-500/10 to-purple-600/5 
+                                        className="group relative p-5 cq-lg:p-6 bg-purple-500/[0.03] 
                                             border border-purple-500/20 rounded-xl text-center cursor-pointer transition-all duration-300 
-                                            hover:border-purple-400/40 hover:from-purple-600/10 hover:via-purple-500/20 hover:to-purple-600/10 
-                                            hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20"
+                                            hover:border-purple-500/40 hover:bg-purple-500/[0.08]
+                                            hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10"
                                         onClick={handleVideoClick}
                                         role="button"
                                         tabIndex={0}
                                     >
-                                        {/* Glow Effect */}
-                                        <div className="absolute -inset-2 rounded-xl bg-gradient-to-r from-purple-600/20 via-purple-500/30 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
+                                        {/* Subtle Glow Effect */}
+                                        <div className="absolute -inset-2 rounded-xl bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
 
                                         <div className="relative">
-                                            <div className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 bg-purple-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors">
+                                            <div className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 bg-purple-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors border border-purple-500/10">
                                                 <VideoIcon className="text-purple-400 group-hover:text-purple-300 transition-colors w-6 h-6 cq-lg:w-7 cq-lg:h-7" />
                                             </div>
                                             <h3 className="text-base cq-lg:text-lg font-semibold text-white group-hover:text-purple-100 transition-colors">
                                                 {config.props.videoOptionTitle || 'Record a video'}
                                             </h3>
-                                            <p className="mt-1.5 text-xs cq-lg:text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                                            <p className="mt-1.5 text-xs cq-lg:text-sm text-gray-400 group-hover:text-purple-200/50 transition-colors">
                                                 {config.props.videoOptionDescription || '2-minute video testimonial'}
                                             </p>
                                         </div>
@@ -441,25 +441,25 @@ const QuestionCard = ({
                                 {/* Text Option Card */}
                                 {enableText && (
                                     <div
-                                        className="group relative p-5 cq-lg:p-6 bg-gradient-to-br from-lime-600/5 via-lime-500/10 to-lime-600/5 
-                                            border border-lime-500/20 rounded-xl text-center cursor-pointer transition-all duration-300 
-                                            hover:border-lime-400/40 hover:from-lime-600/10 hover:via-lime-500/20 hover:to-lime-600/10 
-                                            hover:scale-[1.02] hover:shadow-2xl hover:shadow-lime-500/20"
+                                        className="group relative p-5 cq-lg:p-6 bg-zinc-400/[0.03]  
+                                            border border-zinc-700/50 rounded-xl text-center cursor-pointer transition-all duration-300 
+                                            hover:border-zinc-500 hover:bg-zinc-400/[0.08]
+                                            hover:scale-[1.02] hover:shadow-2xl hover:shadow-white/5"
                                         onClick={handleTextClick}
                                         role="button"
                                         tabIndex={0}
                                     >
-                                        {/* Glow Effect */}
-                                        <div className="absolute -inset-2 rounded-xl bg-gradient-to-r from-lime-600/20 via-lime-500/30 to-lime-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
+                                        {/* Subtle Glow Effect */}
+                                        <div className="absolute -inset-2 rounded-xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity blur-2xl" />
 
                                         <div className="relative">
-                                            <div className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 bg-lime-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-lime-500/20 transition-colors">
-                                                <TypeIcon className="text-lime-400 group-hover:text-lime-300 transition-colors w-6 h-6 cq-lg:w-7 cq-lg:h-7" />
+                                            <div className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 bg-zinc-800/80 rounded-full flex items-center justify-center mb-3 group-hover:bg-zinc-700 transition-colors border border-zinc-700 group-hover:border-zinc-500/50">
+                                                <TypeIcon className="text-zinc-400 group-hover:text-zinc-100 transition-colors w-6 h-6 cq-lg:w-7 cq-lg:h-7" />
                                             </div>
-                                            <h3 className="text-base cq-lg:text-lg font-semibold text-white group-hover:text-lime-100 transition-colors">
+                                            <h3 className="text-base cq-lg:text-lg font-semibold text-zinc-200 group-hover:text-white transition-colors">
                                                 {config.props.textOptionTitle || 'Write your story'}
                                             </h3>
-                                            <p className="mt-1.5 text-xs cq-lg:text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                                            <p className="mt-1.5 text-xs cq-lg:text-sm text-zinc-500 group-hover:text-zinc-300 transition-colors">
                                                 {config.props.textOptionDescription || 'Text testimonial'}
                                             </p>
                                         </div>
