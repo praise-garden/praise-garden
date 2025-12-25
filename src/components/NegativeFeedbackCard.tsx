@@ -39,7 +39,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
               
               Uses lg: instead of md: to match our responsive strategy
             */}
-            <div className="flex-grow flex flex-col lg:flex-row overflow-hidden relative">
+            <div className="flex-grow flex flex-col cq-lg:flex-row overflow-hidden relative">
 
                 {/* Back Button */}
                 {props.onPrevious && <BackButton onClick={props.onPrevious} />}
@@ -52,33 +52,33 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                   - Padding: px-6 → sm:px-8 → lg:px-12
                   - Typography scales with lg: breakpoints
                 */}
-                <div className="w-full lg:w-2/5 bg-[#2a2a2a] flex flex-col overflow-hidden">
+                <div className="w-full cq-lg:w-2/5 bg-[#2a2a2a] flex flex-col overflow-hidden">
 
                     {/* AppBar with Logo */}
                     <div className="flex-shrink-0">
                         <AppBar
-                            maxWidthClass="max-w-md lg:max-w-lg"
-                            paddingXClass="px-6 sm:px-8 lg:px-12"
+                            maxWidthClass="max-w-md cq-lg:max-w-lg"
+                            paddingXClass="px-6 sm:px-8 cq-lg:px-12"
                             logoUrl={theme?.logoUrl}
                         />
                     </div>
 
                     {/* Message Content */}
-                    <div className="flex-grow flex items-center justify-center px-6 sm:px-8 lg:px-12 pb-8 lg:pb-10">
+                    <div className="flex-grow flex items-center justify-center px-6 sm:px-8 cq-lg:px-12 pb-8 cq-lg:pb-10">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="text-center max-w-xs lg:max-w-sm"
+                            className="text-center max-w-xs cq-lg:max-w-sm"
                         >
                             {/* Icon - Responsive sizing */}
-                            <div className="p-3 lg:p-4 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 lg:mb-5 inline-block">
-                                <MessageCircleIcon className="text-amber-400 w-8 h-8 lg:w-10 lg:h-10" />
+                            <div className="p-3 cq-lg:p-4 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 cq-lg:mb-5 inline-block">
+                                <MessageCircleIcon className="text-amber-400 w-8 h-8 cq-lg:w-10 cq-lg:h-10" />
                             </div>
 
-                            {/* Title - Responsive: text-lg → lg:text-xl → xl:text-2xl */}
+                            {/* Title - Responsive: text-xl → sm:text-2xl → cq-lg:text-3xl (Standard) */}
                             <h1
-                                className="text-lg lg:text-xl xl:text-2xl font-bold text-white mb-2 lg:mb-3 leading-tight"
+                                className="text-xl sm:text-2xl cq-lg:text-3xl font-bold text-white mb-2 cq-lg:mb-3 leading-tight"
                                 style={{ color: config.props.titleColor }}
                                 onClick={() => handleFieldClick('props.title')}
                                 data-field="props.title"
@@ -86,9 +86,9 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                                 {config.props.title}
                             </h1>
 
-                            {/* Description - Responsive: text-xs → lg:text-sm */}
+                            {/* Description - Responsive: text-xs → cq-lg:text-sm */}
                             <p
-                                className="text-xs lg:text-sm text-gray-300 leading-relaxed"
+                                className="text-xs cq-lg:text-sm text-gray-300 leading-relaxed"
                                 style={{ color: config.props.descriptionColor }}
                                 onClick={() => handleFieldClick('props.description')}
                                 data-field="props.description"
@@ -107,12 +107,12 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                   - Padding: px-6 → sm:px-8 → lg:px-12
                   - Textarea and button follow design specs
                 */}
-                <div className="w-full lg:w-3/5 px-6 sm:px-8 lg:px-12 py-8 lg:py-0 flex flex-col justify-center">
+                <div className="w-full cq-lg:w-3/5 px-6 sm:px-8 cq-lg:px-12 py-8 cq-lg:py-0 flex flex-col justify-center">
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
-                        className="w-full max-w-md lg:max-w-lg mx-auto"
+                        className="w-full max-w-md cq-lg:max-w-lg mx-auto"
                     >
                         {/* 
                           Feedback Question Label
@@ -120,7 +120,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                         */}
                         <label
                             htmlFor="feedback-textarea"
-                            className="text-sm lg:text-base font-medium text-white mb-2 lg:mb-3 block text-left"
+                            className="text-sm cq-lg:text-base font-medium text-white mb-2 cq-lg:mb-3 block text-left"
                             onClick={() => handleFieldClick('props.feedbackQuestion')}
                             data-field="props.feedbackQuestion"
                         >
@@ -135,7 +135,7 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                         <textarea
                             id="feedback-textarea"
                             placeholder={config.props.feedbackPlaceholder || 'Please share as much detail as possible...'}
-                            className="w-full h-32 lg:h-40 bg-gray-900 border border-gray-700 rounded-lg p-4 
+                            className="w-full h-32 cq-lg:h-40 bg-gray-900 border border-gray-700 rounded-lg p-4 
                                 text-base text-white placeholder-gray-500 
                                 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 
                                 transition-all resize-none"
@@ -143,9 +143,9 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                             data-field="props.feedbackPlaceholder"
                         />
 
-                        {/* Helper Text - Responsive: text-[11px] → lg:text-xs */}
+                        {/* Helper Text - Responsive: text-[11px] → cq-lg:text-xs */}
                         <p
-                            className="text-center text-[11px] lg:text-xs text-gray-500 mt-3 lg:mt-4"
+                            className="text-center text-[11px] cq-lg:text-xs text-gray-500 mt-3 cq-lg:mt-4"
                             onClick={() => handleFieldClick('props.feedbackHelperText')}
                             data-field="props.feedbackHelperText"
                         >
@@ -158,10 +158,10 @@ const NegativeFeedbackCard: React.FC<NegativeFeedbackCardProps> = ({ config, onF
                           STANDARD TEXT: text-sm → lg:text-base font-semibold
                           Note: Using amber color to match the card's theme
                         */}
-                        <div className="mt-5 lg:mt-6">
+                        <div className="mt-5 cq-lg:mt-6">
                             <button
-                                className="w-full h-11 lg:h-12 rounded-xl bg-amber-500 hover:bg-amber-600 
-                                    text-sm lg:text-base font-semibold text-black 
+                                className="w-full h-11 cq-lg:h-12 rounded-xl bg-amber-500 hover:bg-amber-600 
+                                    text-sm cq-lg:text-base font-semibold text-black 
                                     shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 
                                     transition-all active:scale-[0.98]"
                                 onClick={() => {

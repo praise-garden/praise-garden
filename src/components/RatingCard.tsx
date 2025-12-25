@@ -73,7 +73,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
         Padding scales: px-6 → sm:px-8 → lg:px-12
         Vertical: py-8 → lg:py-12
       */}
-      <div className="flex-grow flex flex-col items-center justify-center px-6 sm:px-8 lg:px-12 py-8 lg:py-12 text-center overflow-hidden relative">
+      <div className="flex-grow flex flex-col items-center justify-center px-6 sm:px-8 cq-lg:px-12 py-8 cq-lg:py-12 text-center overflow-hidden relative">
 
         {/* Back Button */}
         {props.onPrevious && <BackButton onClick={props.onPrevious} />}
@@ -85,7 +85,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-xl lg:max-w-2xl mx-auto"
+          className="relative z-10 w-full max-w-xl cq-lg:max-w-2xl mx-auto"
         >
           {/* 
             Brand Logo
@@ -93,24 +93,24 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
             Spacing below: mb-8 → lg:mb-10 (32px → 40px)
           */}
           {theme?.logoUrl && (
-            <div className="flex justify-center items-center mb-8 lg:mb-10">
+            <div className="flex justify-center items-center mb-8 cq-lg:mb-10">
               <img
                 src={theme.logoUrl}
                 alt="Brand Logo"
-                className="h-10 sm:h-12 lg:h-14 w-auto object-contain"
+                className="h-10 sm:h-12 cq-lg:h-14 w-auto object-contain"
               />
             </div>
           )}
 
           {/* 
             Main Content
-            RESPONSIVE TITLE: text-xl → sm:text-2xl → lg:text-4xl
-            RESPONSIVE DESC: text-sm → lg:text-base
-            Gap: space-y-3 → lg:space-y-4
+            RESPONSIVE TITLE: text-2xl → sm:text-3xl → cq-lg:text-4xl (matches WelcomeCard)
+            RESPONSIVE DESC: text-sm → cq-lg:text-base
+            Gap: space-y-3 → cq-lg:space-y-4
           */}
-          <div className="space-y-3 lg:space-y-4 mb-8 lg:mb-10">
+          <div className="space-y-3 cq-lg:space-y-4 mb-8 cq-lg:mb-10">
             <h1
-              className="text-xl sm:text-2xl lg:text-4xl font-bold leading-tight tracking-tight text-white"
+              className="text-2xl sm:text-3xl cq-lg:text-4xl font-bold leading-tight tracking-tight text-white"
               style={{ color: config.props.titleColor }}
               onClick={() => handleFieldClick('props.title')}
               data-field="props.title"
@@ -118,7 +118,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
               {config.props.title}
             </h1>
             <p
-              className="text-sm lg:text-base text-gray-400 leading-relaxed max-w-md lg:max-w-lg mx-auto"
+              className="text-sm cq-lg:text-base text-gray-400 leading-relaxed max-w-md cq-lg:max-w-lg mx-auto"
               style={{ color: config.props.descriptionColor }}
               onClick={() => handleFieldClick('props.description')}
               data-field="props.description"
@@ -133,7 +133,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
             Gap between stars: gap-2 → sm:gap-3 → lg:gap-4
           */}
           <div className="py-2 sm:py-4">
-            <div className="flex justify-center items-center gap-2 sm:gap-3 lg:gap-4 mb-4 lg:mb-6">
+            <div className="flex justify-center items-center gap-2 sm:gap-3 cq-lg:gap-4 mb-4 cq-lg:mb-6">
               {[1, 2, 3, 4, 5].map((rating) => {
                 const isHovered = hoveredStar !== null && rating <= hoveredStar;
                 const isSelected = selectedRating !== null && rating <= selectedRating;
@@ -168,7 +168,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                         >
                           <StarIcon
                             filled={true}
-                            className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 absolute inset-0 text-yellow-400 blur-sm opacity-60"
+                            className="w-10 h-10 sm:w-12 sm:h-12 cq-lg:w-14 cq-lg:h-14 absolute inset-0 text-yellow-400 blur-sm opacity-60"
                           />
                         </motion.div>
                       )}
@@ -176,7 +176,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                       {/* Main star - Responsive sizing */}
                       <StarIcon
                         filled={isFilled}
-                        className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 relative z-10 transition-all duration-300 
+                        className={`w-10 h-10 sm:w-12 sm:h-12 cq-lg:w-14 cq-lg:h-14 relative z-10 transition-all duration-300 
                           ${isFilled
                             ? 'drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] filter brightness-110'
                             : 'group-hover:drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]'
@@ -202,7 +202,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
               Rating Label and Selection Feedback
               RESPONSIVE: text-sm → lg:text-base
             */}
-            <div className="h-6 lg:h-8">
+            <div className="h-6 cq-lg:h-8">
               <AnimatePresence mode="wait">
                 {(hoveredStar !== null || selectedRating !== null) && (
                   <motion.p
@@ -211,7 +211,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className={`text-sm lg:text-base font-medium 
+                    className={`text-sm cq-lg:text-base font-medium 
                       ${selectedRating ? 'text-yellow-400 font-semibold' : 'text-purple-400'}`}
                   >
                     {selectedRating

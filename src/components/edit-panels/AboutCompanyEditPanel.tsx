@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { AboutCompanyBlockConfig } from '@/types/form-config';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { TypeIcon, MessageSquareIcon, ButtonIcon, UserIcon, ChevronDownIcon } from './icons';
+import { TypeIcon, MessageSquareIcon, ButtonIcon, ChevronDownIcon } from './icons';
 import { EditField, SectionDivider, InfoCard } from './shared';
 import { useAutoFocus } from './hooks';
 
@@ -31,6 +31,32 @@ const BuildingIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+// Globe icon for website
+const GlobeIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+);
+
+// Briefcase icon for job title
+const BriefcaseIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+);
+
+// Image icon for logo
+const ImageIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
+    </svg>
+);
+
 const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, onUpdate, focusedField }) => {
     // Track which field sections are expanded
     const [expandedFields, setExpandedFields] = useState<Record<string, boolean>>({});
@@ -39,12 +65,12 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
     const titleInputRef = React.useRef<HTMLInputElement>(null);
     const descriptionInputRef = React.useRef<HTMLTextAreaElement>(null);
     const buttonTextInputRef = React.useRef<HTMLInputElement>(null);
-    const jobTitleLabelRef = React.useRef<HTMLInputElement>(null);
-    const jobTitlePlaceholderRef = React.useRef<HTMLInputElement>(null);
     const companyNameLabelRef = React.useRef<HTMLInputElement>(null);
     const companyNamePlaceholderRef = React.useRef<HTMLInputElement>(null);
-    const roleLabelRef = React.useRef<HTMLInputElement>(null);
-    const rolePlaceholderRef = React.useRef<HTMLInputElement>(null);
+    const jobTitleLabelRef = React.useRef<HTMLInputElement>(null);
+    const jobTitlePlaceholderRef = React.useRef<HTMLInputElement>(null);
+    const companyWebsiteLabelRef = React.useRef<HTMLInputElement>(null);
+    const companyWebsitePlaceholderRef = React.useRef<HTMLInputElement>(null);
     const companyLogoLabelRef = React.useRef<HTMLInputElement>(null);
 
     // Use custom hooks
@@ -52,12 +78,12 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
         'props.title': titleInputRef,
         'props.description': descriptionInputRef,
         'props.buttonText': buttonTextInputRef,
-        'props.fields.jobTitle.label': jobTitleLabelRef,
-        'props.fields.jobTitle.placeholder': jobTitlePlaceholderRef,
         'props.fields.companyName.label': companyNameLabelRef,
         'props.fields.companyName.placeholder': companyNamePlaceholderRef,
-        'props.fields.role.label': roleLabelRef,
-        'props.fields.role.placeholder': rolePlaceholderRef,
+        'props.fields.jobTitle.label': jobTitleLabelRef,
+        'props.fields.jobTitle.placeholder': jobTitlePlaceholderRef,
+        'props.fields.companyWebsite.label': companyWebsiteLabelRef,
+        'props.fields.companyWebsite.placeholder': companyWebsitePlaceholderRef,
         'props.fields.companyLogo.label': companyLogoLabelRef,
     });
 
@@ -85,23 +111,24 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
     };
 
     // Field configuration for rendering
+    // hasPlaceholder indicates if this field type has a placeholder property
     const fieldConfigs = [
-        { key: 'jobTitle', label: 'Job Title Field', iconColor: 'emerald', hasPlaceholder: true },
-        { key: 'companyName', label: 'Company Name Field', iconColor: 'blue', hasPlaceholder: true },
-        { key: 'role', label: 'Role Field', iconColor: 'violet', hasPlaceholder: true },
-        { key: 'companyLogo', label: 'Company Logo', iconColor: 'pink', hasPlaceholder: false },
+        { key: 'companyName', label: 'Company Name', icon: BuildingIcon, iconColor: 'blue', hasPlaceholder: true },
+        { key: 'jobTitle', label: 'Job Title', icon: BriefcaseIcon, iconColor: 'emerald', hasPlaceholder: true },
+        { key: 'companyWebsite', label: 'Company Website', icon: GlobeIcon, iconColor: 'violet', hasPlaceholder: true },
+        { key: 'companyLogo', label: 'Company Logo', icon: ImageIcon, iconColor: 'pink', hasPlaceholder: false },
     ] as const;
 
     const getFieldRef = (key: string, type: 'label' | 'placeholder') => {
         if (type === 'label') {
-            if (key === 'jobTitle') return jobTitleLabelRef;
             if (key === 'companyName') return companyNameLabelRef;
-            if (key === 'role') return roleLabelRef;
+            if (key === 'jobTitle') return jobTitleLabelRef;
+            if (key === 'companyWebsite') return companyWebsiteLabelRef;
             return companyLogoLabelRef;
         }
-        if (key === 'jobTitle') return jobTitlePlaceholderRef;
         if (key === 'companyName') return companyNamePlaceholderRef;
-        return rolePlaceholderRef;
+        if (key === 'jobTitle') return jobTitlePlaceholderRef;
+        return companyWebsitePlaceholderRef;
     };
 
     return (
@@ -137,7 +164,7 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
 
             {/* Form Fields Section */}
             <div className="space-y-3">
-                {fieldConfigs.map(({ key, label, iconColor, hasPlaceholder }) => {
+                {fieldConfigs.map(({ key, label, icon: Icon, iconColor, hasPlaceholder }) => {
                     const field = block.props.fields[key as keyof typeof block.props.fields];
                     const isExpanded = expandedFields[key] ?? false;
                     const isEnabled = field.enabled;
@@ -165,7 +192,7 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
                                         iconColor === 'blue' ? 'bg-blue-500/10' :
                                             iconColor === 'violet' ? 'bg-violet-500/10' : 'bg-pink-500/10'
                                         }`}>
-                                        <BuildingIcon className={`w-3 h-3 ${iconColor === 'emerald' ? 'text-emerald-400' :
+                                        <Icon className={`w-3 h-3 ${iconColor === 'emerald' ? 'text-emerald-400' :
                                             iconColor === 'blue' ? 'text-blue-400' :
                                                 iconColor === 'violet' ? 'text-violet-400' : 'text-pink-400'
                                             }`} />
@@ -211,7 +238,7 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
                                         />
                                     </div>
 
-                                    {/* Placeholder Input (if applicable) */}
+                                    {/* Placeholder Input (only for fields that have placeholder) */}
                                     {hasPlaceholder && 'placeholder' in field && (
                                         <div>
                                             <label className="text-xs text-gray-400 mb-1.5 block">Placeholder</label>
@@ -252,7 +279,7 @@ const AboutCompanyEditPanel: React.FC<AboutCompanyEditPanelProps> = ({ block, on
                 icon={<BuildingIcon className="w-4 h-4 text-blue-400" />}
                 iconColorClass="blue"
                 title="Company Information"
-                description="Collect professional details to add credibility to testimonials. Toggle fields on/off as needed."
+                description="Collect company name, job title, website, and logo to add credibility to testimonials."
             />
         </div>
     );

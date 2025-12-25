@@ -167,9 +167,9 @@ export const createDefaultFormConfig = ({
                     buttonText: 'Continue',
                     titleColor: '#FFFFFF',
                     fields: {
-                        jobTitle: { enabled: true, required: true, label: 'Your Title', placeholder: 'CEO, Founder, Manager...' },
                         companyName: { enabled: true, required: true, label: 'Company Name', placeholder: 'Acme Inc.' },
-                        role: { enabled: true, required: false, label: 'Your Role', placeholder: 'What do you do at the company?' },
+                        jobTitle: { enabled: true, required: true, label: 'Your Title', placeholder: 'CEO, Founder, Manager...' },
+                        companyWebsite: { enabled: true, required: false, label: 'Company Website', placeholder: 'https://example.com' },
                         companyLogo: { enabled: true, required: false, label: 'Company Logo' },
                     },
                 },

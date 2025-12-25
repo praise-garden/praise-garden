@@ -67,14 +67,14 @@ const UsageOption: React.FC<UsageOptionProps> = ({
             onClick={onSelect}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            className={`relative w-full p-4 lg:p-5 rounded-xl border transition-all duration-300 text-left overflow-hidden group
+            className={`relative w-full p-4 cq-lg:p-5 rounded-xl border transition-all duration-300 text-left overflow-hidden group
                 ${selected
                     ? 'bg-white/10 border-white/40 shadow-lg shadow-white/5'
                     : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
                 }`}
         >
             {/* Selection checkmark */}
-            <div className={`absolute top-3 right-3 w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
+            <div className={`absolute top-3 right-3 w-5 h-5 cq-lg:w-6 cq-lg:h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
                 ${selected
                     ? 'bg-white border-white'
                     : 'border-white/20 bg-transparent group-hover:border-white/40'
@@ -88,16 +88,16 @@ const UsageOption: React.FC<UsageOptionProps> = ({
                             exit={{ scale: 0, opacity: 0 }}
                             transition={{ duration: 0.15 }}
                         >
-                            <CheckIcon className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-black" />
+                            <CheckIcon className="w-3 h-3 text-black" />
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
 
             {/* Content */}
-            <div className="relative z-10 flex items-start gap-3 lg:gap-4">
+            <div className="relative z-10 flex items-start gap-3 cq-lg:gap-4">
                 {/* Icon - Responsive sizing */}
-                <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300
+                <div className={`w-10 h-10 cq-lg:w-12 cq-lg:h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300
                     ${selected
                         ? 'bg-white/20 text-white'
                         : 'bg-white/5 text-gray-400 border border-white/5 group-hover:text-gray-300 group-hover:bg-white/10'
@@ -108,11 +108,11 @@ const UsageOption: React.FC<UsageOptionProps> = ({
 
                 {/* Text content */}
                 <div className="flex-1 min-w-0 pr-6">
-                    <h3 className={`text-sm lg:text-base font-semibold transition-colors duration-300 
+                    <h3 className={`text-sm cq-lg:text-base font-semibold transition-colors duration-300 
                         ${selected ? 'text-white' : 'text-gray-200'}`}>
                         {title}
                     </h3>
-                    <p className={`text-xs lg:text-sm leading-relaxed mt-0.5 lg:mt-1 transition-colors duration-300 
+                    <p className={`text-xs cq-lg:text-sm leading-relaxed mt-0.5 cq-lg:mt-1 transition-colors duration-300 
                         ${selected ? 'text-white/80' : 'text-gray-400'}`}>
                         {description}
                     </p>
@@ -182,15 +182,15 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                 */}
                 <div className="flex-shrink-0">
                     <AppBar
-                        maxWidthClass="max-w-xl lg:max-w-2xl"
-                        paddingXClass="px-6 sm:px-8 lg:px-12"
+                        maxWidthClass="max-w-xl cq-lg:max-w-2xl"
+                        paddingXClass="px-6 sm:px-8 cq-lg:px-12"
                         logoUrl={theme?.logoUrl}
                     />
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8 lg:px-12 pb-8 lg:pb-12 pt-4 text-center overflow-y-auto relative z-10">
-                    <div className="w-full max-w-xl lg:max-w-2xl mx-auto space-y-6 lg:space-y-8">
+                <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8 cq-lg:px-12 pb-8 cq-lg:pb-12 pt-4 text-center overflow-y-auto relative z-10">
+                    <div className="w-full max-w-xl cq-lg:max-w-2xl mx-auto space-y-6 cq-lg:space-y-8">
 
                         {/* 
                           Main Heading Section
@@ -202,10 +202,10 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1 }}
-                            className="space-y-2 lg:space-y-3"
+                            className="space-y-2 cq-lg:space-y-3"
                         >
                             <h1
-                                className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight text-white"
+                                className="text-xl sm:text-2xl cq-lg:text-3xl font-bold leading-tight tracking-tight text-white"
                                 style={{ color: config.props.titleColor }}
                                 onClick={() => handleFieldClick('props.title')}
                                 data-field="props.title"
@@ -214,7 +214,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                             </h1>
 
                             <p
-                                className="text-sm lg:text-base text-gray-400 leading-relaxed max-w-md lg:max-w-lg mx-auto"
+                                className="text-sm cq-lg:text-base text-gray-400 leading-relaxed max-w-md cq-lg:max-w-lg mx-auto"
                                 style={{ color: config.props.descriptionColor }}
                                 onClick={() => handleFieldClick('props.description')}
                                 data-field="props.description"
@@ -233,14 +233,14 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
-                            className="space-y-3 lg:space-y-4"
+                            className="space-y-3 cq-lg:space-y-4"
                         >
                             {/* Public Option */}
                             <UsageOption
                                 mode="public"
                                 selected={selectedMode === 'public'}
                                 onSelect={() => handleModeSelect('public')}
-                                icon={<GlobeIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
+                                icon={<GlobeIcon className="w-5 h-5 cq-lg:w-6 cq-lg:h-6" />}
                                 title={config.props.publicOptionTitle || "Share it publicly"}
                                 description={config.props.publicOptionDescription || "Display on our website, social media, and marketing materials."}
                             />
@@ -250,7 +250,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                                 mode="private"
                                 selected={selectedMode === 'private'}
                                 onSelect={() => handleModeSelect('private')}
-                                icon={<LockIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
+                                icon={<LockIcon className="w-5 h-5 cq-lg:w-6 cq-lg:h-6" />}
                                 title={config.props.privateOptionTitle || "Keep it private"}
                                 description={config.props.privateOptionDescription || "Only for internal use. We won't share it publicly."}
                             />
@@ -271,7 +271,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                                 disabled={!selectedMode || isSubmitting}
                                 whileHover={selectedMode ? { scale: 1.02 } : {}}
                                 whileTap={selectedMode ? { scale: 0.98 } : {}}
-                                className={`w-full h-11 lg:h-12 rounded-xl font-semibold text-sm lg:text-base transition-all duration-300 overflow-hidden
+                                className={`w-full h-11 cq-lg:h-12 rounded-xl font-semibold text-sm cq-lg:text-base transition-all duration-300 overflow-hidden
                                     ${selectedMode
                                         ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/35'
                                         : 'bg-gray-800/80 text-gray-500 cursor-not-allowed'
@@ -306,12 +306,12 @@ const ConsentCard: React.FC<ConsentCardProps> = ({ config, onFieldFocus, theme, 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
-                            className="flex items-center justify-center gap-1.5 lg:gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="flex items-center justify-center gap-1.5 cq-lg:gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => handleFieldClick('props.trustNote')}
                             data-field="props.trustNote"
                         >
-                            <ShieldCheckIcon className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-500 flex-shrink-0" />
-                            <span className="text-[11px] lg:text-xs text-gray-500">
+                            <ShieldCheckIcon className="w-3.5 h-3.5 cq-lg:w-4 cq-lg:h-4 text-emerald-500 flex-shrink-0" />
+                            <span className="text-[11px] cq-lg:text-xs text-gray-500">
                                 {config.props.trustNote || "Your privacy is important to us. We'll always respect your choice."}
                             </span>
                         </motion.div>

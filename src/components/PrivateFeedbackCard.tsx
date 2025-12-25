@@ -43,28 +43,28 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
         */}
         <div className="flex-shrink-0">
           <AppBar
-            maxWidthClass="max-w-xl lg:max-w-2xl"
-            paddingXClass="px-6 sm:px-8 lg:px-12"
+            maxWidthClass="max-w-xl cq-lg:max-w-2xl"
+            paddingXClass="px-6 sm:px-8 cq-lg:px-12"
             logoUrl={theme?.logoUrl}
           />
         </div>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto w-full">
-          <div className="w-full px-6 sm:px-8 lg:px-12 pb-8 lg:pb-12 pt-6 lg:pt-8">
+          <div className="w-full px-6 sm:px-8 cq-lg:px-12 pb-8 cq-lg:pb-12 pt-6 cq-lg:pt-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mx-auto w-full max-w-xl lg:max-w-2xl"
+              className="mx-auto w-full max-w-xl cq-lg:max-w-2xl"
             >
               {/* 
                 Header Section
-                RESPONSIVE TITLE: text-lg → sm:text-xl → lg:text-2xl
-                RESPONSIVE DESC: text-sm → lg:text-base
+                RESPONSIVE TITLE: text-xl → sm:text-2xl → cq-lg:text-3xl (Standard)
+                RESPONSIVE DESC: text-sm → cq-lg:text-base
               */}
               <h1
-                className="text-lg sm:text-xl lg:text-2xl font-bold leading-tight tracking-tight text-white"
+                className="text-xl sm:text-2xl cq-lg:text-3xl font-bold leading-tight tracking-tight text-white"
                 style={{ color: config.props.titleColor }}
                 onClick={() => handleFieldClick('props.title')}
                 data-field="props.title"
@@ -72,7 +72,7 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
                 {config.props.title}
               </h1>
               <p
-                className="text-sm lg:text-base text-gray-400 mt-2 lg:mt-3 leading-relaxed"
+                className="text-sm cq-lg:text-base text-gray-400 mt-2 cq-lg:mt-3 leading-relaxed"
                 onClick={() => handleFieldClick('props.description')}
                 data-field="props.description"
               >
@@ -84,7 +84,7 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
                 STANDARD TEXTAREA: text-base (16px prevents iOS zoom)
                 STANDARD BUTTON: h-11 → lg:h-12
               */}
-              <form className="mt-6 lg:mt-8 flex flex-col gap-4 lg:gap-5">
+              <form className="mt-6 cq-lg:mt-8 flex flex-col gap-4 cq-lg:gap-5">
                 {/* 
                   Textarea
                   STANDARD TEXT: text-base (16px on mobile prevents iOS zoom)
@@ -110,8 +110,8 @@ const PrivateFeedbackCard: React.FC<PrivateFeedbackCardProps> = ({ config, onFie
                 */}
                 <button
                   type="button"
-                  className="w-full h-11 lg:h-12 rounded-xl bg-purple-600 hover:bg-purple-700 
-                    text-sm lg:text-base font-semibold text-white 
+                  className="w-full h-11 cq-lg:h-12 rounded-xl bg-purple-600 hover:bg-purple-700 
+                    text-sm cq-lg:text-base font-semibold text-white 
                     shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 
                     transition-all active:scale-[0.98]"
                   onClick={() => {

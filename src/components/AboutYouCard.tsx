@@ -45,16 +45,16 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
         */}
         <div className="flex-shrink-0">
           <AppBar
-            maxWidthClass="max-w-xl lg:max-w-2xl"
-            paddingXClass="px-6 sm:px-8 lg:px-12"
+            maxWidthClass="max-w-xl cq-lg:max-w-2xl"
+            paddingXClass="px-6 sm:px-8 cq-lg:px-12"
             logoUrl={theme?.logoUrl}
           />
         </div>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto w-full scrollbar-hide">
-          <div className="w-full px-6 sm:px-8 lg:px-12 pb-8 lg:pb-12 pt-4">
-            <div className="mx-auto flex w-full max-w-xl lg:max-w-2xl flex-col items-stretch">
+          <div className="w-full px-6 sm:px-8 cq-lg:px-12 pb-6 cq-lg:pb-10 pt-2 cq-lg:pt-4">
+            <div className="mx-auto flex w-full max-w-xl cq-lg:max-w-2xl flex-col items-stretch">
 
               {/* 
                 Header Section
@@ -66,10 +66,10 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="mb-6 lg:mb-8"
+                className="mb-4 cq-lg:mb-6"
               >
                 <h1
-                  className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight text-white mb-2 lg:mb-3"
+                  className="text-xl sm:text-2xl cq-lg:text-3xl font-bold leading-tight tracking-tight text-white mb-2 cq-lg:mb-3"
                   style={{ color: config.props.titleColor }}
                   onClick={() => handleFieldClick('props.title')}
                   data-field="props.title"
@@ -77,7 +77,7 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                   {config.props.title}
                 </h1>
                 <p
-                  className="text-sm lg:text-base text-gray-400 leading-relaxed"
+                  className="text-sm cq-lg:text-base text-gray-400 leading-relaxed"
                   onClick={() => handleFieldClick('props.description')}
                   data-field="props.description"
                 >
@@ -92,7 +92,7 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                 STANDARD LABEL: text-xs lg:text-sm
                 Gap between fields: gap-4 lg:gap-5
               */}
-              <form className="flex w-full flex-col gap-4 lg:gap-5 text-white">
+              <form className="flex w-full flex-col gap-3 cq-lg:gap-4 text-white">
 
                 {/* Name Field */}
                 {config.props.fields.name.enabled && (
@@ -100,11 +100,11 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="w-full flex flex-col gap-1.5 lg:gap-2"
+                    className="w-full flex flex-col gap-1 cq-lg:gap-1.5"
                   >
                     <label
                       htmlFor="name"
-                      className="font-medium text-xs lg:text-sm text-gray-400 block text-left"
+                      className="font-medium text-xs cq-lg:text-sm text-gray-400 block text-left"
                       onClick={() => handleFieldClick('props.fields.name.label')}
                       data-field="props.fields.name.label"
                     >
@@ -117,7 +117,7 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       required
                       type="text"
                       placeholder={config.props.fields.name.placeholder}
-                      className="h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
+                      className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
                         focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 focus:outline-none 
                         transition-all w-full placeholder-gray-500"
                       onClick={() => handleFieldClick('props.fields.name.placeholder')}
@@ -132,11 +132,11 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.15 }}
-                    className="w-full flex flex-col gap-1.5 lg:gap-2"
+                    className="w-full flex flex-col gap-1 cq-lg:gap-1.5"
                   >
                     <label
                       htmlFor="email"
-                      className="font-medium text-xs lg:text-sm text-gray-400 block text-left"
+                      className="font-medium text-xs cq-lg:text-sm text-gray-400 block text-left"
                       onClick={() => handleFieldClick('props.fields.email.label')}
                       data-field="props.fields.email.label"
                     >
@@ -149,7 +149,7 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       required={config.props.fields.email.required}
                       type="email"
                       placeholder={config.props.fields.email.placeholder}
-                      className="h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
+                      className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
                         focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 focus:outline-none 
                         transition-all w-full placeholder-gray-500"
                       onClick={() => handleFieldClick('props.fields.email.placeholder')}
@@ -164,11 +164,11 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="w-full flex flex-col gap-1.5 lg:gap-2"
+                    className="w-full flex flex-col gap-1 cq-lg:gap-1.5"
                   >
                     <label
                       htmlFor="company"
-                      className="font-medium text-xs lg:text-sm text-gray-400 block text-left"
+                      className="font-medium text-xs cq-lg:text-sm text-gray-400 block text-left"
                       onClick={() => handleFieldClick('props.fields.company.label')}
                       data-field="props.fields.company.label"
                     >
@@ -182,7 +182,7 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       name="company"
                       type="text"
                       placeholder={config.props.fields.company.placeholder}
-                      className="h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
+                      className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
                         focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 focus:outline-none 
                         transition-all w-full placeholder-gray-500"
                       onClick={() => handleFieldClick('props.fields.company.placeholder')}
@@ -201,26 +201,26 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
-                    className="flex flex-col gap-1.5 lg:gap-2 pt-2"
+                    className="flex flex-col gap-1 cq-lg:gap-1.5 pt-1 cq-lg:pt-2"
                   >
                     <label
-                      className="font-medium text-xs lg:text-sm text-gray-400"
+                      className="font-medium text-xs cq-lg:text-sm text-gray-400"
                       onClick={() => handleFieldClick('props.fields.avatar.label')}
                       data-field="props.fields.avatar.label"
                     >
                       {config.props.fields.avatar.label}
                       {config.props.fields.avatar.required && <span className="text-red-500 ml-0.5">*</span>}
                     </label>
-                    <div className="flex items-center gap-3 lg:gap-4">
-                      <Avatar className="w-12 h-12 lg:w-14 lg:h-14 border-2 border-purple-400/20 shadow-sm">
+                    <div className="flex items-center gap-2 cq-lg:gap-3">
+                      <Avatar className="w-10 h-10 cq-lg:w-12 cq-lg:h-12 border-2 border-purple-400/20 shadow-sm">
                         <AvatarImage src="https://ui-avatars.com/api/Tony+Stark/200/dcfce7/166534/2/0.34" alt="Profile" />
                         <AvatarFallback>TS</AvatarFallback>
                       </Avatar>
                       <button
                         type="button"
                         aria-label="Pick an image"
-                        className="h-10 px-4 rounded-lg bg-gray-800 border border-gray-700 
-                          text-sm font-medium text-gray-300 hover:bg-gray-700 hover:border-gray-600 
+                        className="h-9 cq-lg:h-10 px-3 cq-lg:px-4 rounded-lg bg-gray-800 border border-gray-700 
+                          text-xs cq-lg:text-sm font-medium text-gray-300 hover:bg-gray-700 hover:border-gray-600 
                           transition-colors"
                       >
                         Pick an image
@@ -239,7 +239,7 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
-                  className="mt-4 lg:mt-6"
+                  className="mt-3 cq-lg:mt-5"
                 >
                   <button
                     type="button"
@@ -247,8 +247,8 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       handleFieldClick('props.buttonText');
                       props.onNext();
                     }}
-                    className="w-full h-11 lg:h-12 rounded-xl bg-purple-600 hover:bg-purple-700 
-                      text-sm lg:text-base font-semibold text-white 
+                    className="w-full h-10 cq-lg:h-11 rounded-xl bg-purple-600 hover:bg-purple-700 
+                      text-sm cq-lg:text-base font-semibold text-white 
                       shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 
                       transition-all active:scale-[0.98]"
                     data-field="props.buttonText"

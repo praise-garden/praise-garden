@@ -204,9 +204,11 @@ export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'con
 }) => {
   // In preview mode: full screen, no page bar
   // In editor mode: constrained size with page bar
+  // Add form-card-container class to enable CSS container queries
+  // This makes child elements respond to container width, not viewport width
   const containerClass = isPreview
-    ? "w-full h-full bg-gray-950 overflow-hidden flex flex-col"
-    : "w-[96%] max-w-[1400px] 2xl:max-w-[1600px] h-[70vh] min-h-[600px] max-h-[700px] mx-auto bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-800/50 flex flex-col";
+    ? "form-card-container w-full h-full bg-gray-950 overflow-hidden flex flex-col"
+    : "form-card-container w-[96%] max-w-[1400px] 2xl:max-w-[1600px] h-[70vh] min-h-[600px] max-h-[700px] mx-auto bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-800/50 flex flex-col";
 
   return (
     <div className={containerClass}>

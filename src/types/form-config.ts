@@ -155,9 +155,9 @@ export interface AboutCompanyBlockConfig extends BaseBlockConfig {
     buttonText: string;
     titleColor: string;
     fields: {
-      jobTitle: { enabled: boolean; required: boolean; label: string; placeholder: string };
       companyName: { enabled: boolean; required: boolean; label: string; placeholder: string };
-      role: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      jobTitle: { enabled: boolean; required: boolean; label: string; placeholder: string };
+      companyWebsite: { enabled: boolean; required: boolean; label: string; placeholder: string };
       companyLogo: { enabled: boolean; required: boolean; label: string };
     };
   };

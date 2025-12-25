@@ -91,7 +91,7 @@ const Confetti = () => {
 // Animated success checkmark - Responsive sizing
 const SuccessCheckmark = () => (
     <motion.div
-        className="relative w-14 h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 mx-auto mb-5 lg:mb-6 xl:mb-8"
+        className="relative w-14 h-14 cq-lg:w-16 cq-lg:h-16 cq-xl:w-20 cq-xl:h-20 mx-auto mb-5 cq-lg:mb-6 cq-xl:mb-8"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
@@ -108,7 +108,7 @@ const SuccessCheckmark = () => (
         <div className="absolute inset-1.5 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg shadow-green-500/30 flex items-center justify-center">
             {/* Checkmark */}
             <motion.svg
-                className="w-6 h-6 lg:w-7 lg:h-7 xl:w-9 xl:h-9"
+                className="w-6 h-6 cq-lg:w-7 cq-lg:h-7 cq-xl:w-9 cq-xl:h-9"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -145,7 +145,7 @@ const FloatingElements = () => {
             {elements.map((el) => (
                 <motion.div
                     key={el.id}
-                    className="absolute text-xl lg:text-2xl xl:text-3xl opacity-60"
+                    className="absolute text-xl cq-lg:text-2xl cq-xl:text-3xl opacity-60"
                     style={{ left: `${el.x}%`, top: `${el.y}%` }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{
@@ -220,16 +220,16 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                     {/* AppBar only when socials are shown */}
                     {config.props.showSocials && (
                         <AppBar
-                            maxWidthClass="max-w-xl lg:max-w-2xl"
-                            paddingXClass="px-6 sm:px-8 lg:px-12"
+                            maxWidthClass="max-w-xl cq-lg:max-w-2xl"
+                            paddingXClass="px-6 sm:px-8 cq-lg:px-12"
                             logoUrl={theme?.logoUrl}
                         />
                     )}
 
                     {/* Content Container - Flex grow to take available space and center content */}
-                    <div className={`w-full flex-grow flex flex-col justify-center px-6 sm:px-8 lg:px-12 xl:px-16 
-                        ${config.props.showSocials ? 'py-6 lg:py-8' : 'py-8 lg:py-12'}`}>
-                        <div className="mx-auto flex w-full max-w-xl lg:max-w-2xl xl:max-w-3xl flex-col items-center text-center">
+                    <div className={`w-full flex-grow flex flex-col justify-center px-6 sm:px-8 cq-lg:px-12 cq-xl:px-16 
+                        ${config.props.showSocials ? 'py-6 cq-lg:py-8' : 'py-8 cq-lg:py-12'}`}>
+                        <div className="mx-auto flex w-full max-w-xl cq-lg:max-w-2xl cq-xl:max-w-3xl flex-col items-center text-center">
 
                             {/* Success Checkmark Animation */}
                             <SuccessCheckmark />
@@ -239,7 +239,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                               RESPONSIVE: text-xl → sm:text-2xl → lg:text-3xl
                             */}
                             <motion.h1
-                                className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight tracking-tight bg-gradient-to-r from-white via-green-100 to-emerald-200 bg-clip-text text-transparent"
+                                className="text-xl sm:text-2xl cq-lg:text-3xl cq-xl:text-4xl font-bold leading-tight tracking-tight bg-gradient-to-r from-white via-green-100 to-emerald-200 bg-clip-text text-transparent"
                                 style={{ color: config.props.titleColor }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -255,7 +255,7 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                               RESPONSIVE: text-sm → lg:text-base
                             */}
                             <motion.p
-                                className="mt-2 lg:mt-3 xl:mt-4 text-sm lg:text-base xl:text-lg text-gray-300 leading-relaxed max-w-sm lg:max-w-md xl:max-w-lg"
+                                className="mt-2 cq-lg:mt-3 cq-xl:mt-4 text-sm cq-lg:text-base cq-xl:text-lg text-gray-300 leading-relaxed max-w-sm cq-lg:max-w-md cq-xl:max-w-lg"
                                 style={{ color: config.props.descriptionColor }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -271,19 +271,19 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                               RESPONSIVE: h-11 → lg:h-12 for the button
                             */}
                             <motion.div
-                                className="my-5 lg:my-6 w-full max-w-xs lg:max-w-sm"
+                                className="my-5 cq-lg:my-6 w-full max-w-xs cq-lg:max-w-sm"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.7 }}
                             >
-                                <button className="group w-full h-11 lg:h-12 flex items-center justify-center gap-2 
+                                <button className="group w-full h-11 cq-lg:h-12 flex items-center justify-center gap-2 
                                     rounded-xl border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm 
-                                    text-sm lg:text-base xl:text-lg tracking-wider text-gray-300 font-mono 
+                                    text-sm cq-lg:text-base cq-xl:text-lg tracking-wider text-gray-300 font-mono 
                                     hover:border-green-500/30 hover:bg-gray-800/70 transition-all duration-300">
                                     <span className="text-green-400 font-semibold">THANKYOU20</span>
-                                    <CopyIcon className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 text-gray-500 group-hover:text-green-400 transition-colors" />
+                                    <CopyIcon className="w-4 h-4 cq-lg:w-5 cq-lg:h-5 cq-xl:w-6 cq-xl:h-6 text-gray-500 group-hover:text-green-400 transition-colors" />
                                 </button>
-                                <p className="text-[11px] lg:text-xs xl:text-sm text-gray-500 mt-1.5 lg:mt-2">
+                                <p className="text-[11px] cq-lg:text-xs cq-xl:text-sm text-gray-500 mt-1.5 cq-lg:mt-2">
                                     Use this code for 20% off your next purchase
                                 </p>
                             </motion.div>
@@ -291,15 +291,15 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                             {/* Celebration message when no socials */}
                             {!config.props.showSocials && (
                                 <motion.div
-                                    className="mt-2 lg:mt-4 flex flex-col items-center gap-4"
+                                    className="mt-2 cq-lg:mt-4 flex flex-col items-center gap-4"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 1 }}
                                 >
                                     <div className="flex items-center gap-2 text-gray-400">
-                                        <span className="w-10 lg:w-12 h-px bg-gradient-to-r from-transparent to-gray-600" />
-                                        <span className="text-xs lg:text-sm xl:text-base">You're awesome!</span>
-                                        <span className="w-10 lg:w-12 h-px bg-gradient-to-l from-transparent to-gray-600" />
+                                        <span className="w-10 cq-lg:w-12 h-px bg-gradient-to-r from-transparent to-gray-600" />
+                                        <span className="text-xs cq-lg:text-sm cq-xl:text-base">You're awesome!</span>
+                                        <span className="w-10 cq-lg:w-12 h-px bg-gradient-to-l from-transparent to-gray-600" />
                                     </div>
                                 </motion.div>
                             )}
@@ -313,16 +313,16 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                 */}
                 {config.props.showSocials && (
                     <motion.div
-                        className="flex-none lg:w-1/2 bg-gray-900/80 backdrop-blur-md border-l border-gray-800 overflow-hidden flex flex-col justify-center"
+                        className="flex-none cq-lg:w-1/2 bg-gray-900/80 backdrop-blur-md border-l border-gray-800 overflow-hidden flex flex-col justify-center"
                         initial={{ x: 100, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <div className="flex w-full flex-col p-5 lg:p-6 xl:p-8">
-                            <div className="mx-auto my-2 flex max-w-sm lg:max-w-md xl:max-w-lg flex-col items-center gap-4 xl:gap-6 text-center">
+                        <div className="flex w-full flex-col p-5 cq-lg:p-6 cq-xl:p-8">
+                            <div className="mx-auto my-2 flex max-w-sm cq-lg:max-w-md cq-xl:max-w-lg flex-col items-center gap-4 cq-xl:gap-6 text-center">
 
                                 {/* Share header */}
-                                <div className="font-sans mb-2 flex items-center gap-3 lg:gap-4 xl:gap-5 text-center text-[11px] lg:text-xs xl:text-sm font-medium text-gray-500 w-full">
+                                <div className="font-sans mb-2 flex items-center gap-3 cq-lg:gap-4 cq-xl:gap-5 text-center text-[11px] cq-lg:text-xs cq-xl:text-sm font-medium text-gray-500 w-full">
                                     <hr className="w-full border-gray-700" />
                                     <div
                                         className="flex flex-none items-center gap-2 whitespace-nowrap"
@@ -335,35 +335,35 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                                 </div>
 
                                 {/* X Post Preview */}
-                                <div className="group relative mx-auto flex w-full items-start gap-3 lg:gap-4 xl:gap-5 rounded-xl border border-gray-700/50 bg-gray-800/30 p-4 xl:p-6 text-left text-sm text-white shadow-lg hover:border-gray-600 transition-colors">
+                                <div className="group relative mx-auto flex w-full items-start gap-3 cq-lg:gap-4 cq-xl:gap-5 rounded-xl border border-gray-700/50 bg-gray-800/30 p-4 cq-xl:p-6 text-left text-sm text-white shadow-lg hover:border-gray-600 transition-colors">
                                     <div className="flex flex-1 flex-wrap items-start justify-start">
                                         <div className="flex flex-1 items-center">
                                             <div className="flex w-full flex-col">
-                                                <div className="flex flex-1 items-center gap-2 lg:gap-3 xl:gap-4">
+                                                <div className="flex flex-1 items-center gap-2 cq-lg:gap-3 cq-xl:gap-4">
                                                     <img
                                                         alt=""
                                                         src="https://ui-avatars.com/api/Tony%20Stark/200/dcfce7/166534/2/0.34"
-                                                        className="h-9 w-9 lg:h-10 lg:w-10 xl:h-12 xl:w-12 rounded-full object-cover ring-2 ring-green-500/20"
+                                                        className="h-9 w-9 cq-lg:h-10 cq-lg:w-10 cq-xl:h-12 cq-xl:w-12 rounded-full object-cover ring-2 ring-green-500/20"
                                                     />
                                                     <div>
                                                         <div className="mr-2 flex items-center gap-2 font-bold text-gray-200 text-sm">
                                                             Tony Stark
                                                         </div>
-                                                        <div className="-mt-0.5 text-[11px] lg:text-xs xl:text-sm text-gray-500">CEO at Stark Industries</div>
+                                                        <div className="-mt-0.5 text-[11px] cq-lg:text-xs cq-xl:text-sm text-gray-500">CEO at Stark Industries</div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="w-full">
-                                            <p className="content mt-3 whitespace-pre-line text-xs lg:text-sm text-gray-300 leading-relaxed">
+                                            <p className="content mt-3 whitespace-pre-line text-xs cq-lg:text-sm text-gray-300 leading-relaxed">
                                                 Just shared my experience with @company - they're doing amazing things! 🌟
                                             </p>
                                         </div>
 
                                         {/* Post Button - Standard height */}
-                                        <button className="mt-4 w-full h-10 lg:h-11 xl:h-12 rounded-lg overflow-hidden shadow-lg shadow-sky-500/10 hover:shadow-sky-500/20 transition-shadow">
-                                            <span className="flex h-full w-full items-center justify-center gap-2 text-sm xl:text-base font-semibold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 transition-colors">
-                                                <XIcon className="w-4 h-4 xl:w-5 xl:h-5" />
+                                        <button className="mt-4 w-full h-10 cq-lg:h-11 cq-xl:h-12 rounded-lg overflow-hidden shadow-lg shadow-sky-500/10 hover:shadow-sky-500/20 transition-shadow">
+                                            <span className="flex h-full w-full items-center justify-center gap-2 text-sm cq-xl:text-base font-semibold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 transition-colors">
+                                                <XIcon className="w-4 h-4 cq-xl:w-5 cq-xl:h-5" />
                                                 Post in one click
                                             </span>
                                         </button>
@@ -371,28 +371,28 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                                 </div>
 
                                 {/* Divider */}
-                                <div className="font-sans flex items-center gap-3 lg:gap-4 xl:gap-5 text-center text-[11px] lg:text-xs xl:text-sm font-medium text-gray-500 w-full">
+                                <div className="font-sans flex items-center gap-3 cq-lg:gap-4 cq-xl:gap-5 text-center text-[11px] cq-lg:text-xs cq-xl:text-sm font-medium text-gray-500 w-full">
                                     <hr className="w-full border-gray-700" />
                                     <div className="flex-none">OR</div>
                                     <hr className="w-full border-gray-700" />
                                 </div>
 
                                 {/* Share buttons */}
-                                <div className="flex flex-col items-center gap-3 lg:gap-4 xl:gap-5 rounded-xl border border-gray-700/50 bg-gray-800/30 px-4 lg:px-5 xl:px-6 py-4 xl:py-6 w-full">
-                                    <p className="text-sm xl:text-base font-medium text-gray-300">Share your testimonial</p>
+                                <div className="flex flex-col items-center gap-3 cq-lg:gap-4 cq-xl:gap-5 rounded-xl border border-gray-700/50 bg-gray-800/30 px-4 cq-lg:px-5 cq-xl:px-6 py-4 cq-xl:py-6 w-full">
+                                    <p className="text-sm cq-xl:text-base font-medium text-gray-300">Share your testimonial</p>
 
                                     {/* Social icons - Responsive sizing */}
-                                    <div className="flex w-full justify-center gap-2 lg:gap-3 xl:gap-4">
-                                        <a href="#" className="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 flex items-center justify-center rounded-full text-white bg-slate-800 hover:bg-slate-700 transition-colors" aria-label="Share on X">
-                                            <XIcon className="w-4 h-4 xl:w-5 xl:h-5" />
+                                    <div className="flex w-full justify-center gap-2 cq-lg:gap-3 cq-xl:gap-4">
+                                        <a href="#" className="w-9 h-9 cq-lg:w-10 cq-lg:h-10 cq-xl:w-12 cq-xl:h-12 flex items-center justify-center rounded-full text-white bg-slate-800 hover:bg-slate-700 transition-colors" aria-label="Share on X">
+                                            <XIcon className="w-4 h-4 cq-xl:w-5 cq-xl:h-5" />
                                         </a>
-                                        <a href="#" className="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 flex items-center justify-center rounded-full text-white bg-blue-600 hover:bg-blue-500 transition-colors" aria-label="Share on Facebook">
-                                            <FacebookIcon className="w-4 h-4 xl:w-5 xl:h-5" />
+                                        <a href="#" className="w-9 h-9 cq-lg:w-10 cq-lg:h-10 cq-xl:w-12 cq-xl:h-12 flex items-center justify-center rounded-full text-white bg-blue-600 hover:bg-blue-500 transition-colors" aria-label="Share on Facebook">
+                                            <FacebookIcon className="w-4 h-4 cq-xl:w-5 cq-xl:h-5" />
                                         </a>
-                                        <a href="#" className="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 flex items-center justify-center rounded-full text-white bg-sky-600 hover:bg-sky-500 transition-colors" aria-label="Share on LinkedIn">
-                                            <LinkedInIcon className="w-4 h-4 xl:w-5 xl:h-5" />
+                                        <a href="#" className="w-9 h-9 cq-lg:w-10 cq-lg:h-10 cq-xl:w-12 cq-xl:h-12 flex items-center justify-center rounded-full text-white bg-sky-600 hover:bg-sky-500 transition-colors" aria-label="Share on LinkedIn">
+                                            <LinkedInIcon className="w-4 h-4 cq-xl:w-5 cq-xl:h-5" />
                                         </a>
-                                        <a href="#" className="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 flex items-center justify-center rounded-full text-white bg-green-600 hover:bg-green-500 transition-colors" aria-label="Share on WhatsApp">
+                                        <a href="#" className="w-9 h-9 cq-lg:w-10 cq-lg:h-10 cq-xl:w-12 cq-xl:h-12 flex items-center justify-center rounded-full text-white bg-green-600 hover:bg-green-500 transition-colors" aria-label="Share on WhatsApp">
                                             <img
                                                 alt="whatsapp"
                                                 width="16"
@@ -404,10 +404,10 @@ const ThankYouCard: React.FC<ThankYouCardProps> = ({ config, onFieldFocus, theme
                                     </div>
 
                                     {/* Copy link button */}
-                                    <button className="w-full h-9 lg:h-10 xl:h-12 rounded-full border border-gray-600 bg-gray-800/50 px-4 text-gray-400 hover:border-gray-500 hover:bg-gray-700/50 transition-colors">
+                                    <button className="w-full h-9 cq-lg:h-10 cq-xl:h-12 rounded-full border border-gray-600 bg-gray-800/50 px-4 text-gray-400 hover:border-gray-500 hover:bg-gray-700/50 transition-colors">
                                         <div className="flex items-center gap-2 justify-center">
-                                            <span className="truncate text-[11px] lg:text-xs xl:text-sm font-mono">trustimonials.io/t/abc123</span>
-                                            <CopyIcon className="w-3.5 h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 flex-shrink-0" />
+                                            <span className="truncate text-[11px] cq-lg:text-xs cq-xl:text-sm font-mono">trustimonials.io/t/abc123</span>
+                                            <CopyIcon className="w-3.5 h-3.5 cq-lg:w-4 cq-lg:h-4 cq-xl:w-5 cq-xl:h-5 flex-shrink-0" />
                                         </div>
                                     </button>
                                 </div>
