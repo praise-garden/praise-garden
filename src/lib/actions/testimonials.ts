@@ -53,7 +53,7 @@ export async function getTestimonials() {
             author_name: t.data?.customer_name || 'Anonymous',
             author_title: t.data?.profession || t.data?.customer_headline || t.data?.company?.job_title || '',
             author_avatar_url: t.data?.customer_avatar_url || t.data?.media?.avatar_url || null,
-            rating: t.data?.rating ?? 5,
+            rating: t.data?.rating ?? null,
             text: t.data?.message || '',
             content: t.data?.message || '',
             title: t.data?.title || '',

@@ -24,7 +24,7 @@ export function EditVideoTestimonialForm({ testimonial, onClose, isEmbedded = fa
     const router = useRouter();
     const [title, setTitle] = useState(testimonial.title || "");
     const [rating, setRating] = useState(testimonial.rating || 5);
-    const [excerpt, setExcerpt] = useState(testimonial.excerpt || "");
+    const [message, setMessage] = useState(testimonial.raw?.data?.message || "");
 
     const initialVideoUrl = testimonial.attachments?.find((a: any) => a.type === 'video')?.url ||
         (testimonial.type === 'video' ? testimonial.video_url : null);
@@ -225,7 +225,7 @@ export function EditVideoTestimonialForm({ testimonial, onClose, isEmbedded = fa
             const updateData = {
                 title,
                 rating,
-                message: excerpt,
+                message: message,
                 original_post_url: postUrl,
                 source,
                 testimonial_date: date,
@@ -430,18 +430,18 @@ export function EditVideoTestimonialForm({ testimonial, onClose, isEmbedded = fa
                             </div>
                         </div>
 
-                        {/* Excerpt */}
+                        {/* Message */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-zinc-400">Excerpt</label>
+                            <label className="text-sm font-medium text-zinc-400">Message</label>
                             <Textarea
-                                value={excerpt}
-                                onChange={(e) => setExcerpt(e.target.value)}
-                                placeholder="Write your excerpt here..."
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Write your testimonial message here..."
                                 className="bg-zinc-900/50 border-zinc-800 min-h-[100px] text-zinc-200 placeholder:text-zinc-600 focus:ring-zinc-700 resize-none rounded-lg"
                             />
                             <p className="text-xs text-zinc-500 flex items-center gap-1">
                                 <span className="inline-block size-1 bg-zinc-600 rounded-full" />
-                                Enter a short excerpt. Tip: Select text to highlight your favorite parts.
+                                Enter the testimonial message. Tip: Select text to highlight your favorite parts.
                             </p>
                         </div>
 

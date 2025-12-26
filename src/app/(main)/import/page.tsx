@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, Globe, FileSpreadsheet, PenTool, ThumbsUp, Chrome, ExternalLink } from "lucide-react";
+import { Globe, FileSpreadsheet, PenTool, Chrome, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -48,23 +48,6 @@ export default function ImportPage() {
             </div>
 
             <div className="space-y-4">
-                {/* Auto-import */}
-                <button className="w-full group bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 flex items-center gap-4 transition-all text-left">
-                    <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                        <RefreshCw className="w-5 h-5 text-purple-500" />
-                    </div>
-                    <div>
-                        <h3 className="text-white font-medium mb-0.5">Auto-import</h3>
-                        <p className="text-sm text-zinc-500">Connect to 21 platforms and Trustimonials will automatically import your new proof.</p>
-                    </div>
-                </button>
-
-                <div className="flex items-center gap-4 py-2">
-                    <div className="h-[1px] flex-1 bg-zinc-800"></div>
-                    <span className="text-xs font-medium text-zinc-600 uppercase">OR</span>
-                    <div className="h-[1px] flex-1 bg-zinc-800"></div>
-                </div>
-
                 {/* Import from web */}
                 <ImportFromWebCard />
 
@@ -91,17 +74,6 @@ export default function ImportPage() {
                         </div>
                     </div>
                 </Link>
-
-                {/* Migrate */}
-                <button className="w-full group bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 flex items-center gap-4 transition-all text-left">
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-                        <ThumbsUp className="w-5 h-5 text-indigo-500" />
-                    </div>
-                    <div>
-                        <h3 className="text-white font-medium mb-0.5">Migrate</h3>
-                        <p className="text-sm text-zinc-500">Paste your Testimonial.to Wall of Love URL and Trustimonials will import your proof.</p>
-                    </div>
-                </button>
             </div>
 
             {/* Bottom Footer */}

@@ -77,6 +77,9 @@ interface ColorPickerFieldProps {
 function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
   const inputRef = React.useRef<HTMLInputElement>(null)
 
+  // Ensure value is always a string to prevent crashes
+  const safeValue = value || "#000000"
+
   const handleColorClick = () => {
     inputRef.current?.click()
   }
@@ -101,7 +104,7 @@ function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
         <input
           ref={inputRef}
           type="color"
-          value={value}
+          value={safeValue}
           onChange={(e) => onChange(e.target.value)}
           className="sr-only"
         />
@@ -110,13 +113,13 @@ function ColorPickerField({ label, value, onChange }: ColorPickerFieldProps) {
           type="button"
           onClick={handleColorClick}
           className="h-8 w-8 rounded-lg border border-zinc-700 cursor-pointer transition-transform hover:scale-105 shrink-0"
-          style={{ backgroundColor: value }}
+          style={{ backgroundColor: safeValue }}
           aria-label={`Pick ${label}`}
         />
         {/* Hex text input */}
         <Input
           type="text"
-          value={value.toUpperCase()}
+          value={safeValue.toUpperCase()}
           onChange={handleHexChange}
           placeholder="#FFFFFF"
           className="h-8 w-28 bg-zinc-900 border-zinc-700 text-white text-xs font-mono uppercase"

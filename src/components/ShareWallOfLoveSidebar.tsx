@@ -46,8 +46,7 @@ export function ShareWallOfLoveSidebar({
     const embedCode = `<iframe 
     id="wall-of-love" 
     src="${currentLink}?embed=true" 
-    style="width:100%; height:100vh; border:none; overflow:hidden;"
-    scrolling="no"
+    style="width:100%; height:100vh; border:none;"
     loading="lazy"
 ></iframe>`
 
@@ -224,7 +223,7 @@ export function ShareWallOfLoveSidebar({
                                         <span className="text-[#8bcdef]">src</span>=
                                         <span className="text-[#a6e3a1]">"{currentLink}?embed=true"</span>{" "}
                                         <span className="text-[#8bcdef]">style</span>=
-                                        <span className="text-[#a6e3a1]">"width:100%; height:100vh; border:none; overflow:hidden;"</span>
+                                        <span className="text-[#a6e3a1]">"width:100%; height:100vh; border:none;"</span>
                                         <span className="text-[#fca7ea]">&gt;&lt;/iframe&gt;</span>
                                     </code>
                                 </pre>

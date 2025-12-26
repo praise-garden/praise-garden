@@ -187,7 +187,8 @@ export function VideoPlayer({
         if (isDragging) return; // Don't update if user is dragging
         let time = 0;
         if (isCloudflare) {
-            time = e?.detail?.currentTime ?? streamRef.current?.currentTime ?? 0;
+            // For Cloudflare Stream, read currentTime from streamRef, not event
+            time = streamRef.current?.currentTime ?? 0;
         } else if (videoRef.current) {
             time = videoRef.current.currentTime;
         }
@@ -214,7 +215,8 @@ export function VideoPlayer({
     const handleLoadedMetadata = (e: any) => {
         let d = 0;
         if (isCloudflare) {
-            d = e?.detail?.duration || 0;
+            // For Cloudflare Stream, read duration from streamRef
+            d = streamRef.current?.duration || 0;
         } else if (videoRef.current) {
             d = videoRef.current.duration;
         }
