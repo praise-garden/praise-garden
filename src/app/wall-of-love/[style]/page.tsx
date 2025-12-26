@@ -21,6 +21,9 @@ import { WallDesignStudioSidebar, TabType } from "@/components/WallDesignStudioS
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
 import Logo from "@/components/ui/Logo"
 import { WallConfig, DEFAULT_WALL_CONFIG, UpdateConfigFn } from "@/types/wall-config"
+import { VideoPlayer } from "@/components/ui/VideoPlayer"
+import { saveWidget } from "@/lib/actions/widgets"
+import { toast } from "sonner"
 
 // ===================== TESTIMONIALS DATA ===================== //
 const WALL_TESTIMONIALS = [
@@ -300,10 +303,52 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const [embedSidebarOpen, setEmbedSidebarOpen] = React.useState(false)
     const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
 
+    // Wall ID state for saving/updating
+    const [widgetId, setWidgetId] = React.useState<string | null>(null)
+    const [isSaving, setIsSaving] = React.useState(false)
+
     // Wall name state (metadata, not config)
     const [wallName, setWallName] = React.useState('My Wall of Love')
     const [isEditingName, setIsEditingName] = React.useState(false)
     const nameInputRef = React.useRef<HTMLInputElement>(null)
+
+    // Handle Save
+    const handleSave = async (silent = false) => {
+        setIsSaving(true)
+        try {
+            const result = await saveWidget({
+                id: widgetId || undefined,
+                name: wallName,
+                type: 'wall-of-love',
+                config: config,
+                selectedTestimonialIds: selectedTestimonialIds,
+                status: 'published'
+            })
+
+            if (result.success && result.data) {
+                setWidgetId(result.data.id)
+                if (!silent) toast.success("Wall saved successfully!")
+                return result.data.id
+            } else {
+                toast.error(result.error || "Failed to save wall")
+                return null
+            }
+        } catch (error) {
+            console.error(error)
+            toast.error("An unexpected error occurred")
+            return null
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleEmbedClick = async () => {
+        // Always save before embedding to ensure we have an ID and latest config
+        const id = await handleSave(true)
+        if (id) {
+            setEmbedSidebarOpen(true)
+        }
+    }
 
     // Testimonial selection state
     const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>([])
@@ -481,14 +526,15 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     }, [selectedTestimonialIds, userTestimonials, isLoadingData])
 
     return (
-        <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden">
+        <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden" style={{ backgroundColor: '#f5f5f7' }}>
             {/* ===================== SIMPLE TOP HEADER ===================== */}
-            <div className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0">
+            <div className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.back()}
                         className="p-2 rounded-lg hover:bg-zinc-100 transition-colors text-zinc-600 hover:text-zinc-900"
                         aria-label="Go back"
+                        style={{ backgroundColor: 'transparent' }}
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </button>
@@ -514,6 +560,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                 onBlur={handleNameBlur}
                                 onKeyDown={handleNameKeyDown}
                                 className="text-sm font-medium text-zinc-900 bg-transparent outline-none min-w-[120px]"
+                                style={{ backgroundColor: 'transparent' }}
                             />
                         ) : (
                             <>
@@ -527,15 +574,28 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     <Button
                         variant="outline"
                         className="gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-50"
-                        onClick={() => setEmbedSidebarOpen(true)}
+                        onClick={handleEmbedClick}
+                        disabled={isSaving}
+                        style={{ backgroundColor: '#ffffff' }}
                     >
-                        <Code className="h-4 w-4" />
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Code className="h-4 w-4" />}
                         Embed Code
                     </Button>
 
                     {/* Save Button */}
-                    <Button className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-5">
-                        Save
+                    <Button
+                        onClick={() => handleSave()}
+                        disabled={isSaving}
+                        className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-5"
+                    >
+                        {isSaving ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            "Save"
+                        )}
                     </Button>
 
                     {/* Sidebar Toggle (Hamburger) - Only shows when sidebar is closed */}
@@ -584,7 +644,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                 </div>
                                 <h2
                                     className="text-4xl font-bold transition-colors duration-200"
-                                    style={{ fontFamily: config.fontFamily, color: config.textColor }}
+                                    style={{ fontFamily: config.fontFamily, color: config.textColor, backgroundColor: 'transparent' }}
                                 >
                                     Wall of Love
                                 </h2>
@@ -682,6 +742,19 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                                         ))}
                                                     </div>
 
+                                                    {/* Video Player */}
+                                                    {((t as any).videoUrl) && (
+                                                        <div className="mb-4 rounded-lg overflow-hidden border border-zinc-200/10 shadow-sm aspect-video bg-black">
+                                                            <VideoPlayer
+                                                                url={(t as any).videoUrl}
+                                                                poster={(t as any).videoThumbnail}
+                                                                showControls={true}
+                                                                showPlayPauseButton={true}
+                                                                className="w-full h-full"
+                                                            />
+                                                        </div>
+                                                    )}
+
                                                     {/* Content */}
                                                     <ExpandableContent
                                                         content={t.content}
@@ -728,6 +801,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
             <ShareWallOfLoveSidebar
                 isOpen={embedSidebarOpen}
                 onClose={() => setEmbedSidebarOpen(false)}
+                shareableLink={widgetId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/w/${widgetId}` : undefined}
             />
 
             {/* ===================== SELECT TESTIMONIALS MODAL ===================== */}
