@@ -15,7 +15,7 @@ import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 
-import { type FormConfig, type FormBlock, FormBlockType, type FormTheme, type QuestionBlockConfig } from '@/types/form-config';
+import { type FormConfig, type FormBlock, FormBlockType, type FormTheme } from '@/types/form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
 import PagesPanel from '@/components/form-builder/PagesPanel';
 import GlobalSettingsPanel from '@/components/form-builder/GlobalSettingsPanel';
@@ -420,107 +420,6 @@ const FormBuilderPage = () => {
     });
   };
 
-  const handleAddPage = () => {
-    setFormConfig(prevConfig => {
-      if (!prevConfig) return null;
-
-      // Create a new Question block
-      const newBlock: QuestionBlockConfig = {
-        id: `question-${Date.now()}`,
-        type: FormBlockType.Question,
-        enabled: true,
-        props: {
-          question: 'What made you choose us?',
-          description: 'Share your experience with us',
-          questionColor: '#FFFFFF',
-          descriptionColor: '#9CA3AF',
-          enableTextTestimonial: true,
-          enableVideoTestimonial: true,
-          videoOptionTitle: 'Record a video',
-          videoOptionDescription: '2-minute video testimonial',
-          textOptionTitle: 'Write your story',
-          textOptionDescription: 'Text testimonial',
-          tips: [
-            'Be specific about what you liked',
-            'Mention any results or outcomes',
-            'Share how it helped you',
-          ],
-        },
-      };
-
-      // Find the last Question block and insert after it
-      // This keeps all questions grouped together
-      const blocks = [...prevConfig.blocks];
-      let lastQuestionIndex = -1;
-
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        if (blocks[i].type === FormBlockType.Question) {
-          lastQuestionIndex = i;
-          break;
-        }
-      }
-
-      if (lastQuestionIndex !== -1) {
-        // Insert after the last question
-        blocks.splice(lastQuestionIndex + 1, 0, newBlock);
-      } else {
-        // No existing questions - find where questions should go
-        // Questions go after Rating and NegativeFeedback, before other blocks
-        const preQuestionTypes = [FormBlockType.Welcome, FormBlockType.Rating, FormBlockType.NegativeFeedback];
-        let insertIndex = 0;
-
-        for (let i = 0; i < blocks.length; i++) {
-          if (preQuestionTypes.includes(blocks[i].type)) {
-            insertIndex = i + 1;
-          } else {
-            break;
-          }
-        }
-
-        blocks.splice(insertIndex, 0, newBlock);
-      }
-
-      toast.success('New question page added!');
-
-      return {
-        ...prevConfig,
-        blocks,
-      };
-    });
-  };
-
-  const handleDeletePage = (id: string) => {
-    setFormConfig(prevConfig => {
-      if (!prevConfig) return null;
-
-      const blockToDelete = prevConfig.blocks.find(b => b.id === id);
-      if (!blockToDelete) return prevConfig;
-
-      // Prevent deleting core pages (Welcome and ThankYou)
-      const coreTypes = [FormBlockType.Welcome, FormBlockType.ThankYou];
-      if (coreTypes.includes(blockToDelete.type)) {
-        toast.error(`Cannot delete ${blockToDelete.type} page - it's required for the form`);
-        return prevConfig;
-      }
-
-      // Filter out the deleted block
-      const newBlocks = prevConfig.blocks.filter(b => b.id !== id);
-
-      // Adjust currentPageIndex if needed
-      const newEnabledBlocks = newBlocks.filter(b => b.enabled);
-      if (currentPageIndex >= newEnabledBlocks.length) {
-        setCurrentPageIndex(Math.max(0, newEnabledBlocks.length - 1));
-      }
-
-      toast.success('Page deleted');
-
-      return {
-        ...prevConfig,
-        blocks: newBlocks,
-      };
-    });
-  };
-
   const handleUpdatePageContent = (id: string, content: any) => {
     // This logic needs to be updated for the new structure
   };
@@ -847,8 +746,6 @@ const FormBuilderPage = () => {
                   onReorder={handleReorder}
                   onPageClick={handlePageClick}
                   onTogglePage={handleTogglePage}
-                  onDeletePage={handleDeletePage}
-                  onAddPage={handleAddPage}
                 />
               )}
 

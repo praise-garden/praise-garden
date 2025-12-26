@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { Reorder, motion, AnimatePresence, useDragControls } from "framer-motion";
+import React, { useMemo } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { type FormBlock, FormBlockType } from '@/types/form-config';
 
 // Human-readable labels for page types
@@ -127,23 +127,7 @@ const PAGE_COLORS: Record<FormBlockType, { bg: string; gradient: string; ring: s
     [FormBlockType.ThankYou]: { bg: 'bg-pink-500/20', gradient: 'from-pink-500 to-rose-400', ring: 'ring-pink-500/50' },
 };
 
-// Drag handle component - Only shown for Question pages
-const DragHandle = () => (
-    <div className="flex flex-col gap-0.5 opacity-40 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-        <div className="flex gap-0.5">
-            <div className="w-1 h-1 rounded-full bg-gray-500" />
-            <div className="w-1 h-1 rounded-full bg-gray-500" />
-        </div>
-        <div className="flex gap-0.5">
-            <div className="w-1 h-1 rounded-full bg-gray-500" />
-            <div className="w-1 h-1 rounded-full bg-gray-500" />
-        </div>
-        <div className="flex gap-0.5">
-            <div className="w-1 h-1 rounded-full bg-gray-500" />
-            <div className="w-1 h-1 rounded-full bg-gray-500" />
-        </div>
-    </div>
-);
+
 
 // Toggle switch component
 const Toggle = ({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) => (
@@ -248,123 +232,7 @@ const StaticPageItem = ({
     );
 };
 
-// Draggable question item component (for Question pages only)
-interface QuestionItemProps {
-    block: FormBlock;
-    enabledIndex: number;
-    isActive: boolean;
-    onSelect: () => void;
-    onToggle: () => void;
-    onDelete: () => void;
-    canDelete: boolean;
-    showToggle: boolean;
-    questionNumber: number;
-}
 
-const QuestionItem = ({
-    block,
-    enabledIndex,
-    isActive,
-    onSelect,
-    onToggle,
-    onDelete,
-    canDelete,
-    showToggle,
-    questionNumber,
-}: QuestionItemProps) => {
-    const colors = PAGE_COLORS[block.type];
-    const label = `Question ${questionNumber}`;
-    const description = PAGE_DESCRIPTIONS[block.type] || '';
-
-    return (
-        <Reorder.Item
-            key={block.id}
-            value={block}
-            className="touch-none"
-        >
-            <motion.div
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                onClick={() => block.enabled && onSelect()}
-                className={`group relative rounded-2xl p-5 cursor-pointer transition-all duration-300 ${isActive
-                    ? 'bg-gray-900/80 border border-purple-500/60 shadow-sm'
-                    : block.enabled
-                        ? 'bg-gray-900/60 hover:bg-gray-800/80 border border-gray-800/50 hover:border-gray-700/50'
-                        : 'bg-gray-900/30 border border-gray-800/30'
-                    } ${!block.enabled ? 'opacity-50' : ''}`}
-            >
-                {/* Connection line to next item */}
-                <div
-                    className="absolute left-8 -bottom-3 w-0.5 h-3 bg-gradient-to-b from-gray-700 to-transparent pointer-events-none"
-                />
-
-                <div className="flex items-center gap-4">
-                    {/* Drag handle - Only for questions */}
-                    <div>
-                        <DragHandle />
-                    </div>
-
-                    {/* Icon with number badge */}
-                    <div className="relative flex-shrink-0">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${colors.bg}`}>
-                            <PageIcon type={block.type} active={false} />
-                        </div>
-                        <div className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${block.enabled
-                            ? isActive
-                                ? 'bg-purple-500 text-white'
-                                : 'bg-gray-700 text-gray-300'
-                            : 'bg-gray-800 text-gray-500'
-                            }`}>
-                            {block.enabled ? enabledIndex + 1 : '–'}
-                        </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold truncate transition-colors text-gray-200">
-                            {label}
-                        </h3>
-                        <p className="text-sm truncate mt-1 transition-colors text-gray-500">
-                            {description}
-                        </p>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        {/* Delete button */}
-                        {canDelete && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition-all"
-                                aria-label="Delete page"
-                            >
-                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                                    <path d="M10 11v6" />
-                                    <path d="M14 11v6" />
-                                </svg>
-                            </button>
-                        )}
-
-                        {/* Toggle - only show for optional pages */}
-                        {showToggle && (
-                            <Toggle
-                                checked={block.enabled}
-                                onChange={onToggle}
-                            />
-                        )}
-                    </div>
-                </div>
-
-
-            </motion.div>
-        </Reorder.Item>
-    );
-};
 
 // Define the fixed order of page types (Questions will be inserted in the middle)
 const PRE_QUESTION_TYPES = [
@@ -386,6 +254,7 @@ const POST_QUESTION_TYPES = [
 const MANDATORY_TYPES = [
     FormBlockType.Welcome,
     FormBlockType.Rating,
+    FormBlockType.Question,
     FormBlockType.AboutYou,
     FormBlockType.ReadyToSend,
     FormBlockType.ThankYou,
@@ -399,8 +268,6 @@ interface PagesPanelProps {
     onReorder: (newOrder: FormBlock[]) => void;
     onPageClick: (index: number) => void;
     onTogglePage: (blockId: string) => void;
-    onDeletePage: (blockId: string) => void;
-    onAddPage: () => void;
 }
 
 const PagesPanel: React.FC<PagesPanelProps> = ({
@@ -410,8 +277,6 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
     onReorder,
     onPageClick,
     onTogglePage,
-    onDeletePage,
-    onAddPage,
 }) => {
     // Separate blocks into three sections
     const { preQuestionBlocks, questionBlocks, postQuestionBlocks } = useMemo(() => {
@@ -442,16 +307,7 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
         return { preQuestionBlocks, questionBlocks, postQuestionBlocks };
     }, [blocks]);
 
-    // Handler for reordering only questions
-    const handleQuestionReorder = (newQuestionOrder: FormBlock[]) => {
-        // Reconstruct the full blocks array with new question order
-        const newBlocks = [
-            ...preQuestionBlocks,
-            ...newQuestionOrder,
-            ...postQuestionBlocks,
-        ];
-        onReorder(newBlocks);
-    };
+
 
     const isToggleShown = (blockType: FormBlockType) => !MANDATORY_TYPES.includes(blockType);
 
@@ -474,8 +330,8 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
 
     return (
         <div className="flex flex-col h-full">
-            {/* Pages List */}
-            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-2">
+            {/* Pages List - Extra bottom padding ensures last item is fully visible */}
+            <div className="flex-1 overflow-y-auto px-4 pt-5 pb-24 space-y-2">
                 <AnimatePresence mode="popLayout">
                     {/* Pre-question static pages */}
                     {preQuestionBlocks.map((block) => {
@@ -496,36 +352,24 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
                         );
                     })}
 
-                    {/* Question pages - Reorderable */}
-                    {questionBlocks.length > 0 && (
-                        <Reorder.Group
-                            axis="y"
-                            values={questionBlocks}
-                            onReorder={handleQuestionReorder}
-                            className="space-y-2"
-                        >
-                            {questionBlocks.map((block, qIndex) => {
-                                const enabledIndex = enabledBlocks.findIndex(b => b.id === block.id);
-                                const isActive = enabledIndex === currentPageIndex && block.enabled;
-                                const displayNumber = getDisplayNumber(block.id);
+                    {/* Question pages - Now rendered as static items (single question only) */}
+                    {questionBlocks.map((block) => {
+                        const enabledIndex = enabledBlocks.findIndex(b => b.id === block.id);
+                        const isActive = enabledIndex === currentPageIndex && block.enabled;
+                        const displayNumber = getDisplayNumber(block.id);
 
-                                return (
-                                    <QuestionItem
-                                        key={block.id}
-                                        block={block}
-                                        enabledIndex={displayNumber - 1}
-                                        isActive={isActive}
-                                        onSelect={() => onPageClick(enabledIndex)}
-                                        onToggle={() => onTogglePage(block.id)}
-                                        onDelete={() => onDeletePage(block.id)}
-                                        canDelete={true}
-                                        showToggle={isToggleShown(block.type)}
-                                        questionNumber={qIndex + 1}
-                                    />
-                                );
-                            })}
-                        </Reorder.Group>
-                    )}
+                        return (
+                            <StaticPageItem
+                                key={block.id}
+                                block={block}
+                                enabledIndex={displayNumber - 1}
+                                isActive={isActive}
+                                onSelect={() => onPageClick(enabledIndex)}
+                                onToggle={() => onTogglePage(block.id)}
+                                showToggle={isToggleShown(block.type)}
+                            />
+                        );
+                    })}
 
                     {/* Post-question static pages */}
                     {postQuestionBlocks.map((block) => {
@@ -546,33 +390,6 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
                         );
                     })}
                 </AnimatePresence>
-            </div>
-
-            {/* Add Page Button */}
-            <div className="p-4 border-t border-gray-800/50">
-                <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={onAddPage}
-                    className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-gray-700/50 hover:border-purple-500/50 bg-gray-900/30 hover:bg-purple-500/5 transition-all duration-300 group"
-                >
-                    <div className="flex items-center justify-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-gray-800 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
-                            <svg className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19" />
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                            </svg>
-                        </div>
-                        <span className="text-sm font-medium text-gray-500 group-hover:text-purple-400 transition-colors">
-                            Add Question
-                        </span>
-                    </div>
-                </motion.button>
-                {questionBlocks.length > 1 && (
-                    <p className="text-center text-[10px] text-gray-600 mt-2">
-                        Tip: Drag questions to reorder them
-                    </p>
-                )}
             </div>
         </div>
     );
