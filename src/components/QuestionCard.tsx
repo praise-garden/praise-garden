@@ -415,35 +415,35 @@ const QuestionCard = ({
                                         className="group relative p-5 cq-lg:p-6 rounded-xl text-center cursor-pointer transition-all duration-300 
                                             hover:scale-[1.02] hover:shadow-2xl"
                                         style={{
-                                            backgroundColor: `${theme?.primaryColor || '#A855F7'}08`,
-                                            border: `1px solid ${theme?.primaryColor || '#A855F7'}33`,
+                                            backgroundColor: `${theme?.primaryColor || '#A855F7'}1A`,
+                                            border: `1px solid ${theme?.primaryColor || '#A855F7'}4D`,
                                         }}
                                         onClick={handleVideoClick}
                                         role="button"
                                         tabIndex={0}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}66`;
-                                            e.currentTarget.style.backgroundColor = `${theme?.primaryColor || '#A855F7'}14`;
-                                            e.currentTarget.style.boxShadow = `0 25px 50px -12px ${theme?.primaryColor || '#A855F7'}1A`;
+                                            e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}80`;
+                                            e.currentTarget.style.backgroundColor = `${theme?.primaryColor || '#A855F7'}26`;
+                                            e.currentTarget.style.boxShadow = `0 25px 50px -12px ${theme?.primaryColor || '#A855F7'}33`;
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}33`;
-                                            e.currentTarget.style.backgroundColor = `${theme?.primaryColor || '#A855F7'}08`;
+                                            e.currentTarget.style.borderColor = `${theme?.primaryColor || '#A855F7'}4D`;
+                                            e.currentTarget.style.backgroundColor = `${theme?.primaryColor || '#A855F7'}1A`;
                                             e.currentTarget.style.boxShadow = 'none';
                                         }}
                                     >
                                         {/* Subtle Glow Effect */}
                                         <div
                                             className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur-2xl"
-                                            style={{ backgroundColor: `${theme?.primaryColor || '#A855F7'}1A` }}
+                                            style={{ backgroundColor: `${theme?.primaryColor || '#A855F7'}26` }}
                                         />
 
                                         <div className="relative">
                                             <div
                                                 className="mx-auto w-12 h-12 cq-lg:w-14 cq-lg:h-14 rounded-full flex items-center justify-center mb-3 transition-colors"
                                                 style={{
-                                                    backgroundColor: `${theme?.primaryColor || '#A855F7'}1A`,
-                                                    border: `1px solid ${theme?.primaryColor || '#A855F7'}1A`,
+                                                    backgroundColor: `${theme?.primaryColor || '#A855F7'}26`,
+                                                    border: `1px solid ${theme?.primaryColor || '#A855F7'}33`,
                                                 }}
                                             >
                                                 <VideoIcon

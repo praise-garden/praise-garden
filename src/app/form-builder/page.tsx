@@ -448,15 +448,36 @@ const FormBuilderPage = () => {
         },
       };
 
-      // Insert the new block before the last block (ThankYou) if it exists
-      // Otherwise just add it at the end
+      // Find the last Question block and insert after it
+      // This keeps all questions grouped together
       const blocks = [...prevConfig.blocks];
-      const thankYouIndex = blocks.findIndex(b => b.type === FormBlockType.ThankYou);
+      let lastQuestionIndex = -1;
 
-      if (thankYouIndex !== -1) {
-        blocks.splice(thankYouIndex, 0, newBlock);
+      for (let i = blocks.length - 1; i >= 0; i--) {
+        if (blocks[i].type === FormBlockType.Question) {
+          lastQuestionIndex = i;
+          break;
+        }
+      }
+
+      if (lastQuestionIndex !== -1) {
+        // Insert after the last question
+        blocks.splice(lastQuestionIndex + 1, 0, newBlock);
       } else {
-        blocks.push(newBlock);
+        // No existing questions - find where questions should go
+        // Questions go after Rating and NegativeFeedback, before other blocks
+        const preQuestionTypes = [FormBlockType.Welcome, FormBlockType.Rating, FormBlockType.NegativeFeedback];
+        let insertIndex = 0;
+
+        for (let i = 0; i < blocks.length; i++) {
+          if (preQuestionTypes.includes(blocks[i].type)) {
+            insertIndex = i + 1;
+          } else {
+            break;
+          }
+        }
+
+        blocks.splice(insertIndex, 0, newBlock);
       }
 
       toast.success('New question page added!');
