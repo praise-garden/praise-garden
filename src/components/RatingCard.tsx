@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RatingBlockConfig } from '@/types/form-config';
+import { RatingBlockConfig, FormBlockType } from '@/types/form-config';
 import BackButton from '@/components/ui/back-button';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -33,7 +33,7 @@ const StarIcon = ({ filled, className, style }: { filled: boolean; className?: s
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
+const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, formSettings, onNavigateToBlockType, ...props }) => {
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,9 +52,32 @@ const RatingCard: React.FC<RatingCardProps> = ({ config, onFieldFocus, theme, ..
     setIsSubmitting(true);
     setSelectedRating(rating);
 
+    // Get the low rating threshold (default to 2 if not set)
+    const threshold = formSettings?.lowRatingThreshold || 2;
+
+    // Logic: If rating <= threshold, user should see Improvement Tips (NegativeFeedback)
+    // If rating > threshold, user skips directly to Question page
+    const shouldShowImprovementTips = rating <= threshold;
+
+    // Store rating decision in sessionStorage for the form renderer to use
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('userRating', rating.toString());
+      sessionStorage.setItem('shouldShowImprovementTips', shouldShowImprovementTips.toString());
+    }
+
     // Auto-advance with a delay so user sees their selection
     setTimeout(() => {
-      props.onNext();
+      if (onNavigateToBlockType) {
+        // Use conditional navigation based on rating
+        if (shouldShowImprovementTips) {
+          onNavigateToBlockType(FormBlockType.NegativeFeedback);
+        } else {
+          onNavigateToBlockType(FormBlockType.Question);
+        }
+      } else {
+        // Fallback to simple next
+        props.onNext();
+      }
     }, 600);
   };
 

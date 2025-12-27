@@ -114,6 +114,19 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
         });
     };
 
+    const updateSettings = (updates: Partial<FormConfig['settings']>) => {
+        setFormConfig((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                settings: {
+                    ...prev.settings,
+                    ...updates,
+                },
+            };
+        });
+    };
+
     const currentTheme = { ...defaultTheme, ...(formConfig.theme ?? {}) };
 
     const handleCopyColor = async (value: string) => {
@@ -341,6 +354,34 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                         onChange={(value) => updateTheme((t) => ({ ...t, bodyFont: value }))}
                         compact
                     />
+                </div>
+            </div>
+
+            {/* Form Settings - Compact */}
+            <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/50 transition-all duration-200">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-gray-300">Low Rating Threshold</label>
+                        <div className="group relative">
+                            <svg className="w-4 h-4 text-gray-500 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-950 border border-gray-700 rounded-lg text-xs text-gray-300 shadow-xl z-50">
+                                Ratings at or below this value show "Improvement Tips" page
+                            </div>
+                        </div>
+                    </div>
+
+                    <select
+                        value={formConfig.settings?.lowRatingThreshold || 3}
+                        onChange={(e) => updateSettings({ lowRatingThreshold: parseInt(e.target.value) as 1 | 2 | 3 | 4 })}
+                        className="bg-gray-950 border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
+                    >
+                        <option value={1}>★ 1</option>
+                        <option value={2}>★ 2</option>
+                        <option value={3}>★ 3</option>
+                        <option value={4}>★ 4</option>
+                    </select>
                 </div>
             </div>
         </div>

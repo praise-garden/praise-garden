@@ -216,11 +216,37 @@ export interface FormTheme {
   bodyFont: string;
 }
 
+/**
+ * Form Settings - Controls form behavior and logic
+ * 
+ * These settings determine how the form flows and behaves based on user input.
+ */
+export interface FormSettings {
+  /**
+   * Low Rating Threshold (1-4)
+   * 
+   * If a user's rating is BELOW this value, they will be redirected to the
+   * "Improvement Tips" page to provide constructive feedback.
+   * 
+   * If their rating is AT or ABOVE this value, they skip directly to the
+   * Question page for a positive testimonial.
+   * 
+   * Example:
+   * - If set to 3: Ratings 1-2 go to Improvement Tips, Ratings 3-5 go to Question
+   * - If set to 4: Ratings 1-3 go to Improvement Tips, Ratings 4-5 go to Question
+   * 
+   * Range: 1 to 4 (5 would mean everyone goes to Improvement Tips, which is not useful)
+   */
+  lowRatingThreshold: 1 | 2 | 3 | 4;
+}
+
 export interface FormConfig {
   id: UUID;
   name: string;
   projectId: UUID;
   createdAt: string; // ISO 8601 date string
   theme: FormTheme;
+  settings: FormSettings;
   blocks: FormBlock[];
 }
+

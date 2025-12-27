@@ -121,52 +121,57 @@ const StarRating = ({ rating = 5, ratingColor }: { rating?: number; ratingColor?
 );
 
 // Single testimonial preview card - Responsive sizing
-const TestimonialPreviewCard = ({ isVideo = false, index = 0, primaryColor, ratingColor }: { isVideo?: boolean; index?: number; primaryColor?: string; ratingColor?: string }) => (
+// Single testimonial preview card - Responsive sizing
+const TestimonialPreviewCard = ({
+    type = 'text',
+    text = '',
+    videoUrl = '',
+    rating = 5,
+    primaryColor,
+    ratingColor
+}: {
+    type?: 'text' | 'video';
+    text?: string;
+    videoUrl?: string;
+    rating?: number;
+    primaryColor?: string;
+    ratingColor?: string;
+}) => (
     <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-sm cq-lg:max-w-lg cq-xl:max-w-xl mx-auto h-44 cq-lg:h-56 cq-xl:h-64"
+        className="w-full max-w-sm cq-lg:max-w-lg cq-xl:max-w-xl mx-auto h-auto min-h-[11rem] cq-lg:min-h-[14rem]"
     >
         <div className={`relative w-full h-full overflow-hidden rounded-xl cq-lg:rounded-2xl cq-xl:rounded-3xl shadow-xl border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 group 
-            ${isVideo ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-800/80 via-gray-900/80 to-black/80 backdrop-blur-md'}`}>
+            ${type === 'video' ? 'bg-gray-900 aspect-video' : 'bg-gradient-to-br from-gray-800/80 via-gray-900/80 to-black/80 backdrop-blur-md'}`}>
 
             {/* Content */}
-            {isVideo ? (
+            {type === 'video' ? (
                 // Video Mode: Full bleed background
-                <div className="absolute inset-0 w-full h-full group cursor-pointer">
-                    {/* Background Gradient/Image Placeholder */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900">
-                        {/* Placeholder pattern */}
-                        <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px]" />
-                    </div>
-
-                    {/* Dark Overlay for better text contrast */}
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-
-                    {/* Play Button - Centered, responsive sizing */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div
-                            className="w-12 h-12 cq-lg:w-14 cq-lg:h-14 cq-xl:w-16 cq-xl:h-16 rounded-full backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
-                            style={{
-                                backgroundColor: `${primaryColor || '#A855F7'}E6`,
-                                boxShadow: `0 10px 15px -3px ${primaryColor || '#A855F7'}4D`
-                            }}
-                        >
-                            <svg className="w-5 h-5 cq-lg:w-6 cq-lg:h-6 cq-xl:w-7 cq-xl:h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
+                <div className="absolute inset-0 w-full h-full group">
+                    {/* Video Player (Using Blob URL) */}
+                    {videoUrl ? (
+                        <video
+                            src={videoUrl}
+                            className="w-full h-full object-cover"
+                            controls
+                            playsInline
+                        />
+                    ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-gray-500 text-sm">
+                            Video preview unavailable
                         </div>
-                    </div>
+                    )}
 
                     {/* Stars Overlay - Top Right */}
-                    <div className="absolute top-3 right-3 cq-lg:top-4 cq-lg:right-4 cq-xl:top-5 cq-xl:right-5 bg-black/40 backdrop-blur-sm px-2 py-1 cq-xl:px-3 cq-xl:py-1.5 rounded-full border border-white/10">
-                        <StarRating rating={5} ratingColor={ratingColor} />
+                    <div className="absolute top-3 right-3 cq-lg:top-4 cq-lg:right-4 cq-xl:top-5 cq-xl:right-5 bg-black/40 backdrop-blur-sm px-2 py-1 cq-xl:px-3 cq-xl:py-1.5 rounded-full border border-white/10 z-10 pointer-events-none">
+                        <StarRating rating={rating} ratingColor={ratingColor} />
                     </div>
 
                     {/* Video Badge - Top Left */}
-                    <div className="absolute top-3 left-3 cq-lg:top-4 cq-lg:left-4 cq-xl:top-5 cq-xl:left-5 flex items-center gap-1.5 px-2 py-1 cq-xl:px-3 cq-xl:py-1.5 bg-black/40 backdrop-blur-sm rounded-full border border-white/10 text-[10px] cq-lg:text-xs cq-xl:text-sm text-white/90 font-medium">
+                    <div className="absolute top-3 left-3 cq-lg:top-4 cq-lg:left-4 cq-xl:top-5 cq-xl:left-5 flex items-center gap-1.5 px-2 py-1 cq-xl:px-3 cq-xl:py-1.5 bg-black/40 backdrop-blur-sm rounded-full border border-white/10 text-[10px] cq-lg:text-xs cq-xl:text-sm text-white/90 font-medium z-10 pointer-events-none">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                             <path d="m22 8-6 4 6 4V8Z" />
                             <rect x="2" y="6" width="14" height="12" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -197,12 +202,12 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0, primaryColor, rati
                             >"</div>
 
                             <p className="text-gray-200 leading-relaxed relative z-10 italic text-sm cq-lg:text-[15px] cq-xl:text-base pt-2 pl-2">
-                                "This product completely transformed how our team collaborates. The intuitive design and powerful features have made us significantly more productive."
+                                "{text || "No testimonial text provided."}"
                             </p>
                         </div>
 
                         <div className="flex justify-end items-center pt-3 cq-lg:pt-4">
-                            <StarRating rating={5} ratingColor={ratingColor} />
+                            <StarRating rating={rating} ratingColor={ratingColor} />
                         </div>
                     </motion.div>
                 </div>
@@ -216,25 +221,32 @@ const TestimonialPreviewCard = ({ isVideo = false, index = 0, primaryColor, rati
 // ═══════════════════════════════════════════════════════════════════════════
 
 const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
-    const [currentTestimonial, setCurrentTestimonial] = useState(0);
+    const [testimonialData, setTestimonialData] = useState<{ type: 'text' | 'video', text?: string, videoUrl?: string } | null>(null);
+    const [rating, setRating] = useState(5);
 
-    // Mock data - in real app, this would come from form state
-    const testimonials = [
-        { id: 1, isVideo: false },
-        { id: 2, isVideo: true },
-        { id: 3, isVideo: false },
-    ];
+    // Retrieve data from sessionStorage
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedRating = sessionStorage.getItem('ratingData');
+            if (savedRating) {
+                try {
+                    setRating(JSON.parse(savedRating).rating);
+                } catch (e) { }
+            }
+
+            const savedTestimonial = sessionStorage.getItem('testimonialData');
+            if (savedTestimonial) {
+                try {
+                    setTestimonialData(JSON.parse(savedTestimonial));
+                } catch (e) {
+                    console.error("Failed to parse testimonial data");
+                }
+            }
+        }
+    }, []);
 
     const handleFieldClick = (fieldPath: string) => {
         onFieldFocus(config.id, fieldPath);
-    };
-
-    const handlePrevious = () => {
-        setCurrentTestimonial((prev) => Math.max(0, prev - 1));
-    };
-
-    const handleNext = () => {
-        setCurrentTestimonial((prev) => Math.min(testimonials.length - 1, prev + 1));
     };
 
     return (
@@ -301,60 +313,17 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                             </p>
                         </motion.div>
 
-                        {/* 
-                          Testimonial Preview with Navigation
-                          Arrow buttons and preview card are responsive
-                        */}
-                        <div className="w-full flex items-center justify-center gap-3 cq-lg:gap-5 cq-xl:gap-6">
-                            {/* Left arrow */}
-                            {testimonials.length > 1 && (
-                                <div className="flex-shrink-0">
-                                    <ArrowButton
-                                        direction="left"
-                                        onClick={handlePrevious}
-                                        disabled={currentTestimonial === 0}
-                                        primaryColor={theme?.primaryColor}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Testimonial card with AnimatePresence for smooth transitions */}
-                            <div className="flex-1 max-w-sm cq-lg:max-w-lg cq-xl:max-w-xl">
-                                <AnimatePresence mode="wait">
-                                    <TestimonialPreviewCard
-                                        key={currentTestimonial}
-                                        isVideo={testimonials[currentTestimonial]?.isVideo}
-                                        index={currentTestimonial}
-                                        primaryColor={theme?.primaryColor}
-                                        ratingColor={theme?.ratingColor}
-                                    />
-                                </AnimatePresence>
-                            </div>
-
-                            {/* Right arrow */}
-                            {testimonials.length > 1 && (
-                                <div className="flex-shrink-0">
-                                    <ArrowButton
-                                        direction="right"
-                                        onClick={handleNext}
-                                        disabled={currentTestimonial === testimonials.length - 1}
-                                        primaryColor={theme?.primaryColor}
-                                    />
-                                </div>
-                            )}
+                        {/* Testimonial Preview */}
+                        <div className="w-full relative px-2 sm:px-4">
+                            <TestimonialPreviewCard
+                                type={testimonialData?.type}
+                                text={testimonialData?.text}
+                                videoUrl={testimonialData?.videoUrl}
+                                rating={rating}
+                                primaryColor={theme?.primaryColor}
+                                ratingColor={theme?.ratingColor}
+                            />
                         </div>
-
-                        {/* Testimonial counter - Responsive text size */}
-                        {testimonials.length > 1 && (
-                            <motion.p
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.5 }}
-                                className="text-[11px] cq-lg:text-xs cq-xl:text-sm text-gray-500"
-                            >
-                                Testimonial {currentTestimonial + 1} of {testimonials.length}
-                            </motion.p>
-                        )}
 
                         {/* 
                           Submit Button
@@ -371,6 +340,15 @@ const ReadyToSendCard: React.FC<ReadyToSendCardProps> = ({ config, onFieldFocus,
                                 type="button"
                                 onClick={() => {
                                     handleFieldClick('props.buttonText');
+
+                                    // Clear all form data from sessionStorage after successful submission
+                                    if (typeof window !== 'undefined') {
+                                        sessionStorage.removeItem('ratingData');
+                                        sessionStorage.removeItem('testimonialData');
+                                        sessionStorage.removeItem('aboutYouData');
+                                        sessionStorage.removeItem('aboutCompanyData');
+                                    }
+
                                     props.onNext();
                                 }}
                                 className="group relative w-full h-11 cq-lg:h-12 cq-xl:h-14 overflow-hidden rounded-xl 

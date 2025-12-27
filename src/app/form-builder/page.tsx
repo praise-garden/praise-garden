@@ -15,7 +15,7 @@ import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 
-import { type FormConfig, type FormBlock, FormBlockType, type FormTheme } from '@/types/form-config';
+import { type FormConfig, type FormBlock, FormBlockType, type FormTheme, type FormSettings } from '@/types/form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
 import PagesPanel from '@/components/form-builder/PagesPanel';
 import GlobalSettingsPanel from '@/components/form-builder/GlobalSettingsPanel';
@@ -192,6 +192,8 @@ export interface FormCardProps {
   // isDeletable?: boolean;
   theme: FormTheme;
   isPreview?: boolean;
+  formSettings?: FormSettings; // Access to form settings (e.g., lowRatingThreshold)
+  onNavigateToBlockType?: (blockType: FormBlockType) => void; // Conditional navigation to specific block type
 }
 
 export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'config' | 'onFieldFocus'>>> = ({
@@ -359,6 +361,20 @@ const FormBuilderPage = () => {
   const handlePreviousPage = useCallback(() => {
     setCurrentPageIndex(currentIndex => Math.max(currentIndex - 1, 0));
   }, []);
+
+  // Handler for conditional navigation to a specific block type
+  const handleNavigateToBlockType = useCallback((targetBlockType: FormBlockType) => {
+    // Find the index of the target block type in enabled blocks
+    const targetIndex = enabledBlocks.findIndex(block => block.type === targetBlockType);
+
+    if (targetIndex !== -1) {
+      // Navigate directly to that block
+      setCurrentPageIndex(targetIndex);
+    } else {
+      // Block type not found or not enabled, just go to next
+      setCurrentPageIndex(currentIndex => Math.min(currentIndex + 1, enabledBlocks.length - 1));
+    }
+  }, [enabledBlocks]);
 
 
 
@@ -588,6 +604,8 @@ const FormBuilderPage = () => {
                       onPrevious: handlePreviousPage,
                       onFieldFocus: handleFieldFocus,
                       theme: formConfig.theme,
+                      formSettings: formConfig.settings,
+                      onNavigateToBlockType: handleNavigateToBlockType,
                     };
 
                     switch (block.type) {
@@ -808,6 +826,15 @@ const FormBuilderPage = () => {
                     onFieldFocus: () => { }, // No-op in preview mode
                     theme: formConfig.theme,
                     isPreview: true,
+                    formSettings: formConfig.settings,
+                    onNavigateToBlockType: (targetBlockType: FormBlockType) => {
+                      const targetIndex = enabledBlocks.findIndex(b => b.type === targetBlockType);
+                      if (targetIndex !== -1) {
+                        setPreviewPageIndex(targetIndex);
+                      } else {
+                        setPreviewPageIndex(prev => Math.min(prev + 1, enabledBlocks.length - 1));
+                      }
+                    },
                   };
 
                   switch (block.type) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import { FormCardProps } from '@/app/form-builder/page';
 import { FormCard } from '@/app/form-builder/page';
@@ -9,6 +9,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AboutYouBlockConfig } from '@/types/form-config';
 
 // ═══════════════════════════════════════════════════════════════════════════
+// VALIDATION HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Allowed image types for avatar upload (supports iPhone HEIC, web images, and standard formats)
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+
+// Max file size (5MB)
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+// ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -17,10 +32,144 @@ interface AboutYouCardProps extends Omit<FormCardProps, 'config' | 'onFieldFocus
   onFieldFocus: (blockId: string, fieldPath: string) => void;
 }
 
+interface FormState {
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
+interface ValidationErrors {
+  name?: string;
+  email?: string;
+  avatar?: string;
+}
+
 const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme, ...props }) => {
+  // Form state
+  const [formState, setFormState] = useState<FormState>({
+    name: '',
+    email: '',
+    avatarUrl: null,
+  });
+
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // File input ref for avatar upload
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Restore state from sessionStorage on mount
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedData = sessionStorage.getItem('aboutYouData');
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          setFormState(prev => ({
+            ...prev,
+            ...parsedData,
+            // Reset avatar if it's a blob url (as they expire on refresh) 
+            // In a real app, we'd persist this differently (e.g. IndexedDB or upload immediately)
+            avatarUrl: parsedData.avatarUrl?.startsWith('blob:') ? null : parsedData.avatarUrl
+          }));
+        } catch (e) {
+          console.error('Failed to parse saved form data', e);
+        }
+      }
+    }
+  }, []);
 
   const handleFieldClick = (fieldPath: string) => {
     onFieldFocus(config.id, fieldPath);
+  };
+
+  // Handle input changes
+  const handleInputChange = (field: keyof FormState, value: string) => {
+    setFormState(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle field blur (mark as touched)
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
+  // Handle avatar image selection
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setUploadError('Please select a valid image (JPG, PNG, WebP, or HEIC)');
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError('Image size must be less than 5MB');
+      return;
+    }
+
+    // Create local URL for preview (not uploaded to server)
+    const localUrl = URL.createObjectURL(file);
+    setFormState(prev => ({ ...prev, avatarUrl: localUrl }));
+    setTouched(prev => ({ ...prev, avatar: true }));
+  };
+
+  // Trigger file input click
+  const handlePickImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Validation logic
+  const validationErrors = useMemo((): ValidationErrors => {
+    const errors: ValidationErrors = {};
+    const fields = config.props.fields;
+
+    // Name validation
+    if (fields.name.enabled && fields.name.required && !formState.name.trim()) {
+      errors.name = 'Name is required';
+    }
+
+    // Email validation
+    if (fields.email.enabled && fields.email.required) {
+      if (!formState.email.trim()) {
+        errors.email = 'Email is required';
+      } else if (!isValidEmail(formState.email)) {
+        errors.email = 'Please enter a valid email';
+      }
+    } else if (formState.email && !isValidEmail(formState.email)) {
+      errors.email = 'Please enter a valid email';
+    }
+
+    // Avatar validation
+    if (fields.avatar.enabled && fields.avatar.required && !formState.avatarUrl) {
+      errors.avatar = 'Photo is required';
+    }
+
+    return errors;
+  }, [formState, config.props.fields]);
+
+  // Check if form is valid
+  const isFormValid = Object.keys(validationErrors).length === 0;
+
+  // Handle continue click
+  const handleContinue = () => {
+    // Mark all fields as touched to show errors
+    setTouched({
+      name: true,
+      email: true,
+      avatar: true,
+    });
+
+    if (isFormValid) {
+      // Store form data in sessionStorage for later use
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('aboutYouData', JSON.stringify(formState));
+      }
+      props.onNext();
+    }
   };
 
   return (
@@ -114,18 +263,24 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                     <input
                       id="name"
                       name="name"
-                      required
                       type="text"
+                      value={formState.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      onBlur={() => handleBlur('name')}
                       placeholder={config.props.fields.name.placeholder}
-                      className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
+                      className={`h-10 cq-lg:h-11 bg-gray-900 rounded-lg border text-base sm:text-sm text-white px-4 
                         focus:ring-2 focus:outline-none 
-                        transition-all w-full placeholder-gray-500"
+                        transition-all w-full placeholder-gray-500
+                        ${touched.name && validationErrors.name ? 'border-red-500' : 'border-gray-700'}`}
                       style={{
                         '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}80`
                       } as React.CSSProperties}
                       onClick={() => handleFieldClick('props.fields.name.placeholder')}
                       data-field="props.fields.name.placeholder"
                     />
+                    {touched.name && validationErrors.name && (
+                      <span className="text-xs text-red-400 mt-0.5">{validationErrors.name}</span>
+                    )}
                   </motion.div>
                 )}
 
@@ -149,54 +304,24 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                     <input
                       id="email"
                       name="email"
-                      required={config.props.fields.email.required}
                       type="email"
+                      value={formState.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onBlur={() => handleBlur('email')}
                       placeholder={config.props.fields.email.placeholder}
-                      className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
+                      className={`h-10 cq-lg:h-11 bg-gray-900 rounded-lg border text-base sm:text-sm text-white px-4 
                         focus:ring-2 focus:outline-none 
-                        transition-all w-full placeholder-gray-500"
+                        transition-all w-full placeholder-gray-500
+                        ${touched.email && validationErrors.email ? 'border-red-500' : 'border-gray-700'}`}
                       style={{
                         '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}80`
                       } as React.CSSProperties}
                       onClick={() => handleFieldClick('props.fields.email.placeholder')}
                       data-field="props.fields.email.placeholder"
                     />
-                  </motion.div>
-                )}
-
-                {/* Company Field */}
-                {config.props.fields.company.enabled && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="w-full flex flex-col gap-1 cq-lg:gap-1.5"
-                  >
-                    <label
-                      htmlFor="company"
-                      className="font-medium text-xs cq-lg:text-sm text-gray-400 block text-left"
-                      onClick={() => handleFieldClick('props.fields.company.label')}
-                      data-field="props.fields.company.label"
-                    >
-                      {config.props.fields.company.label}
-                      {config.props.fields.company.required
-                        ? <span className="text-red-500 ml-0.5">*</span>
-                        : <span className="text-gray-500 ml-1">(optional)</span>}
-                    </label>
-                    <input
-                      id="company"
-                      name="company"
-                      type="text"
-                      placeholder={config.props.fields.company.placeholder}
-                      className="h-10 cq-lg:h-11 bg-gray-900 rounded-lg border border-gray-700 text-base sm:text-sm text-white px-4 
-                        focus:ring-2 focus:outline-none 
-                        transition-all w-full placeholder-gray-500"
-                      style={{
-                        '--tw-ring-color': `${theme?.primaryColor || '#A855F7'}80`
-                      } as React.CSSProperties}
-                      onClick={() => handleFieldClick('props.fields.company.placeholder')}
-                      data-field="props.fields.company.placeholder"
-                    />
+                    {touched.email && validationErrors.email && (
+                      <span className="text-xs text-red-400 mt-0.5">{validationErrors.email}</span>
+                    )}
                   </motion.div>
                 )}
 
@@ -221,23 +346,53 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                       {config.props.fields.avatar.required && <span className="text-red-500 ml-0.5">*</span>}
                     </label>
                     <div className="flex items-center gap-2 cq-lg:gap-3">
+                      {/* Hidden file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+
                       <Avatar
-                        className="w-10 h-10 cq-lg:w-12 cq-lg:h-12 border-2 shadow-sm"
-                        style={{ borderColor: `${theme?.primaryColor || '#A855F7'}33` }}
+                        className={`w-10 h-10 cq-lg:w-12 cq-lg:h-12 border-2 shadow-sm ${touched.avatar && validationErrors.avatar ? 'border-red-500' : ''
+                          }`}
+                        style={{
+                          borderColor: touched.avatar && validationErrors.avatar
+                            ? undefined
+                            : `${theme?.primaryColor || '#A855F7'}33`
+                        }}
                       >
-                        <AvatarImage src="https://ui-avatars.com/api/Tony+Stark/200/dcfce7/166534/2/0.34" alt="Profile" />
-                        <AvatarFallback>TS</AvatarFallback>
+                        {formState.avatarUrl ? (
+                          <AvatarImage src={formState.avatarUrl} alt="Profile" />
+                        ) : (
+                          <>
+                            <AvatarImage src="" alt="" />
+                            <AvatarFallback className="bg-gray-800 text-gray-400 text-xs">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            </AvatarFallback>
+                          </>
+                        )}
                       </Avatar>
                       <button
                         type="button"
+                        onClick={handlePickImage}
                         aria-label="Pick an image"
                         className="h-9 cq-lg:h-10 px-3 cq-lg:px-4 rounded-lg bg-gray-800 border border-gray-700 
                           text-xs cq-lg:text-sm font-medium text-gray-300 hover:bg-gray-700 hover:border-gray-600 
                           transition-colors"
                       >
-                        Pick an image
+                        {formState.avatarUrl ? 'Change image' : 'Pick an image'}
                       </button>
                     </div>
+                    {(uploadError || (touched.avatar && validationErrors.avatar)) && (
+                      <span className="text-xs text-red-400 mt-0.5">
+                        {uploadError || validationErrors.avatar}
+                      </span>
+                    )}
                   </motion.div>
                 )}
 
@@ -255,16 +410,17 @@ const AboutYouCard: React.FC<AboutYouCardProps> = ({ config, onFieldFocus, theme
                 >
                   <button
                     type="button"
-                    onClick={() => {
-                      handleFieldClick('props.buttonText');
-                      props.onNext();
-                    }}
-                    className="w-full h-10 cq-lg:h-11 rounded-xl 
+                    onClick={handleContinue}
+                    disabled={!isFormValid}
+                    className={`w-full h-10 cq-lg:h-11 rounded-xl 
                       text-sm cq-lg:text-base font-semibold text-white 
-                      shadow-lg transition-all active:scale-[0.98]"
+                      shadow-lg transition-all 
+                      ${isFormValid
+                        ? 'active:scale-[0.98] hover:opacity-90'
+                        : 'opacity-50 cursor-not-allowed'}`}
                     style={{
                       backgroundColor: theme?.primaryColor || '#A855F7',
-                      boxShadow: `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33`
+                      boxShadow: isFormValid ? `0 10px 15px -3px ${theme?.primaryColor || '#A855F7'}33` : 'none'
                     }}
                     data-field="props.buttonText"
                   >

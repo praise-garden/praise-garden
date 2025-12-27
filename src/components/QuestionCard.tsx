@@ -133,12 +133,23 @@ const TextTestimonialInput = ({ theme, onNext, rightPanelVariants }: TextTestimo
 
                         {/* Submit Button - Always enabled, elegant */}
                         <button
-                            onClick={onNext}
+                            type="button"
+                            onClick={() => {
+                                if (typeof window !== 'undefined') {
+                                    const testimonialData = {
+                                        type: 'text',
+                                        text: testimonialText,
+                                        timestamp: new Date().toISOString()
+                                    };
+                                    sessionStorage.setItem('testimonialData', JSON.stringify(testimonialData));
+                                }
+                                onNext();
+                            }}
                             disabled={!hasContent}
                             className={`order-1 sm:order-2 w-full sm:w-auto px-8 h-12 cq-lg:h-14 rounded-xl font-semibold text-sm cq-lg:text-base 
                                 transition-all duration-300 
                                 ${hasContent
-                                    ? 'text-white shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                                    ? 'text-white shadow-lg hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
                                     : 'bg-zinc-800/80 text-zinc-500 cursor-not-allowed'
                                 }`}
                             style={hasContent ? {
@@ -205,7 +216,19 @@ const QuestionCard = ({
     };
 
     const handleVideoComplete = (blob: Blob) => {
-        console.log('Video recorded:', blob);
+        // Create a local URL for the blob
+        const videoUrl = URL.createObjectURL(blob);
+
+        // Save to sessionStorage
+        if (typeof window !== 'undefined') {
+            const testimonialData = {
+                type: 'video',
+                videoUrl: videoUrl,
+                timestamp: new Date().toISOString()
+            };
+            sessionStorage.setItem('testimonialData', JSON.stringify(testimonialData));
+        }
+
         cardProps.onNext();
     };
 
@@ -374,7 +397,7 @@ const QuestionCard = ({
                 >
                     {/* Subtle background pattern (not in video mode) */}
                     {mode !== 'video' && (
-                        <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px]" />
+                        <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
                     )}
 
                     <AnimatePresence mode="wait">

@@ -26,8 +26,6 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
   const namePlaceholderRef = React.useRef<HTMLInputElement>(null);
   const emailLabelRef = React.useRef<HTMLInputElement>(null);
   const emailPlaceholderRef = React.useRef<HTMLInputElement>(null);
-  const companyLabelRef = React.useRef<HTMLInputElement>(null);
-  const companyPlaceholderRef = React.useRef<HTMLInputElement>(null);
   const avatarLabelRef = React.useRef<HTMLInputElement>(null);
 
   // Use custom hooks
@@ -39,8 +37,6 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
     'props.fields.name.placeholder': namePlaceholderRef,
     'props.fields.email.label': emailLabelRef,
     'props.fields.email.placeholder': emailPlaceholderRef,
-    'props.fields.company.label': companyLabelRef,
-    'props.fields.company.placeholder': companyPlaceholderRef,
     'props.fields.avatar.label': avatarLabelRef,
   });
 
@@ -71,7 +67,6 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
   const fieldConfigs = [
     { key: 'name', label: 'Name Field', iconColor: 'emerald', hasPlaceholder: true },
     { key: 'email', label: 'Email Field', iconColor: 'blue', hasPlaceholder: true },
-    { key: 'company', label: 'Company Field', iconColor: 'violet', hasPlaceholder: true },
     { key: 'avatar', label: 'Avatar Upload', iconColor: 'pink', hasPlaceholder: false },
   ] as const;
 
@@ -79,12 +74,10 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
     if (type === 'label') {
       if (key === 'name') return nameLabelRef;
       if (key === 'email') return emailLabelRef;
-      if (key === 'company') return companyLabelRef;
       return avatarLabelRef;
     }
     if (key === 'name') return namePlaceholderRef;
-    if (key === 'email') return emailPlaceholderRef;
-    return companyPlaceholderRef;
+    return emailPlaceholderRef;
   };
 
   return (
@@ -145,12 +138,10 @@ const AboutYouEditPanel: React.FC<AboutYouEditPanelProps> = ({ block, onUpdate, 
 
                   {/* Icon */}
                   <div className={`flex items-center justify-center w-5 h-5 rounded ${iconColor === 'emerald' ? 'bg-emerald-500/10' :
-                    iconColor === 'blue' ? 'bg-blue-500/10' :
-                      iconColor === 'violet' ? 'bg-violet-500/10' : 'bg-pink-500/10'
+                    iconColor === 'blue' ? 'bg-blue-500/10' : 'bg-pink-500/10'
                     }`}>
                     <UserIcon className={`w-3 h-3 ${iconColor === 'emerald' ? 'text-emerald-400' :
-                      iconColor === 'blue' ? 'text-blue-400' :
-                        iconColor === 'violet' ? 'text-violet-400' : 'text-pink-400'
+                      iconColor === 'blue' ? 'text-blue-400' : 'text-pink-400'
                       }`} />
                   </div>
 

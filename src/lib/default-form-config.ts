@@ -44,6 +44,11 @@ export const createDefaultFormConfig = ({
             headingFont: 'Space Grotesk',
             bodyFont: 'Inter',
         },
+        settings: {
+            // If rating is 1 or 2, show Improvement Tips
+            // If rating is 3 or above, go directly to Question
+            lowRatingThreshold: 2,
+        },
         blocks: [
             {
                 id: 'welcome_1',
