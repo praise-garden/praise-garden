@@ -248,10 +248,36 @@ export function EditTextTestimonialForm({ testimonial, onClose, isEmbedded = fal
                                 </SelectTrigger>
                                 <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
                                     <SelectItem value="manual">Manual</SelectItem>
-                                    <SelectItem value="twitter">Twitter</SelectItem>
-                                    <SelectItem value="linkedin">LinkedIn</SelectItem>
+                                    <SelectItem value="airbnb">Airbnb</SelectItem>
+                                    <SelectItem value="amazon">Amazon</SelectItem>
+                                    <SelectItem value="app_store">App Store</SelectItem>
+                                    <SelectItem value="apple_podcasts">Apple Podcasts</SelectItem>
+                                    <SelectItem value="appsumo">AppSumo</SelectItem>
+                                    <SelectItem value="capterra">Capterra</SelectItem>
+                                    <SelectItem value="chrome_web_store">Chrome Web Store</SelectItem>
                                     <SelectItem value="email">Email</SelectItem>
-                                    <SelectItem value="producthunt">Product Hunt</SelectItem>
+                                    <SelectItem value="facebook">Facebook</SelectItem>
+                                    <SelectItem value="fiverr">Fiverr</SelectItem>
+                                    <SelectItem value="g2">G2</SelectItem>
+                                    <SelectItem value="google">Google</SelectItem>
+                                    <SelectItem value="homestars">HomeStars</SelectItem>
+                                    <SelectItem value="instagram">Instagram</SelectItem>
+                                    <SelectItem value="linkedin">LinkedIn</SelectItem>
+                                    <SelectItem value="play_store">Play Store</SelectItem>
+                                    <SelectItem value="product_hunt">Product Hunt</SelectItem>
+                                    <SelectItem value="realtor">Realtor</SelectItem>
+                                    <SelectItem value="reddit">Reddit</SelectItem>
+                                    <SelectItem value="skillshare">Skillshare</SelectItem>
+                                    <SelectItem value="sourceforge">SourceForge</SelectItem>
+                                    <SelectItem value="tiktok">TikTok</SelectItem>
+                                    <SelectItem value="trustpilot">Trustpilot</SelectItem>
+                                    <SelectItem value="twitter">Twitter / X</SelectItem>
+                                    <SelectItem value="udemy">Udemy</SelectItem>
+                                    <SelectItem value="whop">Whop</SelectItem>
+                                    <SelectItem value="wordpress">WordPress</SelectItem>
+                                    <SelectItem value="yelp">Yelp</SelectItem>
+                                    <SelectItem value="youtube">YouTube</SelectItem>
+                                    <SelectItem value="zillow">Zillow</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

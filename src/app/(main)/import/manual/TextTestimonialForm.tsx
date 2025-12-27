@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { Camera, Calendar, Star, Image as ImageIcon, ChevronDown, Upload, Check, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Camera, Calendar, Star, Image as ImageIcon, Upload, Check, Loader2 } from "lucide-react";
 import { uploadImageToStorage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createTestimonial, updateTestimonialContent } from "@/lib/actions/testimonials";
 
 interface TextTestimonialFormProps {
@@ -30,6 +32,7 @@ interface TextTestimonialFormProps {
 }
 
 export function TextTestimonialForm({ rating, setRating, initialData, testimonialId, isEditing, onSuccess }: TextTestimonialFormProps) {
+    const router = useRouter();
 
     const [showCompanyDetails, setShowCompanyDetails] = useState(false);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -222,7 +225,7 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
     };
 
     return (
-        <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar space-y-10">
+        <div className="flex-1 overflow-y-auto px-8 py-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-10">
             {/* Success Dialog */}
             <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
                 <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-50 sm:max-w-sm">
@@ -476,31 +479,49 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                 </div>
 
                 <div className="space-y-5">
-                    <div className="space-y-2">
-                        <Label className="text-zinc-400 font-medium">Original Post URL</Label>
-                        <Input
-                            value={originalPostUrl} onChange={(e) => setOriginalPostUrl(e.target.value)}
-                            placeholder="https://..."
-                            className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
-                        />
-                        <p className="text-[10px] text-zinc-500">Original Post URL or verification for the comment.</p>
-                    </div>
+
 
                     <div className="grid grid-cols-2 gap-5">
                         <div className="space-y-2">
                             <Label className="text-zinc-400 font-medium">Source</Label>
-                            <div className="relative">
-                                <select
-                                    value={source} onChange={(e) => setSource(e.target.value)}
-                                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-md h-10 px-3 text-sm text-zinc-200 focus:outline-none focus:border-[#F5426C]/50 transition-colors appearance-none cursor-pointer"
-                                >
-                                    <option value="manual">Select source</option>
-                                    <option value="twitter">Twitter</option>
-                                    <option value="linkedin">LinkedIn</option>
-                                    <option value="email">Email</option>
-                                </select>
-                                <ChevronDown className="w-4 h-4 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                            </div>
+                            <Select value={source} onValueChange={setSource}>
+                                <SelectTrigger className="w-full bg-zinc-900/50 border-zinc-800 rounded-md h-10 px-3 text-sm text-zinc-200 focus:ring-1 focus:ring-[#F5426C]/50 transition-colors">
+                                    <SelectValue placeholder="Select source" />
+                                </SelectTrigger>
+                                <SelectContent position="popper" side="bottom" align="start" avoidCollisions={false} className="bg-zinc-900 border-zinc-800 text-zinc-200 max-h-[200px]">
+                                    <SelectItem value="manual">Manual</SelectItem>
+                                    <SelectItem value="airbnb">Airbnb</SelectItem>
+                                    <SelectItem value="amazon">Amazon</SelectItem>
+                                    <SelectItem value="app_store">App Store</SelectItem>
+                                    <SelectItem value="apple_podcasts">Apple Podcasts</SelectItem>
+                                    <SelectItem value="appsumo">AppSumo</SelectItem>
+                                    <SelectItem value="capterra">Capterra</SelectItem>
+                                    <SelectItem value="chrome_web_store">Chrome Web Store</SelectItem>
+                                    <SelectItem value="email">Email</SelectItem>
+                                    <SelectItem value="facebook">Facebook</SelectItem>
+                                    <SelectItem value="fiverr">Fiverr</SelectItem>
+                                    <SelectItem value="g2">G2</SelectItem>
+                                    <SelectItem value="google">Google</SelectItem>
+                                    <SelectItem value="homestars">HomeStars</SelectItem>
+                                    <SelectItem value="instagram">Instagram</SelectItem>
+                                    <SelectItem value="linkedin">LinkedIn</SelectItem>
+                                    <SelectItem value="play_store">Play Store</SelectItem>
+                                    <SelectItem value="product_hunt">Product Hunt</SelectItem>
+                                    <SelectItem value="realtor">Realtor</SelectItem>
+                                    <SelectItem value="reddit">Reddit</SelectItem>
+                                    <SelectItem value="skillshare">Skillshare</SelectItem>
+                                    <SelectItem value="sourceforge">SourceForge</SelectItem>
+                                    <SelectItem value="tiktok">TikTok</SelectItem>
+                                    <SelectItem value="trustpilot">Trustpilot</SelectItem>
+                                    <SelectItem value="twitter">Twitter / X</SelectItem>
+                                    <SelectItem value="udemy">Udemy</SelectItem>
+                                    <SelectItem value="whop">Whop</SelectItem>
+                                    <SelectItem value="wordpress">WordPress</SelectItem>
+                                    <SelectItem value="yelp">Yelp</SelectItem>
+                                    <SelectItem value="youtube">YouTube</SelectItem>
+                                    <SelectItem value="zillow">Zillow</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">
@@ -515,13 +536,23 @@ export function TextTestimonialForm({ rating, setRating, initialData, testimonia
                         </div>
                     </div>
 
+                    <div className="space-y-2">
+                        <Label className="text-zinc-400 font-medium">Original Post URL</Label>
+                        <Input
+                            value={originalPostUrl} onChange={(e) => setOriginalPostUrl(e.target.value)}
+                            placeholder="https://..."
+                            className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-10"
+                        />
+                        <p className="text-[10px] text-zinc-500">Original Post URL or verification for the comment.</p>
+                    </div>
+
 
                 </div>
             </div>
 
             {/* Footer Actions */}
             <div className="pt-6 flex justify-end gap-3 sticky bottom-0 bg-transparent blur-none">
-                <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-zinc-800">
+                <Button variant="ghost" onClick={() => router.push('/import')} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
                     Cancel
                 </Button>
                 <Button

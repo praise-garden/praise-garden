@@ -234,7 +234,7 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
     };
 
     return (
-        <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar space-y-6">
+        <div className="flex-1 overflow-y-auto px-8 py-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-6">
             {/* Success Dialog */}
             <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
                 <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-50 sm:max-w-sm">
