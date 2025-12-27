@@ -5,12 +5,8 @@ import Link from "next/link";
 
 export default function ImportPage() {
     return (
-<<<<<<< Updated upstream
-        <div className="flex flex-col h-full max-w-4xl mx-auto">
-=======
         <div className="flex flex-col h-full max-w-5xl mx-auto py-8 px-4">
             {/* Header */}
->>>>>>> Stashed changes
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-white mb-2">Add proof to your account</h1>
                 <p className="text-zinc-400">Import your proof from 30 sources.</p>

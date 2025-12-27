@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { getTestimonials } from "@/lib/actions/testimonials"
 import {
@@ -23,8 +23,18 @@ import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/Selec
 import Logo from "@/components/ui/Logo"
 import { WallConfig, DEFAULT_WALL_CONFIG, UpdateConfigFn } from "@/types/wall-config"
 import { VideoPlayer } from "@/components/ui/VideoPlayer"
-import { saveWall } from "@/lib/actions/walls"
+import { saveWall, getWallById } from "@/lib/actions/walls"
 import { toast, Toaster } from "sonner"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 // ===================== TESTIMONIALS DATA ===================== //
 const WALL_TESTIMONIALS = [
@@ -324,11 +334,23 @@ const ExpandableContent = ({
 
 
 interface WallOfLovePageProps {
-    params: { style: string }
+    params: Promise<{ style: string }>
 }
 
 export default function WallOfLovePage({ params }: WallOfLovePageProps) {
+    const resolvedParams = React.use(params);
     const router = useRouter()
+    const searchParams = useSearchParams()
+
+
+    // Check if we are in "Edit Mode" (saved wall) or "Create Mode" (new template)
+    const isEditMode = React.useMemo(() =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedParams.style),
+        [resolvedParams.style]
+    );
+
+    // Initial load state to prevent flash of default content
+    const [isInitializing, setIsInitializing] = React.useState(true);
 
     // ===================== CONFIG STATE (Single Source of Truth) ===================== //
     const [config, setConfig] = React.useState<WallConfig>(DEFAULT_WALL_CONFIG)
@@ -343,6 +365,8 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const [activeTab, setActiveTab] = React.useState<TabType>('templates')
     const [embedSidebarOpen, setEmbedSidebarOpen] = React.useState(false)
     const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
+    const [isSaveModalOpen, setIsSaveModalOpen] = React.useState(false)
+    const [saveSource, setSaveSource] = React.useState<'save' | 'embed'>('save')
 
     // Wall ID state for saving/updating
     const [wallId, setWallId] = React.useState<string | null>(null)
@@ -354,7 +378,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const nameInputRef = React.useRef<HTMLInputElement>(null)
 
     // Handle Save
-    const handleSave = async (silent = false) => {
+    const handleSave = async (silent = false, openEmbed = false) => {
         setIsSaving(true)
         try {
             // Generate a simple slug from name
@@ -373,6 +397,11 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
             if (result.success && result.data) {
                 setWallId(result.data.id)
                 if (!silent) toast.success("Wall saved successfully!")
+
+                // Use pushState to update URL without triggering Next.js re-fetch/remount
+                // This ensures a smooth "Local Update" feel
+                window.history.pushState(null, '', `/wall-of-love/${result.data.id}`)
+
                 return result.data.id
             } else {
                 toast.error(result.error || "Failed to save wall")
@@ -388,11 +417,35 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     }
 
     const handleEmbedClick = () => {
-        // Only open embed sidebar if wall is already saved
+        // If saved, open embed sidebar
         if (wallId) {
             setEmbedSidebarOpen(true)
+        } else {
+            // If unsaved, open save modal
+            setSaveSource('embed')
+            setIsSaveModalOpen(true)
         }
     }
+
+    const handleModalSave = async () => {
+        const id = await handleSave(false)
+        if (id) {
+            setIsSaveModalOpen(false)
+            // Open sidebar immediately if that was the intent
+            if (saveSource === 'embed') {
+                setEmbedSidebarOpen(true)
+            }
+        }
+    }
+
+    // Effect: Handle URL actions (like opening sidebar after save redirect)
+    React.useEffect(() => {
+        if (searchParams.get('action') === 'embed') {
+            setEmbedSidebarOpen(true)
+            // Cleanup param to avoid reopening on refresh (Optional, but clean)
+            // router.replace(...) - skipping for now to keep history simple
+        }
+    }, [searchParams])
 
     // Testimonial selection state
     const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>([])
@@ -427,8 +480,11 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     }))
 
                     setUserTestimonials(mapped)
-                    // Select all user testimonials by default
-                    setSelectedTestimonialIds(mapped.map(t => t.id))
+                    // Select all user testimonials by default ONLY if we are creating a new wall
+                    // If editing, we wait for the saved selection from loadWall
+                    if (!isEditMode) {
+                        setSelectedTestimonialIds(mapped.map(t => t.id))
+                    }
                 } else {
                     setUserTestimonials([])
                 }
@@ -441,7 +497,48 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
         }
 
         fetchUserTestimonials()
-    }, [])
+    }, [isEditMode])
+
+    // Fetch existing wall data if URL param is a UUID
+    React.useEffect(() => {
+        const loadWall = async () => {
+            if (!isEditMode) {
+                setIsInitializing(false);
+                return;
+            }
+
+            const styleParam = resolvedParams.style;
+
+            try {
+                const { data } = await getWallById(styleParam);
+                if (data) {
+                    setWallId(data.id);
+                    setWallName(data.name);
+                    // Cast config from DB record to WallConfig type
+                    if (data.config) {
+                        setConfig(data.config as WallConfig);
+                        // Checks for selectedTestimonialIds in config json (primary storage)
+                        if ((data.config as any).selectedTestimonialIds) {
+                            setSelectedTestimonialIds((data.config as any).selectedTestimonialIds);
+                        }
+                    }
+                    // Fallback to column if present
+                    if (data.selected_testimonial_ids && data.selected_testimonial_ids.length > 0) {
+                        setSelectedTestimonialIds(data.selected_testimonial_ids);
+                    }
+                } else {
+                    // If ID valid format but not found (deleted?), maybe show error or treat as new
+                    console.error("Wall ID not found");
+                }
+            } catch (error) {
+                console.error("Failed to load wall:", error);
+            } finally {
+                setIsInitializing(false);
+            }
+        };
+
+        loadWall();
+    }, [isEditMode, resolvedParams.style]);
 
     // Transform testimonials to the format expected by SelectTestimonialsModal
     // Logic: ONLY show user testimonials in the modal. If none, modal list is empty.
@@ -541,9 +638,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const styleConfig = getStyleConfig()
     const cardTheme = getCardThemeConfig()
 
-    // Display testimonials based on selection
-    // If no testimonials are selected, show all (initial state)
-    // Otherwise, filter to show only selected testimonials
+
     // Display testimonials based on selection
     // If user has NO data, fallback to DEMO data (WALL_TESTIMONIALS)
     // If user HAS data, use userTestimonials filtered by selection
@@ -568,6 +663,14 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
 
         return []
     }, [selectedTestimonialIds, userTestimonials, isLoadingData])
+
+    if (isInitializing) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-zinc-50">
+                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+            </div>
+        )
+    }
 
     return (
         <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden" style={{ backgroundColor: '#f5f5f7' }}>
@@ -618,21 +721,27 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     <Button
                         variant="outline"
                         className={cn(
-                            "gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-50",
-                            !wallId && "opacity-50 cursor-not-allowed"
+                            "gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-50"
                         )}
                         onClick={handleEmbedClick}
-                        disabled={!wallId || isSaving}
-                        title={!wallId ? "Save the wall first to get embed code" : "Get embed code"}
+                        disabled={isSaving}
+                        title={!wallId ? "Save to get embed code" : "Get embed code"}
                         style={{ backgroundColor: '#ffffff' }}
                     >
-                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Code className="h-4 w-4" />}
+                        <Code className="h-4 w-4" />
                         Embed Code
                     </Button>
 
                     {/* Save Button */}
                     <Button
-                        onClick={() => handleSave()}
+                        onClick={() => {
+                            if (wallId) {
+                                handleSave()
+                            } else {
+                                setSaveSource('save')
+                                setIsSaveModalOpen(true)
+                            }
+                        }}
                         disabled={isSaving}
                         className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-5"
                     >
@@ -707,9 +816,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                 ) : (
                                     <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
                                         {displayTestimonials.map((t, index) => {
-                                            // Get dot color based on index
-                                            const dotColors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-red-500', 'bg-yellow-500']
-                                            const dotColor = dotColors[index % dotColors.length]
+
 
                                             return (
                                                 <div
@@ -918,6 +1025,47 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                 selectedIds={selectedTestimonialIds}
                 onSelectionChange={setSelectedTestimonialIds}
             />
+
+            {/* ===================== SAVE & EMBED MODAL ===================== */}
+            <Dialog open={isSaveModalOpen} onOpenChange={setIsSaveModalOpen}>
+                <DialogContent className="sm:max-w-md bg-white text-zinc-900 border-zinc-200">
+                    <DialogHeader>
+                        <DialogTitle>Save your Wall of Love</DialogTitle>
+                        <DialogDescription>
+                            {saveSource === 'embed'
+                                ? "Give your wall a name to save it and generate the embed code."
+                                : "Please confirm the name of your wall to save it."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="wall-name" className="text-zinc-700">Name</Label>
+                            <Input
+                                id="wall-name"
+                                value={wallName}
+                                onChange={(e) => setWallName(e.target.value)}
+                                placeholder="My Awesome Wall"
+                                className="bg-white border-zinc-300 text-zinc-900 focus-visible:ring-violet-500"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsSaveModalOpen(false)} className="text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleModalSave} disabled={isSaving} className="bg-violet-600 hover:bg-violet-500 text-white">
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                saveSource === 'embed' ? "Save & Get Code" : "Confirm Save"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Toast notifications */}
             <Toaster position="bottom-right" theme="dark" richColors />
