@@ -161,7 +161,7 @@ export const createDefaultFormConfig = ({
                     titleColor: '#FFFFFF',
                     fields: {
                         name: { enabled: true, required: true, label: 'Full Name', placeholder: 'John Doe' },
-                        email: { enabled: true, required: true, label: 'Email', placeholder: 'john@example.com' },
+                        email: { enabled: true, required: false, label: 'Email', placeholder: 'john@example.com' },
                         company: { enabled: false, required: false, label: 'Company', placeholder: 'Example.com' },
                         avatar: { enabled: true, required: false, label: 'Upload your photo' },
                     },

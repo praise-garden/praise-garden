@@ -13,7 +13,7 @@ import AboutCompanyCard from '@/components/AboutCompanyCard';
 import ReadyToSendCard from '@/components/ReadyToSendCard';
 import ThankYouCard from '@/components/ThankYouCard';
 import WelcomeCard from '@/components/WelcomeCard';
-import { Reorder, motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { type FormConfig, type FormBlock, FormBlockType, type FormTheme, type FormSettings } from '@/types/form-config';
 import FormBuilderEditPanel from '@/components/edit-panels/FormBuilderEditPanel';
@@ -273,6 +273,20 @@ const FormBuilderPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Warn user before leaving page with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requires this
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     if (!formId) {
@@ -401,6 +415,7 @@ const FormBuilderPage = () => {
       }
 
       toast.success('Form saved successfully!');
+      setHasUnsavedChanges(false);
     } catch (error: any) {
       toast.error(`Failed to save form: ${error.message}`);
     } finally {
@@ -424,17 +439,9 @@ const FormBuilderPage = () => {
         ),
       };
     });
+    setHasUnsavedChanges(true);
   };
 
-  const handleReorder = (newOrder: FormBlock[]) => {
-    setFormConfig(prevConfig => {
-      if (!prevConfig) return null;
-      return {
-        ...prevConfig,
-        blocks: newOrder,
-      };
-    });
-  };
 
   const handleUpdatePageContent = (id: string, content: any) => {
     // This logic needs to be updated for the new structure
@@ -452,6 +459,7 @@ const FormBuilderPage = () => {
         ),
       };
     });
+    setHasUnsavedChanges(true);
   };
 
   useEffect(() => {
@@ -642,6 +650,7 @@ const FormBuilderPage = () => {
                   formConfig={formConfig}
                   setFormConfig={setFormConfig}
                   defaultTheme={defaultTheme}
+                  onConfigChange={() => setHasUnsavedChanges(true)}
                 />
               </div>
             </motion.main>
@@ -761,7 +770,7 @@ const FormBuilderPage = () => {
                   blocks={formConfig.blocks}
                   enabledBlocks={enabledBlocks}
                   currentPageIndex={currentPageIndex}
-                  onReorder={handleReorder}
+
                   onPageClick={handlePageClick}
                   onTogglePage={handleTogglePage}
                 />

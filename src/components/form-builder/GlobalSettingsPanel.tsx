@@ -99,9 +99,10 @@ interface GlobalSettingsPanelProps {
     formConfig: FormConfig;
     setFormConfig: React.Dispatch<React.SetStateAction<FormConfig | null>>;
     defaultTheme: FormTheme;
+    onConfigChange?: () => void;
 }
 
-const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, setFormConfig, defaultTheme }) => {
+const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, setFormConfig, defaultTheme, onConfigChange }) => {
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const [showAdvancedBrand, setShowAdvancedBrand] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -112,6 +113,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
             const currentTheme = { ...defaultTheme, ...(prev.theme ?? {}) };
             return { ...prev, theme: updater(currentTheme) };
         });
+        onConfigChange?.();
     };
 
     const updateSettings = (updates: Partial<FormConfig['settings']>) => {
@@ -125,6 +127,7 @@ const GlobalSettingsPanel: React.FC<GlobalSettingsPanelProps> = ({ formConfig, s
                 },
             };
         });
+        onConfigChange?.();
     };
 
     const currentTheme = { ...defaultTheme, ...(formConfig.theme ?? {}) };

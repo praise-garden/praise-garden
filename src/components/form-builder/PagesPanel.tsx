@@ -265,7 +265,6 @@ interface PagesPanelProps {
     blocks: FormBlock[];
     enabledBlocks: FormBlock[];
     currentPageIndex: number;
-    onReorder: (newOrder: FormBlock[]) => void;
     onPageClick: (index: number) => void;
     onTogglePage: (blockId: string) => void;
 }
@@ -274,7 +273,6 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
     blocks,
     enabledBlocks,
     currentPageIndex,
-    onReorder,
     onPageClick,
     onTogglePage,
 }) => {
@@ -331,7 +329,7 @@ const PagesPanel: React.FC<PagesPanelProps> = ({
     return (
         <div className="flex flex-col h-full">
             {/* Pages List - Extra bottom padding ensures last item is fully visible */}
-            <div className="flex-1 overflow-y-auto px-4 pt-5 pb-24 space-y-2">
+            <div className="flex-1 overflow-y-auto px-4 pt-5 pb-36 space-y-2 custom-scrollbar">
                 <AnimatePresence mode="popLayout">
                     {/* Pre-question static pages */}
                     {preQuestionBlocks.map((block) => {
