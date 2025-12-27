@@ -335,7 +335,6 @@ const ExpandableContent = ({
 
 interface WallOfLovePageProps {
     params: Promise<{ style: string }>
-    params: Promise<{ style: string }>
 }
 
 export default function WallOfLovePage({ params }: WallOfLovePageProps) {
