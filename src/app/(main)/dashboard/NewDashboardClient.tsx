@@ -11,6 +11,7 @@ import { CustomDateRangeDropdown } from "@/components/customdatepicker";
 import { TestimonialTable } from "@/components/dashboard/TestimonialTable";
 import { cn } from "@/lib/utils";
 import { BulkActionsFloatingBar } from "@/components/dashboard/BulkActionsFloatingBar";
+import { FilterSidebar, FilterState } from "@/components/dashboard/FilterSidebar";
 
 export interface Testimonial {
     id: number | string;
@@ -110,6 +111,17 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     const [testimonialToDelete, setTestimonialToDelete] = useState<string | number | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set());
 
+    // Filter Sidebar State
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState<FilterState>({
+        sources: [],
+        stars: [],
+        statuses: [],
+        types: []
+    });
+
+    const availableSources = Array.from(new Set(testimonials.map(t => t.source || 'Unknown'))).sort();
+
     const [, startTransition] = useTransition();
 
     useEffect(() => {
@@ -119,6 +131,17 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     }, [serverTestimonials]);
 
     const filtered = testimonials.filter(t => {
+        // Sidebar Filters
+        if (filters.sources.length > 0 && !filters.sources.includes(t.source)) return false;
+        if (filters.stars.length > 0 && !filters.stars.includes(t.rating)) return false;
+        if (filters.types.length > 0 && !filters.types.includes(t.type)) return false;
+
+        // Status Filter from Sidebar (Normalized check)
+        if (filters.statuses.length > 0) {
+            // Check if t.status matches any selected status (case-insensitive to be safe)
+            const matchesStatus = filters.statuses.some(s => s.toLowerCase() === t.status.toLowerCase());
+            if (!matchesStatus) return false;
+        }
         // Tab Filter
         if (activeTab !== "All" && activeTab !== "Filters") {
             // Updated mapping
@@ -345,7 +368,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
     };
 
     return (
-        <div className="min-h-full pb-10 relative max-w-[1600px] mx-auto">
+        <div className={cn("min-h-full pb-10 relative max-w-[1600px] mx-auto transition-all duration-300", showFilters && "lg:mr-[20rem]")}>
             {/* Header Section with gradient accent */}
             <div className="relative mb-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -384,7 +407,7 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                             ))}
                         </div>
 
-                        <Button variant="outline" className="bg-zinc-900/70 border-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 text-xs rounded-lg transition-all duration-200">
+                        <Button variant="outline" onClick={() => setShowFilters(prev => !prev)} className={cn("bg-zinc-900/70 border-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 text-xs rounded-lg transition-all duration-200", showFilters && "bg-zinc-800 text-white border-zinc-700")}>
                             <Filter className="size-3.5 mr-1.5" />
                             Filters
                         </Button>
@@ -504,6 +527,15 @@ export default function NewDashboardClient({ serverTestimonials }: NewDashboardC
                     </div>
                 </div>
             </div>
+
+            {/* Filter Sidebar */}
+            <FilterSidebar
+                isOpen={showFilters}
+                onClose={() => setShowFilters(false)}
+                filters={filters}
+                setFilters={setFilters}
+                availableSources={availableSources}
+            />
 
             {/* Edit Dialog */}
             {editingTestimonial && (

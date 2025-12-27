@@ -88,7 +88,6 @@ export async function saveWall(input: SaveWallInput): Promise<{ success: boolean
             console.log("Wall not found, creating new one");
         } else {
             // Update existing wall - keep existing slug to avoid breaking links
-            // Store selectedTestimonialIds inside config
             const configWithTestimonials = {
                 ...input.config,
                 selectedTestimonialIds: input.selectedTestimonialIds
@@ -119,7 +118,6 @@ export async function saveWall(input: SaveWallInput): Promise<{ success: boolean
     }
 
     // Create new wall
-    // Store selectedTestimonialIds inside config
     const configWithTestimonials = {
         ...input.config,
         selectedTestimonialIds: input.selectedTestimonialIds
