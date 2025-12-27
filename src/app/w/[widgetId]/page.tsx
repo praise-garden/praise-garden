@@ -1,0 +1,45 @@
+import { getPublicWidgetById, getPublicTestimonialsByIds } from "@/lib/actions/widgets"
+import { notFound } from "next/navigation"
+import { Metadata } from "next"
+import PublicWidgetClient from "./PublicWidgetClient"
+
+interface PageProps {
+    params: {
+        widgetId: string
+    }
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { data: widget } = await getPublicWidgetById(params.widgetId)
+
+    if (!widget) {
+        return {
+            title: "Widget Not Found | Trustimonials",
+        }
+    }
+
+    return {
+        title: `${widget.name} | Trustimonials Widget`,
+        description: `View testimonials widget: ${widget.name}`,
+    }
+}
+
+export default async function PublicWidgetPage({ params }: PageProps) {
+    const { data: widget, error } = await getPublicWidgetById(params.widgetId)
+
+    if (!widget || error) {
+        notFound()
+    }
+
+    // Fetch testimonials if any are selected
+    let testimonials: any[] = []
+    if (widget.selected_testimonial_ids && widget.selected_testimonial_ids.length > 0) {
+        const { data } = await getPublicTestimonialsByIds(widget.selected_testimonial_ids)
+        if (data) {
+            testimonials = data
+        }
+    }
+
+    return <PublicWidgetClient widget={widget} testimonials={testimonials} />
+}

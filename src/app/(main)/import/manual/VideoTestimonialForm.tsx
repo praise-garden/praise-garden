@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import { Video, Upload, ChevronDown, ImageIcon, Star, Tag, Calendar, Check, Loader2 } from "lucide-react";
 import { uploadImageToStorage } from "@/lib/storage";
+import { generateVideoThumbnail } from "@/lib/supabase/thumbnail-generator";
 import { createClient } from "@/lib/supabase/client";
 import {
     Dialog,
@@ -38,12 +39,14 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
     const [company, setCompany] = useState(initialData?.company?.name || initialData?.company_name || "");
     const [team, setTeam] = useState(""); // Not checking initialData for team as no clear mapping
     const [message, setMessage] = useState(initialData?.message || initialData?.testimonial_message || "");
-    const [date, setDate] = useState(initialData?.testimonial_date || initialData?.date || new Date().toLocaleDateString());
+    const [date, setDate] = useState(initialData?.testimonial_date || initialData?.date || new Date().toISOString().split('T')[0]);
 
     // File Upload States
     const [videoUrl, setVideoUrl] = useState(initialData?.video_url || initialData?.media?.video_url || "");
     const [avatarUrl, setAvatarUrl] = useState(initialData?.customer_avatar_url || initialData?.avatar_url || initialData?.media?.avatar_url || "");
     const [companyLogoUrl, setCompanyLogoUrl] = useState(initialData?.company_logo_url || initialData?.company?.logo_url || "");
+    const [thumbnailBlobs, setThumbnailBlobs] = useState<Blob[]>([]);
+    const [localVideoPreview, setLocalVideoPreview] = useState<string | null>(null);
 
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -62,31 +65,58 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
         else setIsUploadingLogo(true);
 
         try {
-            const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
+            if (type === 'video') {
+                const { uploadVideo } = await import("@/lib/video-upload");
+                const result = await uploadVideo(file);
 
-            if (user) {
-                const result = await uploadImageToStorage({
-                    file,
-                    context: { type: 'user', userId: user.id },
-                    bucket: 'assets'
-                });
+                if (result.type === 'cloudflare') {
+                    // Store UID for form submission
+                    setVideoUrl(result.uid!);
 
-                if (type === 'video') setVideoUrl(result.url);
-                else if (type === 'avatar') setAvatarUrl(result.url);
-                else setCompanyLogoUrl(result.url);
+                    // Set local preview to avoid waiting for Cloudflare processing
+                    // This stores the blob: URL so the user sees their video instantly
+                    const objectUrl = URL.createObjectURL(file);
+                    setLocalVideoPreview(objectUrl);
+                } else {
+                    setVideoUrl(result.url!);
+                    setLocalVideoPreview(null);
+                }
+
+                // Only generate thumbnails manually if we are NOT using Cloudflare (i.e. using Supabase Storage)
+                if (process.env.NEXT_PUBLIC_VIDEO_PROVIDER !== 'cloudflare-stream') {
+                    try {
+                        const t20 = await generateVideoThumbnail(file, 0.2);
+                        const t50 = await generateVideoThumbnail(file, 0.5);
+                        setThumbnailBlobs([t20, t50]);
+                    } catch (e) {
+                        console.error("Thumbnail generation failed", e);
+                    }
+                }
+
             } else {
-                // Fallback
-                const objectUrl = URL.createObjectURL(file);
-                if (type === 'video') setVideoUrl(objectUrl);
-                else if (type === 'avatar') setAvatarUrl(objectUrl);
-                else setCompanyLogoUrl(objectUrl);
+                // Images still go to Supabase
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const result = await uploadImageToStorage({
+                        file,
+                        context: { type: 'user', userId: user.id },
+                        bucket: 'assets'
+                    });
+                    if (type === 'avatar') setAvatarUrl(result.url);
+                    else setCompanyLogoUrl(result.url);
+                }
             }
+
         } catch (error) {
             console.error(error);
             alert("Upload failed. Showing preview instead.");
             const objectUrl = URL.createObjectURL(file);
-            if (type === 'video') setVideoUrl(objectUrl);
+            if (type === 'video') {
+                // In case of failure, we might want to let them preview locally but blocking submission might be better?
+                // Users wanted a robust flow.
+                setVideoUrl(objectUrl);
+            }
             else if (type === 'avatar') setAvatarUrl(objectUrl);
             else setCompanyLogoUrl(objectUrl);
         } finally {
@@ -97,8 +127,18 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
     };
 
     const handleSubmit = () => {
+        if (!videoUrl) {
+            alert("Please upload a video. Video is required for video testimonials.");
+            return;
+        }
+
         if (!name) {
             alert("Please enter a customer name.");
+            return;
+        }
+
+        if (!email) {
+            alert("Please enter an email address.");
             return;
         }
 
@@ -138,7 +178,29 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                     await updateTestimonialContent(testimonialId, updateData);
                     if (onSuccess) onSuccess();
                 } else {
+                    // Upload Thumbnails
+                    const thumbUrls: string[] = [];
+                    if (thumbnailBlobs.length > 0) {
+                        try {
+                            const supabase = createClient();
+                            const { data: { user } } = await supabase.auth.getUser();
+                            if (user) {
+                                for (let i = 0; i < thumbnailBlobs.length; i++) {
+                                    const blob = thumbnailBlobs[i];
+                                    const thumbFile = new File([blob], `thumb_${Date.now()}_${i}.webp`, { type: "image/webp" });
+                                    const res = await uploadImageToStorage({
+                                        file: thumbFile,
+                                        context: { type: 'user', userId: user.id },
+                                        bucket: 'assets'
+                                    });
+                                    thumbUrls.push(res.url);
+                                }
+                            }
+                        } catch (e) { console.error("Thumbnail upload failed", e); }
+                    }
+
                     const formData = {
+                        thumbnails: thumbUrls,
                         type: 'video',
                         rating,
                         customer_name: name,
@@ -197,49 +259,70 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
             {/* Video Upload Zone */}
-            <input
-                type="file"
-                ref={videoInputRef}
-                className="hidden"
-                accept="video/*"
-                onChange={(e) => handleFileUpload(e, 'video')}
-            />
-            <div
-                onClick={() => videoInputRef.current?.click()}
-                className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden"
-            >
-                {isUploadingVideo ? (
-                    <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="w-8 h-8 text-[#F5426C] animate-spin" />
-                        <span className="text-zinc-400 text-sm">Uploading video...</span>
-                    </div>
-                ) : videoUrl ? (
-                    <div className="relative w-full h-full bg-black flex items-center justify-center">
-                        <video src={videoUrl} className="max-h-full max-w-full" controls playsInline />
-                        <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full cursor-pointer hover:bg-black/80" onClick={(e) => { e.stopPropagation(); videoInputRef.current?.click(); }}>
-                            <Upload className="w-4 h-4 text-white" />
+            <div className="space-y-2">
+                <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Video <span className="text-[#F5426C]">*</span></Label>
+                <input
+                    type="file"
+                    ref={videoInputRef}
+                    className="hidden"
+                    accept="video/*"
+                    onChange={(e) => handleFileUpload(e, 'video')}
+                />
+                <div
+                    onClick={() => videoInputRef.current?.click()}
+                    className="w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 flex flex-col items-center justify-center group hover:border-[#F5426C]/50 transition-colors cursor-pointer relative overflow-hidden"
+                >
+                    {isUploadingVideo ? (
+                        <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-8 h-8 text-[#F5426C] animate-spin" />
+                            <span className="text-zinc-400 text-sm">Uploading video...</span>
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="w-16 h-16 mb-4 relative">
-                            <div className="absolute inset-0 bg-[#F5426C]/10 rounded-xl transform rotate-6"></div>
-                            <div className="absolute inset-0 bg-[#F5426C]/20 rounded-xl transform -rotate-6"></div>
-                            <div className="relative z-10 w-full h-full bg-zinc-900 border border-[#F5426C] rounded-xl flex items-center justify-center shadow-lg shadow-[#F5426C]/10">
-                                <Video className="w-8 h-8 text-[#F5426C]" />
-                                <div className="absolute -bottom-2 -right-2 bg-[#F5426C] rounded-full p-1 border-4 border-zinc-950">
-                                    <Upload className="w-3 h-3 text-white" />
-                                </div>
+                    ) : (localVideoPreview || videoUrl) ? (
+                        <div className="relative w-full h-full bg-black flex items-center justify-center">
+                            {
+                                // Priority 1: Local Preview (Instant playback after upload)
+                                localVideoPreview ? (
+                                    <video src={localVideoPreview} className="max-h-full max-w-full" controls playsInline />
+                                ) :
+                                    // Priority 2: Standard URL (Supabase or other direct link)
+                                    (videoUrl.startsWith('http') || videoUrl.startsWith('blob:')) ? (
+                                        <video src={videoUrl} className="max-h-full max-w-full" controls playsInline />
+                                    ) : (
+                                        // Priority 3: Cloudflare UID (Iframe)
+                                        <iframe
+                                            src={`https://iframe.videodelivery.net/${videoUrl}`}
+                                            className="w-full h-full"
+                                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                                            allowFullScreen
+                                        ></iframe>
+                                    )
+                            }
+                            <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full cursor-pointer hover:bg-black/80" onClick={(e) => { e.stopPropagation(); videoInputRef.current?.click(); }}>
+                                <Upload className="w-4 h-4 text-white" />
                             </div>
                         </div>
-                        <p className="text-zinc-400 text-sm font-medium">Drag and drop video here or <span className="text-white underline decoration-[#F5426C] decoration-2 underline-offset-4">Choose file</span></p>
-                        <div className="flex justify-between w-full px-4 mt-6 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">
-                            <span>Supported formats: MP4, MOV, AVI, ...</span>
-                            <span>Maximum size: 50MB</span>
-                        </div>
-                    </>
-                )}
+                    ) : (
+                        <>
+                            <div className="w-16 h-16 mb-4 relative">
+                                <div className="absolute inset-0 bg-[#F5426C]/10 rounded-xl transform rotate-6"></div>
+                                <div className="absolute inset-0 bg-[#F5426C]/20 rounded-xl transform -rotate-6"></div>
+                                <div className="relative z-10 w-full h-full bg-zinc-900 border border-[#F5426C] rounded-xl flex items-center justify-center shadow-lg shadow-[#F5426C]/10">
+                                    <Video className="w-8 h-8 text-[#F5426C]" />
+                                    <div className="absolute -bottom-2 -right-2 bg-[#F5426C] rounded-full p-1 border-4 border-zinc-950">
+                                        <Upload className="w-3 h-3 text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-zinc-400 text-sm font-medium">Drag and drop video here or <span className="text-white underline decoration-[#F5426C] decoration-2 underline-offset-4">Choose file</span></p>
+                            <div className="flex justify-between w-full px-4 mt-6 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">
+                                <span>Supported formats: MP4, MOV, AVI, ...</span>
+                                <span>Maximum size: 50MB</span>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Form Fields */}
@@ -286,11 +369,13 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Email</Label>
+                    <Label className="text-zinc-400 text-xs uppercase tracking-wide font-semibold">Email <span className="text-[#F5426C]">*</span></Label>
                     <Input
+                        type="email"
                         value={email} onChange={(e) => setEmail(e.target.value)}
                         placeholder="sarah@example.com"
-                        className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 placeholder:text-zinc-600 h-11"
+                        className="bg-zinc-900/50 border-zinc-800 focus:border-[#F5426C] focus:ring-1 focus:ring-[#F5426C]/50 text-zinc-200 placeholder:text-zinc-600 h-11"
+                        required
                     />
                 </div>
 
@@ -373,12 +458,7 @@ export function VideoTestimonialForm({ rating, setRating, initialData, testimoni
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Button variant="outline" className="text-zinc-400 border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 hover:text-white h-9 px-3 gap-2 text-xs">
-                        <Tag className="w-3 h-3" />
-                        Add a tag
-                    </Button>
-                </div>
+
             </div>
 
             {/* Footer Button */}

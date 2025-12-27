@@ -1,5 +1,6 @@
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { WidgetEditorClient } from "./WidgetEditorClient"
+import { Toaster } from "sonner"
 
 interface PageProps {
     params: {
@@ -7,10 +8,12 @@ interface PageProps {
     }
 }
 
-export default function WidgetEditorPage({ params }: PageProps) {
+export default async function WidgetEditorPage({ params }: PageProps) {
+    const { widgetId } = await params
     return (
         <RequireAuth>
-            <WidgetEditorClient widgetId={params.widgetId} />
+            <WidgetEditorClient widgetId={widgetId} />
+            <Toaster position="bottom-right" theme="dark" richColors />
         </RequireAuth>
     )
 }

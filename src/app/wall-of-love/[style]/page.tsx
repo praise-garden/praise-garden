@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { getTestimonials } from "@/lib/actions/testimonials"
 import {
     Star,
     ArrowLeft,
@@ -12,6 +13,8 @@ import {
     Twitter,
     Linkedin,
     Facebook,
+    Loader2,
+    MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ShareWallOfLoveSidebar } from "@/components/ShareWallOfLoveSidebar"
@@ -19,6 +22,9 @@ import { WallDesignStudioSidebar, TabType } from "@/components/WallDesignStudioS
 import { SelectTestimonialsModal, Testimonial } from "@/components/widgets/SelectTestimonialsModal"
 import Logo from "@/components/ui/Logo"
 import { WallConfig, DEFAULT_WALL_CONFIG, UpdateConfigFn } from "@/types/wall-config"
+import { VideoPlayer } from "@/components/ui/VideoPlayer"
+import { saveWall } from "@/lib/actions/walls"
+import { toast, Toaster } from "sonner"
 
 // ===================== TESTIMONIALS DATA ===================== //
 const WALL_TESTIMONIALS = [
@@ -168,20 +174,60 @@ const WALL_TESTIMONIALS = [
     },
 ]
 
-// Source icon helper
+// Source icon helper - returns icon info for various testimonial sources
 const getSourceIcon = (source: string) => {
-    switch (source) {
-        case 'TWITTER':
-            return { icon: Twitter, color: 'text-sky-500', bg: 'bg-sky-500/10' }
-        case 'LINKEDIN':
-            return { icon: Linkedin, color: 'text-blue-600', bg: 'bg-blue-600/10' }
-        case 'FACEBOOK':
-            return { icon: Facebook, color: 'text-blue-500', bg: 'bg-blue-500/10' }
-        case 'PLAYSTORE':
-            return { icon: null, color: 'text-green-600', bg: 'bg-green-600/10', text: '▶' }
-        default:
-            return { icon: null, color: 'text-zinc-500', bg: 'bg-zinc-500/10', text: '●' }
+    const s = (source || '').toUpperCase().trim()
+
+    // Twitter/X
+    if (s.includes('TWITTER') || s === 'X') {
+        return { icon: Twitter, color: 'text-white', bg: 'bg-black' }
     }
+    // LinkedIn
+    if (s.includes('LINKEDIN')) {
+        return { icon: Linkedin, color: 'text-white', bg: 'bg-[#0A66C2]' }
+    }
+    // Facebook
+    if (s.includes('FACEBOOK')) {
+        return { icon: Facebook, color: 'text-white', bg: 'bg-[#1877F2]' }
+    }
+    // Play Store / Google
+    if (s.includes('PLAYSTORE') || s.includes('PLAY STORE') || s.includes('GOOGLE')) {
+        return { icon: null, color: 'text-white', bg: 'bg-gradient-to-br from-green-400 via-blue-500 to-red-500', text: 'G' }
+    }
+    // Product Hunt
+    if (s.includes('PRODUCTHUNT') || s.includes('PRODUCT HUNT')) {
+        return { icon: null, color: 'text-white', bg: 'bg-[#DA552F]', text: 'P' }
+    }
+    // G2
+    if (s === 'G2' || s.includes('G2CROWD')) {
+        return { icon: null, color: 'text-white', bg: 'bg-[#FF492C]', text: 'G2' }
+    }
+    // Capterra
+    if (s.includes('CAPTERRA')) {
+        return { icon: null, color: 'text-white', bg: 'bg-[#FF9D28]', text: 'C' }
+    }
+    // TrustPilot
+    if (s.includes('TRUSTPILOT')) {
+        return { icon: null, color: 'text-white', bg: 'bg-[#00B67A]', text: 'TP' }
+    }
+    // Instagram
+    if (s.includes('INSTAGRAM')) {
+        return { icon: null, color: 'text-white', bg: 'bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400', text: 'IG' }
+    }
+    // YouTube
+    if (s.includes('YOUTUBE')) {
+        return { icon: null, color: 'text-white', bg: 'bg-[#FF0000]', text: 'YT' }
+    }
+    // TikTok
+    if (s.includes('TIKTOK')) {
+        return { icon: null, color: 'text-white', bg: 'bg-black', text: 'TT' }
+    }
+    // Email
+    if (s.includes('EMAIL')) {
+        return { icon: null, color: 'text-white', bg: 'bg-zinc-700', text: '@' }
+    }
+    // Manual / Other - Use chat bubble icon like dashboard
+    return { icon: MessageSquare, color: 'text-white', bg: 'bg-zinc-700' }
 }
 
 // ===================== TEMPLATE CONFIGURATIONS ===================== //
@@ -220,6 +266,62 @@ const CARD_THEMES = [
     },
 ]
 
+// ===================== HELPER COMPONENTS ===================== //
+
+const ExpandableContent = ({
+    content,
+    fontFamily,
+    textColorClass,
+    subtitleColorClass
+}: {
+    content: string
+    fontFamily?: string
+    textColorClass: string
+    subtitleColorClass: string
+}) => {
+    const [isExpanded, setIsExpanded] = React.useState(false)
+    // Limit to 200 chars as requested
+    const shouldTruncate = content.length > 200
+
+    if (!shouldTruncate) {
+        return (
+            <p
+                className={cn("text-sm leading-relaxed break-words whitespace-pre-wrap", textColorClass)}
+                style={{ fontFamily }}
+            >
+                {content}
+            </p>
+        )
+    }
+
+    return (
+        <div>
+            <p
+                className={cn(
+                    "text-sm leading-relaxed break-words whitespace-pre-wrap",
+                    textColorClass,
+                    !isExpanded && "line-clamp-6"
+                )}
+                style={{ fontFamily }}
+            >
+                {content}
+            </p>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setIsExpanded(!isExpanded)
+                }}
+                className={cn(
+                    "text-xs font-medium mt-2 hover:underline focus:outline-none flex items-center gap-1",
+                    subtitleColorClass
+                )}
+            >
+                {isExpanded ? "Read Less" : "Read More"}
+            </button>
+        </div>
+    )
+}
+
 
 interface WallOfLovePageProps {
     params: { style: string }
@@ -242,27 +344,108 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     const [embedSidebarOpen, setEmbedSidebarOpen] = React.useState(false)
     const [isSelectTestimonialsOpen, setIsSelectTestimonialsOpen] = React.useState(false)
 
+    // Wall ID state for saving/updating
+    const [wallId, setWallId] = React.useState<string | null>(null)
+    const [isSaving, setIsSaving] = React.useState(false)
+
     // Wall name state (metadata, not config)
     const [wallName, setWallName] = React.useState('My Wall of Love')
     const [isEditingName, setIsEditingName] = React.useState(false)
     const nameInputRef = React.useRef<HTMLInputElement>(null)
 
-    // Testimonial selection state
-    const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>(
-        WALL_TESTIMONIALS.map(t => t.id)
-    )
+    // Handle Save
+    const handleSave = async (silent = false) => {
+        setIsSaving(true)
+        try {
+            // Generate a simple slug from name
+            const baseSlug = wallName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = wallId ? baseSlug : `${baseSlug}-${Math.random().toString(36).substring(2, 7)}`;
 
+            const result = await saveWall({
+                id: wallId || undefined,
+                name: wallName,
+                slug: slug,
+                config: config,
+                selectedTestimonialIds: selectedTestimonialIds,
+                isPublished: true
+            })
+
+            if (result.success && result.data) {
+                setWallId(result.data.id)
+                if (!silent) toast.success("Wall saved successfully!")
+                return result.data.id
+            } else {
+                toast.error(result.error || "Failed to save wall")
+                return null
+            }
+        } catch (error) {
+            console.error(error)
+            toast.error("An unexpected error occurred")
+            return null
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleEmbedClick = () => {
+        // Only open embed sidebar if wall is already saved
+        if (wallId) {
+            setEmbedSidebarOpen(true)
+        }
+    }
+
+    // Testimonial selection state
+    const [selectedTestimonialIds, setSelectedTestimonialIds] = React.useState<string[]>([])
+    const [userTestimonials, setUserTestimonials] = React.useState<Testimonial[] | null>(null)
+    const [isLoadingData, setIsLoadingData] = React.useState(true)
+
+    // Fetch user testimonials
+    React.useEffect(() => {
+        const fetchUserTestimonials = async () => {
+            try {
+                const { data } = await getTestimonials()
+
+                if (data && data.length > 0) {
+                    // Map DB records to Testimonial interface
+                    const mapped: Testimonial[] = data.map((t: any) => ({
+                        id: t.id,
+                        type: t.type || 'text',
+                        authorName: t.author_name || 'Anonymous',
+                        authorTitle: t.author_title || '',
+                        authorAvatarUrl: t.author_avatar_url,
+                        rating: t.rating ?? null,
+                        content: t.content || '',
+                        source: t.source || 'MANUAL',
+                        date: new Date(t.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric"
+                        }),
+                        videoUrl: t.video_url,
+                        videoThumbnail: t.video_thumbnail,
+                        attachments: t.attachments || []
+                    }))
+
+                    setUserTestimonials(mapped)
+                    // Select all user testimonials by default
+                    setSelectedTestimonialIds(mapped.map(t => t.id))
+                } else {
+                    setUserTestimonials([])
+                }
+            } catch (err) {
+                console.error("Failed to fetch testimonials:", err)
+                setUserTestimonials([])
+            } finally {
+                setIsLoadingData(false)
+            }
+        }
+
+        fetchUserTestimonials()
+    }, [])
 
     // Transform testimonials to the format expected by SelectTestimonialsModal
-    const modalTestimonials: Testimonial[] = WALL_TESTIMONIALS.map(t => ({
-        id: t.id,
-        authorName: t.authorName,
-        authorTitle: t.company,
-        rating: t.rating,
-        content: t.content,
-        source: t.source,
-        date: t.date,
-    }))
+    // Logic: ONLY show user testimonials in the modal. If none, modal list is empty.
+    const modalTestimonials: Testimonial[] = userTestimonials || []
 
     // Handle name editing
     const handleNameClick = () => {
@@ -361,22 +544,41 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
     // Display testimonials based on selection
     // If no testimonials are selected, show all (initial state)
     // Otherwise, filter to show only selected testimonials
+    // Display testimonials based on selection
+    // If user has NO data, fallback to DEMO data (WALL_TESTIMONIALS)
+    // If user HAS data, use userTestimonials filtered by selection
     const displayTestimonials = React.useMemo(() => {
+        // If loading, return empty (we will show spinner in UI)
+        if (isLoadingData) return []
+
+        // If user has NO data (and not loading), show Demo
+        if (userTestimonials && userTestimonials.length === 0) {
+            return WALL_TESTIMONIALS
+        }
+
+        // If user has data but DESELECTED all, show Demo
         if (selectedTestimonialIds.length === 0) {
             return WALL_TESTIMONIALS
         }
-        return WALL_TESTIMONIALS.filter(t => selectedTestimonialIds.includes(t.id))
-    }, [selectedTestimonialIds])
+
+        // Otherwise filter user data
+        if (userTestimonials) {
+            return userTestimonials.filter(t => selectedTestimonialIds.includes(t.id))
+        }
+
+        return []
+    }, [selectedTestimonialIds, userTestimonials, isLoadingData])
 
     return (
-        <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden">
+        <div className="h-[100vh] w-[100vw] flex flex-col bg-[#f5f5f7] overflow-hidden" style={{ backgroundColor: '#f5f5f7' }}>
             {/* ===================== SIMPLE TOP HEADER ===================== */}
-            <div className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0">
+            <div className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.back()}
                         className="p-2 rounded-lg hover:bg-zinc-100 transition-colors text-zinc-600 hover:text-zinc-900"
                         aria-label="Go back"
+                        style={{ backgroundColor: 'transparent' }}
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </button>
@@ -402,6 +604,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                 onBlur={handleNameBlur}
                                 onKeyDown={handleNameKeyDown}
                                 className="text-sm font-medium text-zinc-900 bg-transparent outline-none min-w-[120px]"
+                                style={{ backgroundColor: 'transparent' }}
                             />
                         ) : (
                             <>
@@ -414,16 +617,33 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                     {/* Embed Code Button */}
                     <Button
                         variant="outline"
-                        className="gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-50"
-                        onClick={() => setEmbedSidebarOpen(true)}
+                        className={cn(
+                            "gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-50",
+                            !wallId && "opacity-50 cursor-not-allowed"
+                        )}
+                        onClick={handleEmbedClick}
+                        disabled={!wallId || isSaving}
+                        title={!wallId ? "Save the wall first to get embed code" : "Get embed code"}
+                        style={{ backgroundColor: '#ffffff' }}
                     >
-                        <Code className="h-4 w-4" />
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Code className="h-4 w-4" />}
                         Embed Code
                     </Button>
 
                     {/* Save Button */}
-                    <Button className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-5">
-                        Save
+                    <Button
+                        onClick={() => handleSave()}
+                        disabled={isSaving}
+                        className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-5"
+                    >
+                        {isSaving ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            "Save"
+                        )}
                     </Button>
 
                     {/* Sidebar Toggle (Hamburger) - Only shows when sidebar is closed */}
@@ -472,7 +692,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                                 </div>
                                 <h2
                                     className="text-4xl font-bold transition-colors duration-200"
-                                    style={{ fontFamily: config.fontFamily, color: config.textColor }}
+                                    style={{ fontFamily: config.fontFamily, color: config.textColor, backgroundColor: 'transparent' }}
                                 >
                                     Wall of Love
                                 </h2>
@@ -480,94 +700,179 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
 
                             {/* Testimonials Masonry Grid */}
                             <div className="px-6 pb-8">
-                                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-                                    {displayTestimonials.map((t, index) => {
-                                        // Get dot color based on index
-                                        const dotColors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-red-500', 'bg-yellow-500']
-                                        const dotColor = dotColors[index % dotColors.length]
+                                {isLoadingData ? (
+                                    <div className="flex justify-center items-center py-20">
+                                        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                                    </div>
+                                ) : (
+                                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+                                        {displayTestimonials.map((t, index) => {
+                                            // Get dot color based on index
+                                            const dotColors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-red-500', 'bg-yellow-500']
+                                            const dotColor = dotColors[index % dotColors.length]
 
-                                        return (
-                                            <div
-                                                key={t.id}
-                                                className={cn(
-                                                    "relative break-inside-avoid rounded-xl p-5 transition-all hover:scale-[1.02]",
-                                                    cardTheme.cardBg,
-                                                    cardTheme.cardBorder,
-                                                    cardTheme.cardShadow
-                                                )}
-                                            >
-                                                {/* Source Icon */}
-                                                <div className="absolute top-4 right-4">
-                                                    {(() => {
-                                                        const sourceInfo = getSourceIcon(t.source)
-                                                        const IconComponent = sourceInfo.icon
-                                                        return (
-                                                            <div className={cn(
-                                                                "w-6 h-6 rounded-full flex items-center justify-center",
-                                                                sourceInfo.bg
-                                                            )}>
-                                                                {IconComponent ? (
-                                                                    <IconComponent className={cn("w-3.5 h-3.5", sourceInfo.color)} />
-                                                                ) : (
-                                                                    <span className={cn("text-xs font-bold", sourceInfo.color)}>
-                                                                        {sourceInfo.text}
-                                                                    </span>
+                                            return (
+                                                <div
+                                                    key={t.id}
+                                                    className={cn(
+                                                        "relative break-inside-avoid rounded-xl overflow-hidden transition-transform duration-200 hover:scale-[1.02]",
+                                                        cardTheme.cardBg,
+                                                        cardTheme.cardBorder
+                                                    )}
+                                                    style={{
+                                                        boxShadow: config.shadowIntensity > 0
+                                                            ? `0 4px 20px rgba(0, 0, 0, ${config.shadowIntensity / 100 * 0.3}), 0 2px 8px rgba(0, 0, 0, ${config.shadowIntensity / 100 * 0.15})`
+                                                            : 'none'
+                                                    }}
+                                                >
+                                                    {/* Video Testimonial Layout - Check type is video */}
+                                                    {(t as any).type === 'video' && (t as any).videoUrl ? (
+                                                        <>
+                                                            {/* Video Section with Overlay */}
+                                                            <div className="relative aspect-video overflow-hidden">
+                                                                <VideoPlayer
+                                                                    url={(t as any).videoUrl}
+                                                                    poster={(t as any).videoThumbnail}
+                                                                    showControls={true}
+                                                                    showPlayPauseButton={true}
+                                                                    className="w-full h-full"
+                                                                />
+
+                                                                {/* Gradient overlay at bottom */}
+                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+
+                                                                {/* User info overlaid at bottom-left */}
+                                                                <div className="absolute bottom-3 left-3 right-16">
+                                                                    {/* Stars - only show if rating exists */}
+                                                                    {t.rating && t.rating > 0 && (
+                                                                        <div className="flex gap-0.5 mb-1">
+                                                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                                                <Star
+                                                                                    key={i}
+                                                                                    className="w-3.5 h-3.5"
+                                                                                    style={{
+                                                                                        fill: i < t.rating ? '#fbbf24' : 'rgba(255,255,255,0.3)',
+                                                                                        color: i < t.rating ? '#fbbf24' : 'rgba(255,255,255,0.3)',
+                                                                                    }}
+                                                                                />
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                    {/* Name with verification */}
+                                                                    <p className="font-semibold text-white text-sm flex items-center gap-1">
+                                                                        {t.authorName}
+                                                                        <span className="text-yellow-400">⚡</span>
+                                                                    </p>
+                                                                    {/* Title */}
+                                                                    <p className="text-xs text-white/70">
+                                                                        {(t as any).company || (t as any).authorTitle}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Content below video */}
+                                                            <div className="p-4">
+                                                                <ExpandableContent
+                                                                    content={t.content}
+                                                                    fontFamily={config.fontFamily}
+                                                                    textColorClass={cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700'}
+                                                                    subtitleColorClass={cardTheme.subtitleColor}
+                                                                />
+                                                                {/* Date */}
+                                                                {(t as any).date && (
+                                                                    <p className="text-xs text-zinc-400 mt-2">
+                                                                        {new Date((t as any).date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                    </p>
                                                                 )}
                                                             </div>
-                                                        )
-                                                    })()}
-                                                </div>
+                                                        </>
+                                                    ) : (
+                                                        /* Text Testimonial Layout - Original */
+                                                        <div className="p-5">
+                                                            {/* Author row with Source Icon */}
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                {/* Author Info */}
+                                                                <div className="flex items-center gap-3">
+                                                                    {(t as any).authorAvatarUrl ? (
+                                                                        <img
+                                                                            src={(t as any).authorAvatarUrl}
+                                                                            alt={t.authorName}
+                                                                            className="w-10 h-10 rounded-full object-cover shrink-0"
+                                                                        />
+                                                                    ) : (
+                                                                        <div
+                                                                            className={cn(
+                                                                                "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0",
+                                                                                (t as any).avatarBg || "bg-gradient-to-br from-indigo-500 to-purple-500"
+                                                                            )}
+                                                                        >
+                                                                            {t.authorName.charAt(0)}
+                                                                        </div>
+                                                                    )}
+                                                                    <div>
+                                                                        <p
+                                                                            className={cn("font-semibold text-sm", cardTheme.textColor)}
+                                                                            style={{ fontFamily: config.fontFamily }}
+                                                                        >
+                                                                            {t.authorName}
+                                                                        </p>
+                                                                        <p
+                                                                            className={cn("text-xs", cardTheme.subtitleColor)}
+                                                                            style={{ fontFamily: config.fontFamily }}
+                                                                        >
+                                                                            {(t as any).company || (t as any).authorTitle}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
 
-                                                {/* Author */}
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <div
-                                                        className={cn(
-                                                            "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0",
-                                                            t.avatarBg
-                                                        )}
-                                                    >
-                                                        {t.authorName.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            className={cn("font-semibold text-sm", cardTheme.textColor)}
-                                                            style={{ fontFamily: config.fontFamily }}
-                                                        >
-                                                            {t.authorName}
-                                                        </p>
-                                                        <p
-                                                            className={cn("text-xs", cardTheme.subtitleColor)}
-                                                            style={{ fontFamily: config.fontFamily }}
-                                                        >
-                                                            {t.company}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                                {/* Source Icon */}
+                                                                {(() => {
+                                                                    const sourceInfo = getSourceIcon(t.source)
+                                                                    const IconComponent = sourceInfo.icon
+                                                                    return (
+                                                                        <div className={cn(
+                                                                            "w-7 h-7 rounded-full flex items-center justify-center shrink-0",
+                                                                            sourceInfo.bg
+                                                                        )}>
+                                                                            {IconComponent ? (
+                                                                                <IconComponent className={cn("w-4 h-4", sourceInfo.color)} />
+                                                                            ) : (
+                                                                                <span className={cn("text-xs font-bold", sourceInfo.color)}>
+                                                                                    {sourceInfo.text}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    )
+                                                                })()}
+                                                            </div>
 
-                                                <div className="flex gap-0.5 mb-3">
-                                                    {Array.from({ length: 5 }).map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            className="w-4 h-4"
-                                                            style={{
-                                                                fill: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
-                                                                color: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </div>
+                                                            <div className="flex gap-0.5 mb-3">
+                                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                                    <Star
+                                                                        key={i}
+                                                                        className="w-4 h-4"
+                                                                        style={{
+                                                                            fill: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                                            color: i < t.rating ? config.accentColor : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </div>
 
-                                                {/* Content */}
-                                                <p
-                                                    className={cn("text-sm leading-relaxed", cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700')}
-                                                    style={{ fontFamily: config.fontFamily }}
-                                                >
-                                                    {t.content}
-                                                </p>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                                            {/* Content */}
+                                                            <ExpandableContent
+                                                                content={t.content}
+                                                                fontFamily={config.fontFamily}
+                                                                textColorClass={cardTheme.textColor === 'text-white' ? 'text-zinc-300' : 'text-zinc-700'}
+                                                                subtitleColorClass={cardTheme.subtitleColor}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Powered By Branding - Only show when sidebar is closed */}
@@ -602,6 +907,7 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
             <ShareWallOfLoveSidebar
                 isOpen={embedSidebarOpen}
                 onClose={() => setEmbedSidebarOpen(false)}
+                shareableLink={wallId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/wall/${wallId}` : undefined}
             />
 
             {/* ===================== SELECT TESTIMONIALS MODAL ===================== */}
@@ -612,6 +918,9 @@ export default function WallOfLovePage({ params }: WallOfLovePageProps) {
                 selectedIds={selectedTestimonialIds}
                 onSelectionChange={setSelectedTestimonialIds}
             />
+
+            {/* Toast notifications */}
+            <Toaster position="bottom-right" theme="dark" richColors />
         </div>
     )
 }

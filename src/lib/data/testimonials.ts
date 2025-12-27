@@ -23,7 +23,7 @@ export async function getTestimonialsForProject(projectId: string) {
         reviewer: t.data.customer_name || "Anonymous",
         email: t.data.customer_email || "",
         profession: t.data.profession || t.data.customer_headline || t.data.company?.job_title || "",
-        rating: t.data.rating || 5,
+        rating: t.data.rating || 0,
         text: t.data.message || "",
         source: t.data.source || "Manual",
         status: t.status === 'public' ? 'Public' : (t.status === 'hidden' ? 'Hidden' : 'Pending'),
@@ -33,6 +33,9 @@ export async function getTestimonialsForProject(projectId: string) {
             t.data.company?.logo_url ? { type: 'image', url: t.data.company.logo_url } : null,
             t.data.media?.video_url ? { type: 'video', url: t.data.media.video_url } : null
         ].filter(Boolean) as { type: 'image' | 'video', url: string }[],
+        videoThumbnail: t.data.thumbnails?.[t.data.selected_thumbnail_index || 0] || "",
+        trimStart: t.data.trim_start,
+        trimEnd: t.data.trim_end,
         // Keep original data handy if needed
         raw: t
     }));
@@ -58,7 +61,7 @@ export async function getTestimonialById(id: string) {
         reviewer: data.data.customer_name || "Anonymous",
         email: data.data.customer_email || "",
         profession: data.data.profession || data.data.customer_headline || data.data.company?.job_title || "",
-        rating: data.data.rating || 5,
+        rating: data.data.rating || 0,
         text: data.data.message || "",
         source: data.data.source || "Manual",
         status: data.status === 'public' ? 'Public' : (data.status === 'hidden' ? 'Hidden' : 'Pending'),
@@ -68,6 +71,52 @@ export async function getTestimonialById(id: string) {
             data.data.company?.logo_url ? { type: 'image', url: data.data.company.logo_url } : null,
             data.data.media?.video_url ? { type: 'video', url: data.data.media.video_url } : null
         ].filter(Boolean) as { type: 'image' | 'video', url: string }[],
+        videoThumbnail: data.data.thumbnails?.[data.data.selected_thumbnail_index || 0] || "",
         raw: data
     };
+}
+
+export async function getTestimonialsByEmail(email: string, excludeId?: string) {
+    if (!email) return [];
+
+    const supabase = await createClient();
+
+    let query = supabase
+        .from("testimonials")
+        .select("*")
+        .eq("data->>customer_email", email)
+        .order("created_at", { ascending: false });
+
+    // Exclude the current testimonial if provided
+    if (excludeId) {
+        query = query.neq("id", excludeId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error fetching testimonials by email:", error);
+        return [];
+    }
+
+    // Transform to UI shape
+    return data.map((t) => ({
+        id: t.id,
+        type: t.type,
+        reviewer: t.data.customer_name || "Anonymous",
+        email: t.data.customer_email || "",
+        profession: t.data.profession || t.data.customer_headline || t.data.company?.job_title || "",
+        rating: t.data.rating || 0,
+        text: t.data.message || "",
+        source: t.data.source || "Manual",
+        status: t.status === 'public' ? 'Public' : (t.status === 'hidden' ? 'Hidden' : 'Archived'),
+        date: new Date(t.data.testimonial_date || t.created_at).toLocaleDateString(),
+        avatar: t.data.customer_avatar_url || t.data.media?.avatar_url || "",
+        attachments: [
+            t.data.company?.logo_url ? { type: 'image', url: t.data.company.logo_url } : null,
+            t.data.media?.video_url ? { type: 'video', url: t.data.media.video_url } : null
+        ].filter(Boolean) as { type: 'image' | 'video', url: string }[],
+        videoThumbnail: t.data.thumbnails?.[t.data.selected_thumbnail_index || 0] || "",
+        raw: t
+    }));
 }

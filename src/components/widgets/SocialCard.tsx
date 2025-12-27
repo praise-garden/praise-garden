@@ -1,6 +1,7 @@
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight, Star } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star, Play, Pause } from "lucide-react"
+import { Stream } from "@cloudflare/stream-react"
 import { cn } from "@/lib/utils"
 import { CardWidgetConfig } from "@/types/widget-config"
 
@@ -8,6 +9,7 @@ interface SocialCardProps {
     config: CardWidgetConfig
     testimonial: {
         id: string
+        type?: 'text' | 'video'
         authorName: string
         authorTitle: string
         authorAvatarUrl?: string
@@ -15,6 +17,8 @@ interface SocialCardProps {
         content: string
         source: string
         date: string
+        videoUrl?: string | null
+        videoThumbnail?: string | null
     }
     handleNextCard?: () => void
     handlePrevCard?: () => void
@@ -63,6 +67,34 @@ export function SocialCard({
 
     const { className: styleClass, style: styleObject } = getContainerStyles()
 
+    // Video state and helpers
+    const isVideo = testimonial.type === 'video' && testimonial.videoUrl
+    const [isPlaying, setIsPlaying] = React.useState(false)
+    const streamRef = React.useRef<any>(null)
+    const videoRef = React.useRef<HTMLVideoElement>(null)
+
+    // Check if Cloudflare UID
+    const isCloudflare = testimonial.videoUrl &&
+        !testimonial.videoUrl.includes('/') &&
+        !testimonial.videoUrl.startsWith('http') &&
+        !testimonial.videoUrl.startsWith('blob:')
+
+    const togglePlayPause = () => {
+        if (isCloudflare && streamRef.current) {
+            if (isPlaying) {
+                streamRef.current.pause()
+            } else {
+                streamRef.current.play()
+            }
+        } else if (videoRef.current) {
+            if (isPlaying) {
+                videoRef.current.pause()
+            } else {
+                videoRef.current.play()
+            }
+        }
+    }
+
     return (
         <div
             className={
@@ -86,10 +118,10 @@ export function SocialCard({
                         "h-12 w-12 flex items-center justify-center text-white text-sm font-medium tracking-wide shrink-0",
                         config.cardStyle === 'brutal' ? "bg-[#111113] border-2 border-black rounded-[4px]" : "rounded-full bg-[#111113]"
                     )}>
-                        {testimonial.authorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                        {(testimonial.authorName || 'A').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-white font-bold text-[16px] leading-tight">{testimonial.authorName}</span>
+                        <span className="text-white font-bold text-[16px] leading-tight">{testimonial.authorName || 'Anonymous'}</span>
                         <span className="text-white/80 text-[13px] font-normal">{testimonial.authorTitle}</span>
                     </div>
                 </div>
@@ -134,23 +166,71 @@ export function SocialCard({
                     )}
                 </div>
 
-                <div className="relative">
-                    <p
-                        className="text-[15px] leading-[1.5] font-normal transition-colors duration-300"
-                        style={{
-                            color: config.textColor,
-                            display: 'block',
-                            maxHeight: `calc(1.5em * ${config.maxLines})`,
-                            overflow: 'hidden',
-                            lineHeight: '1.5em'
-                        }}
+                {/* Show video player for video testimonials, text for text testimonials */}
+                {isVideo && testimonial.videoUrl ? (
+                    <div
+                        className="relative bg-black group overflow-hidden rounded-lg"
+                        style={{ height: '30vh', width: '30vw', minHeight: '200px', minWidth: '200px' }}
                     >
-                        {testimonial.content}
-                    </p>
-                    <button className="text-sm font-medium hover:underline mt-1 block" style={{ color: config.accentColor }}>
-                        Read more
-                    </button>
-                </div>
+                        {isCloudflare ? (
+                            <Stream
+                                src={testimonial.videoUrl}
+                                poster={testimonial.videoThumbnail || undefined}
+                                streamRef={streamRef}
+                                controls={false}
+                                responsive={true}
+                                className="w-full h-full"
+                                onPlay={() => setIsPlaying(true)}
+                                onPause={() => setIsPlaying(false)}
+                            />
+                        ) : (
+                            <video
+                                ref={videoRef}
+                                src={testimonial.videoUrl}
+                                poster={testimonial.videoThumbnail || undefined}
+                                className="w-full h-full object-cover"
+                                playsInline
+                                onPlay={() => setIsPlaying(true)}
+                                onPause={() => setIsPlaying(false)}
+                            />
+                        )}
+                        {/* Play/Pause button overlay */}
+                        <div
+                            className="absolute inset-0 flex items-center justify-center cursor-pointer transition-colors"
+                            style={{ backgroundColor: isPlaying ? 'transparent' : 'rgba(0,0,0,0.2)' }}
+                            onClick={togglePlayPause}
+                        >
+                            <div className={cn(
+                                "w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg transition-all",
+                                isPlaying ? "opacity-0 hover:opacity-100" : "opacity-100 hover:scale-110"
+                            )}>
+                                {isPlaying ? (
+                                    <Pause className="w-6 h-6 text-black" fill="currentColor" />
+                                ) : (
+                                    <Play className="w-6 h-6 text-black ml-0.5" fill="currentColor" />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <p
+                            className="text-[15px] leading-[1.5] font-normal transition-colors duration-300"
+                            style={{
+                                color: config.textColor,
+                                display: 'block',
+                                maxHeight: `calc(1.5em * ${config.maxLines})`,
+                                overflow: 'hidden',
+                                lineHeight: '1.5em'
+                            }}
+                        >
+                            {testimonial.content}
+                        </p>
+                        <button className="text-sm font-medium hover:underline mt-1 block" style={{ color: config.accentColor }}>
+                            Read more
+                        </button>
+                    </div>
+                )}
 
                 {config.showDate && (
                     <div className="pt-2 text-zinc-500 text-[13px]">

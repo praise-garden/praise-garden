@@ -29,23 +29,30 @@ interface ShareWallOfLoveSidebarProps {
 export function ShareWallOfLoveSidebar({
     isOpen,
     onClose,
-    shareableLink = 'https://senja.io/p/te/XADG/8o',
+    shareableLink,
 }: ShareWallOfLoveSidebarProps) {
+    const [currentLink, setCurrentLink] = React.useState("")
     const [linkCopied, setLinkCopied] = React.useState(false)
     const [codeCopied, setCodeCopied] = React.useState(false)
-    const [customDomainEnabled, setCustomDomainEnabled] = React.useState(false)
-    const [customDomain, setCustomDomain] = React.useState('')
-    const [hideNavigation, setHideNavigation] = React.useState(false)
     const [editUrlOpen, setEditUrlOpen] = React.useState(false)
 
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setCurrentLink(shareableLink || window.location.href.split('?')[0])
+        }
+    }, [shareableLink, isOpen])
+
     // Generate embed code
-    const embedCode = `<script type="text/javascript" src="https://testimonial.to/js/widget.js"></script>
-<iframe id="wall-of-love-RADG188" src="https://testimonial.to/embed/wall-of-love"></iframe>
-<script type="text/javascript">document.addEventListener('DOMContentLoaded', function() { window.TestimonialWidget.init('wall-of-love-RADG188'); });</script>`
+    const embedCode = `<iframe 
+    id="wall-of-love" 
+    src="${currentLink}?embed=true" 
+    style="width:100%; height:100vh; border:none;"
+    loading="lazy"
+></iframe>`
 
     // Copy to clipboard handlers
     const handleCopyLink = async () => {
-        await navigator.clipboard.writeText(shareableLink)
+        await navigator.clipboard.writeText(currentLink)
         setLinkCopied(true)
         setTimeout(() => setLinkCopied(false), 2000)
     }
@@ -63,7 +70,7 @@ export function ShareWallOfLoveSidebar({
             <EditWallUrlDialog
                 isOpen={editUrlOpen}
                 onOpenChange={setEditUrlOpen}
-                initialUrl={shareableLink}
+                initialUrl={currentLink}
             />
 
             {/* Backdrop */}
@@ -107,7 +114,7 @@ export function ShareWallOfLoveSidebar({
                                 {/* Using simple text or icon if needed, but input handles it */}
                             </div>
                             <Input
-                                value={shareableLink}
+                                value={currentLink}
                                 readOnly
                                 className="pr-20 pl-4 h-11 text-sm bg-white border-zinc-200 rounded-xl text-zinc-600 focus-visible:ring-violet-500"
                             />
@@ -210,25 +217,14 @@ export function ShareWallOfLoveSidebar({
                                 </div>
                                 <pre className="text-[13px] font-mono leading-loose overflow-x-auto text-zinc-300 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent pb-1">
                                     <code>
-                                        <span className="text-[#fca7ea]">&lt;script</span>{" "}
-                                        <span className="text-[#8bcdef]">type</span>=
-                                        <span className="text-[#a6e3a1]">"text/javascript"</span>{" "}
-                                        <span className="text-[#8bcdef]">src</span>=
-                                        <span className="text-[#a6e3a1]">"https://widget.senj..."</span>
-                                        <span className="text-[#fca7ea]">&gt;&lt;/script&gt;</span>
-                                        {"\n"}
                                         <span className="text-[#fca7ea]">&lt;iframe</span>{" "}
                                         <span className="text-[#8bcdef]">id</span>=
-                                        <span className="text-[#a6e3a1]">"wall-of-love-kADGI9o"</span>{" "}
+                                        <span className="text-[#a6e3a1]">"wall-of-love"</span>{" "}
                                         <span className="text-[#8bcdef]">src</span>=
-                                        <span className="text-[#a6e3a1]">"https://senja.io/p/t..."</span>
+                                        <span className="text-[#a6e3a1]">"{currentLink}?embed=true"</span>{" "}
+                                        <span className="text-[#8bcdef]">style</span>=
+                                        <span className="text-[#a6e3a1]">"width:100%; height:100vh; border:none;"</span>
                                         <span className="text-[#fca7ea]">&gt;&lt;/iframe&gt;</span>
-                                        {"\n"}
-                                        <span className="text-[#fca7ea]">&lt;script</span>{" "}
-                                        <span className="text-[#8bcdef]">type</span>=
-                                        <span className="text-[#a6e3a1]">"text/javascript"</span>
-                                        <span className="text-[#fca7ea]">&gt;</span>
-                                        <span className="text-[#cba6f7]">document.addEventList...</span>
                                     </code>
                                 </pre>
                             </div>

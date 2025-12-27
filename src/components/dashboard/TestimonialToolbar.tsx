@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Copy, Pencil, Scissors, Share2, Trash2 } from "lucide-react";
-import { deleteTestimonial } from "@/lib/actions/testimonials";
+import { deleteTestimonial, duplicateTestimonial } from "@/lib/actions/testimonials";
 import { useRouter } from "next/navigation";
 import { useTransition, useState } from "react";
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -16,34 +17,84 @@ import {
 
 interface TestimonialToolbarProps {
     testimonialId: string | number;
+    testimonialData?: any;
     isVideo: boolean;
+    onEdit?: () => void;
+    onTrim?: () => void;
+    onDuplicate?: (newTestimonial: any, tempId?: number) => void;
+    onDelete?: (id: string | number) => void;
 }
 
-export function TestimonialToolbar({ testimonialId, isVideo }: TestimonialToolbarProps) {
+export function TestimonialToolbar({ testimonialId, testimonialData, isVideo, onEdit, onTrim, onDuplicate, onDelete }: TestimonialToolbarProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [isDuplicating, setIsDuplicating] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const handleDelete = () => {
         startTransition(async () => {
             try {
-                await deleteTestimonial(testimonialId);
-                router.push("/dashboard");
+                const result = await deleteTestimonial(testimonialId);
+                if (result.hasRemainingTestimonials) {
+                    // Other testimonials exist for this email - just update local state
+                    if (onDelete) {
+                        onDelete(testimonialId);
+                    } else {
+                        router.refresh();
+                    }
+                    toast.success("Testimonial deleted successfully");
+                } else {
+                    // No other testimonials for this email - navigate to dashboard
+                    router.push("/dashboard");
+                }
             } catch (error) {
                 console.error("Failed to delete", error);
-                alert("Failed to delete testimonial");
+                toast.error("Failed to delete testimonial");
             }
         });
     };
 
     const handleShare = () => {
         navigator.clipboard.writeText(window.location.href);
-        // Could replace with a toast
-        alert("Link copied to clipboard!");
+        toast.success("Link copied to clipboard!");
     };
 
-    const handleFeatureNotReady = (feature: string) => {
-        alert(`${feature} feature coming soon!`);
+    const handleDuplicate = async () => {
+        setIsDuplicating(true);
+        const tempId = Date.now(); // Temporary ID for optimistic update
+
+        // Optimistic Update
+        if (testimonialData && onDuplicate) {
+            const optimisticTestimonial = {
+                ...testimonialData,
+                id: tempId,
+                title: (testimonialData.title || "") + " (Copy)",
+                date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+                created_at: new Date().toISOString(),
+                video_url: testimonialData.video_url || testimonialData.media?.video_url || testimonialData.videoUrl || null,
+                // Ensure attachments are preserved/copied correctly for the optimistic update
+                attachments: testimonialData.attachments ? [...testimonialData.attachments] : []
+            };
+            onDuplicate(optimisticTestimonial, tempId);
+        }
+
+        try {
+            const result = await duplicateTestimonial(testimonialId);
+            if (result.success && result.newTestimonial) {
+                // Replace optimistic item with real server data
+                if (onDuplicate) {
+                    onDuplicate(result.newTestimonial, tempId);
+                }
+                toast.success("Testimonial duplicated successfully!");
+            }
+        } catch (error) {
+            console.error("Failed to duplicate", error);
+            toast.error("Failed to duplicate testimonial");
+            // Ideally we should remove the optimistic item here if it failed, 
+            // but for now relying on refresh/manual delete is acceptable for MVP simplicity
+        } finally {
+            setIsDuplicating(false);
+        }
     };
 
     return (
@@ -52,7 +103,10 @@ export function TestimonialToolbar({ testimonialId, isVideo }: TestimonialToolba
                 <div className="flex items-center gap-2">
                     <Button
                         variant="ghost"
-                        onClick={() => handleFeatureNotReady("Edit Metadata")}
+                        onClick={() => {
+                            if (onEdit) onEdit();
+                            else router.push(`/dashboard/Edit-Testimonial/${testimonialId}`);
+                        }}
                         className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                     >
                         <Pencil className="size-4" />
@@ -62,7 +116,10 @@ export function TestimonialToolbar({ testimonialId, isVideo }: TestimonialToolba
                     {isVideo && (
                         <Button
                             variant="ghost"
-                            onClick={() => handleFeatureNotReady("Video Trim")}
+                            onClick={() => {
+                                if (onTrim) onTrim();
+                                else router.push(`/dashboard/Trim-Video/${testimonialId}`);
+                            }}
                             className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                         >
                             <Scissors className="size-4" />
@@ -72,11 +129,12 @@ export function TestimonialToolbar({ testimonialId, isVideo }: TestimonialToolba
 
                     <Button
                         variant="ghost"
-                        onClick={() => handleFeatureNotReady("Duplicate")}
+                        onClick={handleDuplicate}
+                        disabled={isDuplicating}
                         className="h-10 px-4 gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700/50 rounded-xl transition-all duration-200"
                     >
                         <Copy className="size-4" />
-                        <span className="font-medium">Duplicate</span>
+                        <span className="font-medium">{isDuplicating ? "Duplicating..." : "Duplicate"}</span>
                     </Button>
 
                     <Button

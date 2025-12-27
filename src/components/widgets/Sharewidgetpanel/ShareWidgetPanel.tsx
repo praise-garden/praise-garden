@@ -1,9 +1,11 @@
 "use client"
-
+import { QRCodeCanvas } from "qrcode.react";
 import * as React from "react"
 import { ArrowLeft, Code, Link2, Image, Copy, Check, ExternalLink, Download, Sparkles, FileImage } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { downloadWidgetImage, ExportFormat } from "./export-utils"
 
 // ===================== PLATFORM ICONS ===================== //
 const WordPressIcon = () => (
@@ -54,18 +56,33 @@ export interface ShareWidgetPanelProps {
 
 // ===================== MAIN COMPONENT ===================== //
 export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: ShareWidgetPanelProps) {
-    const [activeTab, setActiveTab] = React.useState<ShareTab>('embed')
+    const [activeTab, setActiveTab] = React.useState<ShareTab>('link')
     const [copiedEmbed, setCopiedEmbed] = React.useState(false)
     const [copiedLink, setCopiedLink] = React.useState(false)
+    const [copiedQR, setCopiedQR] = React.useState(false)
+
     const [copiedFramer, setCopiedFramer] = React.useState(false)
+    const [isExporting, setIsExporting] = React.useState(false)
+    const [exportWidth, setExportWidth] = React.useState(1200)
+
+    const handleExport = async (format: ExportFormat) => {
+        setIsExporting(true)
+        try {
+            await downloadWidgetImage(widgetId, format, exportWidth)
+            toast.success(`Exported as ${format.toUpperCase()}`)
+        } catch (e) {
+            toast.error("Failed to export image")
+        } finally {
+            setIsExporting(false)
+        }
+    }
 
     // Generate embed code based on widget ID
-    const embedCode = `<script src="https://widget.senja.io/widget/${widgetId}/platform.js"></script>
-<div class="senja-embed" data-id="${widgetId}"
-     data-mode="shadow">
-</div>`
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://trustimonials.io'
+    const embedCode = `<script src="${origin}/embed.js" async></script>
+<div class="trustimonials-widget" data-id="${widgetId}"></div>`
 
-    const widgetLink = `https://praisegarden.io/widget/${widgetId}`
+    const widgetLink = `${origin}/w/${widgetId}`
     const framerLink = `https://framer.com/m/SenjaWidget-KBJN.js`
 
     const handleCopy = async (text: string, setCopied: (v: boolean) => void) => {
@@ -77,6 +94,35 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
             console.error('Failed to copy:', err)
         }
     }
+
+    const handleDownloadQR = () => {
+        const canvas = document.querySelector("#qr-code-wrapper canvas") as HTMLCanvasElement;
+        if (!canvas) return;
+
+        const pngFile = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `widget-${widgetId}-qr.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+    };
+
+    const handleCopyQR = () => {
+        const canvas = document.querySelector("#qr-code-wrapper canvas") as HTMLCanvasElement;
+        if (!canvas) return;
+
+        try {
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                setCopiedQR(true);
+                setTimeout(() => setCopiedQR(false), 2000);
+            }, 'image/png');
+        } catch (err) {
+            console.error('Failed to copy QR image:', err);
+        }
+    };
 
     const platforms = [
         { name: 'WordPress', icon: WordPressIcon },
@@ -192,26 +238,21 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">src</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"https://widget.senja.io/widget/{widgetId}/platform.js"</span>
+                                                <span className="text-emerald-400">"{origin}/embed.js"</span>
+                                                <span className="text-white"> </span>
+                                                <span className="text-cyan-400">async</span>
                                                 <span className="text-pink-400">&gt;&lt;/script&gt;</span>
                                                 {"\n"}
                                                 <span className="text-pink-400">&lt;div</span>
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">class</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"senja-embed"</span>
+                                                <span className="text-emerald-400">"trustimonials-widget"</span>
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">data-id</span>
                                                 <span className="text-white">=</span>
                                                 <span className="text-emerald-400">"{widgetId}"</span>
-                                                {"\n"}
-                                                <span className="text-white">     </span>
-                                                <span className="text-cyan-400">data-mode</span>
-                                                <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"shadow"</span>
-                                                <span className="text-pink-400">&gt;</span>
-                                                {"\n"}
-                                                <span className="text-pink-400">&lt;/div&gt;</span>
+                                                <span className="text-pink-400">&gt;&lt;/div&gt;</span>
                                             </code>
                                         </pre>
                                     </div>
@@ -277,17 +318,18 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                 <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-6">
                                     <h3 className="text-base font-semibold text-white mb-1.5">Your widget link</h3>
                                     <p className="text-sm text-zinc-500 mb-4">
-                                        Share this link to display your widget on any platform.
+                                        Share this link to display your widget on any platform. Anyone with this link can view your widget.
                                     </p>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex-1 px-4 py-3 bg-zinc-800/60 border border-zinc-700/50 rounded-xl">
+                                        <div className="flex-1 px-4 py-3 bg-zinc-800/60 border border-zinc-700/50 rounded-xl overflow-hidden">
                                             <span className="text-sm text-zinc-300 font-mono truncate block">
-                                                https://widget.senja.io/widget/{widgetId}
+                                                {typeof window !== 'undefined' ? `${window.location.origin}/w/${widgetId}` : `/w/${widgetId}`}
                                             </span>
                                         </div>
                                         <button
-                                            onClick={() => handleCopy(`https://widget.senja.io/widget/${widgetId}`, setCopiedLink)}
+                                            onClick={() => handleCopy(`${typeof window !== 'undefined' ? window.location.origin : ''}/w/${widgetId}`, setCopiedLink)}
                                             className="p-3 bg-zinc-800/60 border border-zinc-700/50 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all duration-200"
+                                            title="Copy link"
                                         >
                                             {copiedLink ? (
                                                 <Check className="h-4 w-4 text-green-500" />
@@ -295,7 +337,19 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                 <Copy className="h-4 w-4" />
                                             )}
                                         </button>
+                                        <a
+                                            href={`/w/${widgetId}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-3 bg-violet-600 hover:bg-violet-500 rounded-xl text-white transition-all duration-200"
+                                            title="Open in new tab"
+                                        >
+                                            <ExternalLink className="h-4 w-4" />
+                                        </a>
                                     </div>
+                                    <p className="text-xs text-zinc-500 mt-3">
+                                        💡 Save your widget first to get a permanent link
+                                    </p>
                                 </div>
 
                                 {/* Share your widget's QR code - Card Container */}
@@ -308,16 +362,27 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                 Scan this QR code to access a widget that to code in your widget.
                                             </p>
                                             <div className="flex gap-3">
-                                                <Button className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700/50 gap-2 font-medium rounded-xl px-5 py-2.5 transition-all duration-200">
+                                                <Button
+                                                    onClick={handleDownloadQR}
+                                                    className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700/50 gap-2 font-medium rounded-xl px-5 py-2.5 transition-all duration-200">
                                                     <Download className="h-4 w-4" />
                                                     Download
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleCopy(`https://widget.senja.io/widget/${widgetId}`, setCopiedLink)}
+                                                    onClick={handleCopyQR}
                                                     className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700/50 gap-2 font-medium rounded-xl px-5 py-2.5 transition-all duration-200"
                                                 >
-                                                    <Copy className="h-4 w-4" />
-                                                    Copy to Clipboard
+                                                    {copiedQR ? (
+                                                        <>
+                                                            <Check className="h-4 w-4 text-green-500" />
+                                                            Copied!
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Copy className="h-4 w-4" />
+                                                            Copy to Clipboard
+                                                        </>
+                                                    )}
                                                 </Button>
                                             </div>
                                         </div>
@@ -326,64 +391,19 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                         <div className="shrink-0">
                                             <div className="w-32 h-32 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg">
                                                 {/* QR Code placeholder - replace with actual QR code library */}
-                                                <svg viewBox="0 0 100 100" className="w-full h-full">
-                                                    <rect fill="#000" x="0" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="10" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="20" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="30" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="40" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="50" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="10" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="10" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="20" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="30" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="40" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="30" width="10" height="10" />
-                                                    <rect fill="#000" x="20" y="30" width="10" height="10" />
-                                                    <rect fill="#000" x="30" y="30" width="10" height="10" />
-                                                    <rect fill="#000" x="40" y="30" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="30" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="20" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="30" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="40" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="50" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="50" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="10" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="20" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="30" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="40" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="50" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="90" y="0" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="10" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="90" y="20" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="90" y="40" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="50" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="90" y="60" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="10" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="20" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="30" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="40" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="50" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="0" y="90" width="10" height="10" />
-                                                    <rect fill="#000" x="60" y="90" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="90" y="80" width="10" height="10" />
-                                                    <rect fill="#000" x="80" y="90" width="10" height="10" />
-                                                    <rect fill="#000" x="90" y="90" width="10" height="10" />
-                                                </svg>
+                                                <div
+                                                    id="qr-code-wrapper"
+                                                    className="w-full h-full text-black bg-white flex items-center justify-center overflow-hidden"
+                                                >
+                                                    <QRCodeCanvas
+                                                        size={256}
+                                                        style={{ width: "100%", height: "auto" }}
+                                                        value={typeof window !== 'undefined' ? `${window.location.origin}/w/${widgetId}` : `/w/${widgetId}`}
+                                                        fgColor="#000000"
+                                                        bgColor="#FFFFFF"
+                                                        includeMargin={true}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -404,7 +424,8 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                         <label className="text-xs text-zinc-400 mb-2 block">Width (px)</label>
                                         <input
                                             type="number"
-                                            defaultValue={1200}
+                                            value={exportWidth}
+                                            onChange={(e) => setExportWidth(Number(e.target.value))}
                                             min={400}
                                             max={3000}
                                             step={100}
@@ -421,17 +442,26 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                     </p>
 
                                     <div className="flex gap-3">
-                                        <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
-                                            <Download className="h-4 w-4" />
-                                            Download as PNG
+                                        <Button
+                                            onClick={() => handleExport('png')}
+                                            disabled={isExporting}
+                                            className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
+                                            {isExporting ? <Sparkles className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                            {isExporting ? 'Exporting...' : 'Download as PNG'}
                                         </Button>
-                                        <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
-                                            <Sparkles className="h-4 w-4" />
-                                            Download as SVG
+                                        <Button
+                                            onClick={() => handleExport('svg')}
+                                            disabled={isExporting}
+                                            className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
+                                            {isExporting ? <Sparkles className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                                            {isExporting ? 'Exporting...' : 'Download as SVG'}
                                         </Button>
-                                        <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
-                                            <FileImage className="h-4 w-4" />
-                                            Download as JPG
+                                        <Button
+                                            onClick={() => handleExport('jpeg')}
+                                            disabled={isExporting}
+                                            className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700/50 gap-2.5 font-medium py-5 rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200">
+                                            {isExporting ? <Sparkles className="h-4 w-4 animate-spin" /> : <FileImage className="h-4 w-4" />}
+                                            {isExporting ? 'Exporting...' : 'Download as JPG'}
                                         </Button>
                                     </div>
                                 </div>
