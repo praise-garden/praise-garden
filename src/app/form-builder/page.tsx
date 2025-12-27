@@ -274,6 +274,9 @@ const FormBuilderPage = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Warn user before leaving page with unsaved changes
   useEffect(() => {
@@ -526,12 +529,49 @@ const FormBuilderPage = () => {
           <button className="text-gray-400 rounded-md p-1 hover:bg-white/10 transition-colors">
             <ArrowLeftIcon />
           </button>
-          <div className="flex items-center gap-2 group cursor-pointer">
-            <h1 className="text-lg font-medium text-white">{formConfig.name}</h1>
-            <button className="text-gray-400 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:text-white hover:scale-110">
-              <EditIcon />
-            </button>
-          </div>
+          {isEditingName ? (
+            <input
+              ref={nameInputRef}
+              type="text"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={() => {
+                if (editedName.trim() && editedName !== formConfig.name) {
+                  setFormConfig(prev => prev ? { ...prev, name: editedName.trim() } : null);
+                  setHasUnsavedChanges(true);
+                }
+                setIsEditingName(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (editedName.trim() && editedName !== formConfig.name) {
+                    setFormConfig(prev => prev ? { ...prev, name: editedName.trim() } : null);
+                    setHasUnsavedChanges(true);
+                  }
+                  setIsEditingName(false);
+                } else if (e.key === 'Escape') {
+                  setIsEditingName(false);
+                }
+              }}
+              className="text-lg font-medium text-white bg-gray-800 border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-w-[200px]"
+              autoFocus
+            />
+          ) : (
+            <div
+              className="flex items-center gap-2 group cursor-pointer"
+              onClick={() => {
+                setEditedName(formConfig.name);
+                setIsEditingName(true);
+                setTimeout(() => nameInputRef.current?.focus(), 0);
+              }}
+            >
+              <h1 className="text-lg font-medium text-white">{formConfig.name}</h1>
+              <button className="text-gray-400 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:text-white hover:scale-110">
+                <EditIcon />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Center Section: Navigation Tabs */}
