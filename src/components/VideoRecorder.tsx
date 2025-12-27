@@ -27,7 +27,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onCancel, onComplete, onL
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const chunksRef = useRef<Blob[]>([]);
-    const animationFrameRef = useRef<number>();
+    const animationFrameRef = useRef<number | undefined>(undefined);
 
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [permissionError, setPermissionError] = useState<string | null>(null);
