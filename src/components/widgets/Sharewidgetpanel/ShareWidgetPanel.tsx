@@ -238,7 +238,7 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">src</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"{origin}/embed.js"</span>
+                                                <span className="text-emerald-400">{`"${origin}/embed.js"`}</span>
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">async</span>
                                                 <span className="text-pink-400">&gt;&lt;/script&gt;</span>
@@ -247,11 +247,11 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">class</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"trustimonials-widget"</span>
+                                                <span className="text-emerald-400">{`"trustimonials-widget"`}</span>
                                                 <span className="text-white"> </span>
                                                 <span className="text-cyan-400">data-id</span>
                                                 <span className="text-white">=</span>
-                                                <span className="text-emerald-400">"{widgetId}"</span>
+                                                <span className="text-emerald-400">{`"${widgetId}"`}</span>
                                                 <span className="text-pink-400">&gt;&lt;/div&gt;</span>
                                             </code>
                                         </pre>
@@ -357,7 +357,7 @@ export function ShareWidgetPanel({ isOpen, onClose, widgetId, widgetName }: Shar
                                     <div className="flex gap-6">
                                         {/* Left Content */}
                                         <div className="flex-1">
-                                            <h3 className="text-base font-semibold text-white mb-1.5">Share your widget's QR code</h3>
+                                            <h3 className="text-base font-semibold text-white mb-1.5">Share your widget{"'"}s QR code</h3>
                                             <p className="text-sm text-zinc-500 mb-5">
                                                 Scan this QR code to access a widget that to code in your widget.
                                             </p>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormCard, FormCardProps } from '@/app/form-builder/page';
+import { FormCard, FormCardProps } from '@/components/form-builder/FormCard';
 import AppBar from '@/components/ui/app-bar';
 import BackButton from '@/components/ui/back-button';
 import { PrivateFeedbackBlockConfig } from '@/types/form-config';

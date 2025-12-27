@@ -3,9 +3,9 @@ import { getPublicTestimonialsByIds } from "@/lib/actions/widgets"
 import { WallEmbedClient } from "./WallEmbedClient"
 
 interface PageProps {
-    params: {
+    params: Promise<{
         wallId: string
-    }
+    }>
 }
 
 export default async function WallEmbedPage({ params }: PageProps) {

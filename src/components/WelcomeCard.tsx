@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormCard, FormCardProps } from '@/app/form-builder/page';
+import { FormCard, FormCardProps } from '@/components/form-builder/FormCard';
 import { motion } from 'framer-motion';
 import { WelcomeBlockConfig } from '@/types/form-config';
 

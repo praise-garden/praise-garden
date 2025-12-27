@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FormCard, FormCardProps } from '@/app/form-builder/page';
+import { FormCard, FormCardProps } from '@/components/form-builder/FormCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentBlockConfig } from '@/types/form-config';
 import BackButton from '@/components/ui/back-button';

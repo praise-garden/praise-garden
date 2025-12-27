@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FormCardProps, FormCard } from '@/app/form-builder/page';
+import { FormCardProps, FormCard } from '@/components/form-builder/FormCard';
 import AppBar from '@/components/ui/app-bar';
 import BackButton from '@/components/ui/back-button';
 import { ReadyToSendBlockConfig } from '@/types/form-config';

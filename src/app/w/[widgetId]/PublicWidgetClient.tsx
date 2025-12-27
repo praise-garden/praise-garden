@@ -243,7 +243,7 @@ export default function PublicWidgetClient({ widget, testimonials: initialTestim
                 {/* Render based on widget type */}
 
                 {/* 1. Wall of Love Type */}
-                {config.type === 'wall-of-love' && (
+                {(config.type as string) === 'wall-of-love' && (
                     <div className="w-full max-w-7xl mx-auto">
                         {/* Header */}
                         <div className="py-10 px-4 flex flex-col items-center justify-center text-center mb-8">
@@ -345,8 +345,8 @@ export default function PublicWidgetClient({ widget, testimonials: initialTestim
                                                     key={i}
                                                     className="w-4 h-4"
                                                     style={{
-                                                        fill: i < (t.rating || 5) ? (config.accentColor || '#fbbf24') : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
-                                                        color: i < (t.rating || 5) ? (config.accentColor || '#fbbf24') : (config.cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                        fill: i < (t.rating || 5) ? (config.accentColor || '#fbbf24') : ((config as any).cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
+                                                        color: i < (t.rating || 5) ? (config.accentColor || '#fbbf24') : ((config as any).cardTheme === 'cinematic' ? '#52525b' : '#e4e4e7'),
                                                     }}
                                                 />
                                             ))}

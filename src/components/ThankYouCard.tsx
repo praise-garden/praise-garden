@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { FormCardProps } from '@/app/form-builder/page';
-import { FormCard } from '@/app/form-builder/page';
+import { FormCardProps } from '@/components/form-builder/FormCard';
+import { FormCard } from '@/components/form-builder/FormCard';
 import AppBar from '@/components/ui/app-bar';
 import { ThankYouBlockConfig } from '@/types/form-config';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { FormCardProps } from '@/app/form-builder/page';
-import { FormCard } from '@/app/form-builder/page';
+import { FormCardProps } from '@/components/form-builder/FormCard';
+import { FormCard } from '@/components/form-builder/FormCard';
 import { motion } from 'framer-motion';
 import AppBar from '@/components/ui/app-bar';
 import BackButton from '@/components/ui/back-button';

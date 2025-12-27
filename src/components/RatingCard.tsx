@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { FormCardProps } from '@/app/form-builder/page';
-import { FormCard } from '@/app/form-builder/page';
+import { FormCardProps } from '@/components/form-builder/FormCard';
+import { FormCard } from '@/components/form-builder/FormCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RatingBlockConfig, FormBlockType } from '@/types/form-config';
 import BackButton from '@/components/ui/back-button';

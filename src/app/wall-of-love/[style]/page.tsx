@@ -324,10 +324,11 @@ const ExpandableContent = ({
 
 
 interface WallOfLovePageProps {
-    params: { style: string }
+    params: Promise<{ style: string }>
 }
 
 export default function WallOfLovePage({ params }: WallOfLovePageProps) {
+    const resolvedParams = React.use(params)
     const router = useRouter()
 
     // ===================== CONFIG STATE (Single Source of Truth) ===================== //

@@ -4,14 +4,15 @@ import { Metadata } from "next"
 import PublicWidgetClient from "./PublicWidgetClient"
 
 interface PageProps {
-    params: {
+    params: Promise<{
         widgetId: string
-    }
+    }>
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { data: widget } = await getPublicWidgetById(params.widgetId)
+    const { widgetId } = await params
+    const { data: widget } = await getPublicWidgetById(widgetId)
 
     if (!widget) {
         return {
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PublicWidgetPage({ params }: PageProps) {
-    const { data: widget, error } = await getPublicWidgetById(params.widgetId)
+    const { widgetId } = await params
+    const { data: widget, error } = await getPublicWidgetById(widgetId)
 
     if (!widget || error) {
         notFound()

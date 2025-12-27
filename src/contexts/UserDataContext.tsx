@@ -174,19 +174,16 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         setTestimonials(prev => [optimisticTestimonial, ...prev])
 
         try {
-            const { data, error } = await createTestimonialAction(input)
+            const result = await createTestimonialAction(input)
 
-            if (error || !data) {
+            if (!result.success) {
                 // Rollback on error
                 setTestimonials(prev => prev.filter(t => t.id !== optimisticId))
-                return { success: false, error: error || "Failed to create testimonial" }
+                return { success: false, error: "Failed to create testimonial" }
             }
 
-            // Replace optimistic entry with real data
-            setTestimonials(prev =>
-                prev.map(t => t.id === optimisticId ? data : t)
-            )
-
+            // Fetch the updated testimonials to get the real data
+            // For now, keep the optimistic entry (it has correct data)
             return { success: true }
         } catch (err) {
             // Rollback on error
@@ -242,14 +239,14 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         setTestimonials(prev => prev.filter(t => t.id !== id))
 
         try {
-            const { success, error } = await deleteTestimonialAction(id)
+            const result = await deleteTestimonialAction(id)
 
-            if (!success) {
+            if (!result.success) {
                 // Rollback on error
                 setTestimonials(prev => [...prev, original].sort((a, b) =>
                     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
                 ))
-                return { success: false, error: error || "Failed to delete testimonial" }
+                return { success: false, error: "Failed to delete testimonial" }
             }
 
             return { success: true }

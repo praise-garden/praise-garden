@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FormCard, FormCardProps } from '@/app/form-builder/page';
+import { FormCard, FormCardProps } from '@/components/form-builder/FormCard';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import AppBar from '@/components/ui/app-bar';
 import { NegativeFeedbackBlockConfig } from '@/types/form-config';

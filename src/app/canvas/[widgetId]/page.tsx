@@ -3,9 +3,9 @@ import { WidgetEditorClient } from "./WidgetEditorClient"
 import { Toaster } from "sonner"
 
 interface PageProps {
-    params: {
+    params: Promise<{
         widgetId: string
-    }
+    }>
 }
 
 export default async function WidgetEditorPage({ params }: PageProps) {

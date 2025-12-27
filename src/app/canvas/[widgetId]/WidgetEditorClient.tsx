@@ -150,14 +150,14 @@ export function WidgetEditorClient({ widgetId }: WidgetEditorClientProps) {
       authorName: t.author_name,
       authorTitle: t.author_title || '',
       authorAvatarUrl: t.author_avatar_url,
-      rating: t.rating,
+      rating: t.rating ?? 5,
       content: t.content,
       source: t.source,
       date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       videoUrl: (t as any).video_url || null,
       videoThumbnail: (t as any).video_thumbnail || null,
       attachments: (t as any).attachments || [],
-    }))
+    })) as WidgetTestimonial[]
   }, [dbTestimonials])
 
   // Helper to check if widgetId is a UUID (saved widget) vs widget type

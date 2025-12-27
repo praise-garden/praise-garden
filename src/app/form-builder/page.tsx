@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import React, { Suspense, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import RatingCard from '@/components/RatingCard';
 // import FormBuilderSidebar from '@/components/FormBuilderSidebar';
@@ -178,7 +178,7 @@ const NavItem = ({ children, icon, active = false, onClick }: NavItemProps) => (
   </button>
 );
 
-export interface FormCardProps {
+interface FormCardProps {
   // page: PageItem; - This will be replaced by a specific block config
   config: FormBlock;
   currentPage: number;
@@ -196,7 +196,7 @@ export interface FormCardProps {
   onNavigateToBlockType?: (blockType: FormBlockType) => void; // Conditional navigation to specific block type
 }
 
-export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'config' | 'onFieldFocus'>>> = ({
+const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'config' | 'onFieldFocus'>>> = ({
   children,
   currentPage,
   totalPages,
@@ -259,7 +259,7 @@ export const FormCard: React.FC<React.PropsWithChildren<Omit<FormCardProps, 'con
   )
 }
 
-const FormBuilderPage = () => {
+const FormBuilderPageContent = () => {
   const searchParams = useSearchParams();
   const formId = searchParams.get('id');
 
@@ -909,4 +909,18 @@ const FormBuilderPage = () => {
   );
 };
 
-export default FormBuilderPage;
+// Wrap in Suspense for useSearchParams
+export default function FormBuilderPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-950 text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-12 border-4 border-gray-700 border-t-purple-600 rounded-full animate-spin"></div>
+          <p className="text-gray-400">Loading form builder...</p>
+        </div>
+      </div>
+    }>
+      <FormBuilderPageContent />
+    </Suspense>
+  );
+}

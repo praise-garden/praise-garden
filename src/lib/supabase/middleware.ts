@@ -13,7 +13,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * - Redirect unauthorized users
  */
 export const updateSession = async (request: NextRequest) => {
-  let supabaseResponse = NextResponse.next({
+  const supabaseResponse = NextResponse.next({
     request,
   });
 

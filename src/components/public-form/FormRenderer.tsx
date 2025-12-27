@@ -88,7 +88,7 @@ const FormRenderer: React.FC<FormRendererProps> = ({
         currentPage: currentPageIndex + 1,
         totalPages,
         onNext: handleNext,
-        onPrevious: currentPageIndex > 0 ? handlePrevious : undefined,
+        onPrevious: handlePrevious,
         onFieldFocus: handleFieldFocus,
         theme: formConfig.theme,
         isPreview: true, // Always true to get full-screen layout
